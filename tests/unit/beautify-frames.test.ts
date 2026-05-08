@@ -71,12 +71,33 @@ describe("renderFrame", () => {
     expect(meta.height!).toBeGreaterThan(300);
   });
 
-  it("passes through device frames unchanged (handled later)", async () => {
-    const img = await makeImage(400, 300);
+  it("renders iPhone frame with image composited into screen area", async () => {
+    const img = await makeImage(400, 800);
     const result = await renderFrame(img, "iphone");
     const meta = await sharp(result).metadata();
-    expect(meta.width).toBe(400);
-    expect(meta.height).toBe(300);
+    expect(meta.width!).toBeGreaterThan(400);
+    expect(meta.height!).toBeGreaterThan(800);
+  });
+
+  it("renders MacBook frame", async () => {
+    const img = await makeImage(800, 500);
+    const result = await renderFrame(img, "macbook");
+    const meta = await sharp(result).metadata();
+    expect(meta.width!).toBeGreaterThan(800);
+  });
+
+  it("renders iPad frame", async () => {
+    const img = await makeImage(400, 600);
+    const result = await renderFrame(img, "ipad");
+    const meta = await sharp(result).metadata();
+    expect(meta.width!).toBeGreaterThan(400);
+  });
+
+  it("renders iPhone dark frame", async () => {
+    const img = await makeImage(400, 800);
+    const result = await renderFrame(img, "iphone-dark");
+    const meta = await sharp(result).metadata();
+    expect(meta.width!).toBeGreaterThan(400);
   });
 
   it("handles wide images", async () => {

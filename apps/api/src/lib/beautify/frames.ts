@@ -1,5 +1,61 @@
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { DEVICE_FRAMES, SVG_FRAMES } from "./constants.js";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const FRAMES_DIR = join(__dirname, "../../assets/frames");
+
+interface DeviceFrameData {
+  png: Buffer;
+  meta: { screenX: number; screenY: number; screenW: number; screenH: number };
+}
+
+const frameCache = new Map<string, DeviceFrameData>();
+
+function loadDeviceFrame(frameId: string): DeviceFrameData {
+  const cached = frameCache.get(frameId);
+  if (cached) return cached;
+
+  const pngBuf = readFileSync(join(FRAMES_DIR, `${frameId}.png`));
+  const meta = JSON.parse(readFileSync(join(FRAMES_DIR, `${frameId}.meta.json`), "utf-8"));
+
+  const data: DeviceFrameData = { png: pngBuf, meta };
+  frameCache.set(frameId, data);
+  return data;
+}
+
+async function renderDeviceFrame(imageBuffer: Buffer, frameId: string): Promise<Buffer> {
+  const { png: framePng, meta } = loadDeviceFrame(frameId);
+  const frameMeta = await sharp(framePng).metadata();
+  const frameW = frameMeta.width ?? 0;
+  const frameH = frameMeta.height ?? 0;
+
+  // Resize the screenshot to fit the screen rect
+  const resized = await sharp(imageBuffer)
+    .resize(meta.screenW, meta.screenH, { fit: "fill" })
+    .png()
+    .toBuffer();
+
+  // Composite: screenshot behind frame so the frame bezel overlays it
+  const result = await sharp({
+    create: {
+      width: frameW,
+      height: frameH,
+      channels: 4,
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    },
+  })
+    .composite([
+      { input: resized, left: meta.screenX, top: meta.screenY },
+      { input: framePng, left: 0, top: 0 },
+    ])
+    .png()
+    .toBuffer();
+
+  return result;
+}
 
 const WINDOW_TITLE_BAR_HEIGHT = 36;
 const BROWSER_TITLE_BAR_HEIGHT = 72;
@@ -162,7 +218,7 @@ export async function renderFrame(
   }
 
   if (DEVICE_FRAMES.has(frame)) {
-    return imageBuffer;
+    return renderDeviceFrame(imageBuffer, frame);
   }
 
   if (!SVG_FRAMES.has(frame)) {
