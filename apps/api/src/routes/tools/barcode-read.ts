@@ -159,7 +159,7 @@ export function registerBarcodeRead(app: FastifyInstance) {
         data: new Uint8ClampedArray(rawData.buffer, rawData.byteOffset, rawData.length),
         width,
         height,
-      };
+      } as ImageData;
 
       const results = await readBarcodes(imageData, {
         tryHarder,
