@@ -194,6 +194,11 @@ export const en = {
     },
     pipeline: { name: "Pipeline Builder", description: "Chain multiple tools into a workflow" },
   },
+  imageEnhancement: {
+    deepEnhance: "Deep Enhance (AI)",
+    deepEnhanceDescription: "Removes noise and artifacts using AI",
+    deepEnhanceRequires: "Requires Upscale & Enhance bundle",
+  },
   settings: {
     title: "Settings",
     general: "General",

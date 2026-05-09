@@ -6,6 +6,7 @@ import {
   Sparkles,
   User,
   UtensilsCrossed,
+  Wand2,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -156,6 +157,7 @@ export function ImageEnhancementControls({
     sharpness: true,
     denoise: true,
   });
+  const [deepEnhance, setDeepEnhance] = useState(false);
 
   const analyzeAbortRef = useRef<AbortController | null>(null);
   const onChangeRef = useRef(onChange);
@@ -200,8 +202,8 @@ export function ImageEnhancementControls({
 
   // Emit settings when mode/intensity/toggles change
   useEffect(() => {
-    onChangeRef.current?.({ mode, intensity, corrections: toggles });
-  }, [mode, intensity, toggles]);
+    onChangeRef.current?.({ mode, intensity, corrections: toggles, deepEnhance });
+  }, [mode, intensity, toggles, deepEnhance]);
 
   // CSS filter preview
   useEffect(() => {
@@ -317,6 +319,32 @@ export function ImageEnhancementControls({
           onChange={(e) => setIntensity(Number(e.target.value))}
           className="w-full mt-1"
         />
+      </div>
+
+      {/* Deep Enhance toggle */}
+      <div className="flex items-center justify-between py-1">
+        <div className="flex items-center gap-2">
+          <Wand2 className="h-3.5 w-3.5 text-muted-foreground" />
+          <div>
+            <p className="text-xs font-medium">Deep Enhance (AI)</p>
+            <p className="text-[10px] text-muted-foreground">
+              Removes noise and artifacts using AI
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => setDeepEnhance(!deepEnhance)}
+          className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors ${
+            deepEnhance ? "bg-primary" : "bg-muted"
+          }`}
+        >
+          <span
+            className={`inline-block h-3.5 w-3.5 rounded-full bg-white transition-transform ${
+              deepEnhance ? "translate-x-4.5" : "translate-x-0.5"
+            }`}
+          />
+        </button>
       </div>
 
       {/* Analysis badges */}
@@ -454,7 +482,11 @@ export function ImageEnhancementSettings({
           disabled={!hasFile || processing}
           className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          {files.length > 1 ? `Enhance (${files.length} files)` : "Enhance"}
+          {files.length > 1
+            ? `${settings.deepEnhance ? "Deep Enhance" : "Enhance"} (${files.length} files)`
+            : settings.deepEnhance
+              ? "Deep Enhance"
+              : "Enhance"}
         </button>
       )}
 
