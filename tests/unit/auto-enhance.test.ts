@@ -84,6 +84,40 @@ describe("analyzeImage", () => {
     const result = await analyzeImage(darkBuffer);
     expect(result.suggestedMode).toBe("low-light");
   });
+
+  it("produces contrast score near 50 for a typical well-exposed image", async () => {
+    // A gradient image has stdev ~60, which should score ~50
+    const gradientBuffer = await sharp(
+      Buffer.from(
+        Array.from({ length: 100 * 100 * 3 }, (_, i) => Math.floor(((i % 300) * 255) / 300)),
+      ),
+      { raw: { width: 100, height: 100, channels: 3 } },
+    )
+      .png()
+      .toBuffer();
+
+    const result = await analyzeImage(gradientBuffer);
+    expect(result.scores.contrast).toBeGreaterThanOrEqual(35);
+    expect(result.scores.contrast).toBeLessThanOrEqual(65);
+  });
+
+  it("produces near-zero corrections for well-exposed images (dead zone)", async () => {
+    // Wide spread centered at 128 gives stdev ~60 (contrast ~50) and mean ~128 (exposure ~50).
+    // Both scores land inside the [40,60] dead zone, so corrections should be zero.
+    const midGrayBuffer = await sharp(
+      Buffer.from(
+        Array.from({ length: 100 * 100 * 3 }, (_, i) => 24 + Math.floor(Math.random() * 208)),
+      ),
+      { raw: { width: 100, height: 100, channels: 3 } },
+    )
+      .png()
+      .toBuffer();
+
+    const result = await analyzeImage(midGrayBuffer);
+    // Corrections should be zero or near-zero in the dead zone
+    expect(Math.abs(result.corrections.brightness)).toBeLessThanOrEqual(5);
+    expect(Math.abs(result.corrections.contrast)).toBeLessThanOrEqual(5);
+  });
 });
 
 describe("scaleCorrections", () => {

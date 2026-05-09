@@ -119,9 +119,8 @@ function computeScores(
 ): AnalysisScores {
   const exposureScore = clamp(Math.round((meanLum / 255) * 100), 0, 100);
 
-  const idealStdev = 60;
-  const contrastDeviation = Math.abs(stdevLum - idealStdev) / idealStdev;
-  const contrastScore = clamp(Math.round((1 - contrastDeviation) * 50 + 25), 0, 100);
+  // Linear mapping: stdev ~60 = score 50. Higher stdev = higher contrast.
+  const contrastScore = clamp(Math.round(stdevLum / 1.2), 0, 100);
 
   const meanR = rCh.mean;
   const meanG = gCh.mean;
@@ -146,9 +145,9 @@ function computeScores(
 }
 
 function computeCorrections(scores: AnalysisScores): CorrectionParams {
-  const brightness = clamp(Math.round((50 - scores.exposure) * 1.2), -60, 60);
-  const contrast = clamp(Math.round((50 - scores.contrast) * 0.8), -40, 40);
-  const temperature = clamp(Math.round((50 - scores.whiteBalance) * 0.5), -30, 30);
+  const brightness = deadZoneCorrection(scores.exposure, 40, 60, 0.8);
+  const contrast = deadZoneCorrection(scores.contrast, 40, 60, 0.6);
+  const temperature = deadZoneCorrection(scores.whiteBalance, 40, 60, 0.5);
 
   const saturation =
     scores.saturation < 40
@@ -163,6 +162,16 @@ function computeCorrections(scores: AnalysisScores): CorrectionParams {
   const denoise = scores.noise < 25 ? 5 : scores.noise < 35 ? 3 : 0;
 
   return { brightness, contrast, temperature, saturation, sharpness, denoise };
+}
+
+/**
+ * Scores inside [lo, hi] produce zero correction.
+ * Scores outside scale from the dead zone edge, not from 50.
+ */
+function deadZoneCorrection(score: number, lo: number, hi: number, factor: number): number {
+  if (score >= lo && score <= hi) return 0;
+  if (score < lo) return clamp(Math.round((lo - score) * factor), 0, 60);
+  return clamp(Math.round((hi - score) * factor), -60, 0);
 }
 
 function detectIssues(scores: AnalysisScores): string[] {
