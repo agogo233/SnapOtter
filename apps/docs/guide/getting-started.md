@@ -53,8 +53,8 @@ See [Configuration](/guide/configuration) for all environment variables.
 **Prerequisites:** Node.js 22+, pnpm 9+, Python 3.10+ (for AI features), Git.
 
 ```bash
-git clone https://github.com/snapotter-hq/snapotter.git
-cd snapotter
+git clone https://github.com/snapotter-hq/SnapOtter.git
+cd SnapOtter
 pnpm install
 pnpm dev
 ```
