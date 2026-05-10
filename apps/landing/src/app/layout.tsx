@@ -10,6 +10,13 @@ export const metadata: Metadata = {
   description:
     "48 image processing tools with local AI. Runs 100% offline. No data leaves your network. Open source and free forever.",
   metadataBase: new URL("https://snapotter.com"),
+  icons: {
+    icon: [
+      { url: "/favicon.png", type: "image/png", sizes: "48x48" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
   other: {
     "color-scheme": "light only",
     "darkreader-lock": "true",
