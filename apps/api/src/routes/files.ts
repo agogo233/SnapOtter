@@ -156,17 +156,28 @@ export async function fileRoutes(app: FastifyInstance): Promise<void> {
       try {
         buffer = await decodeToSharpCompat(buffer, validation.format);
       } catch {
-        return reply.status(422).send({
-          error: `Failed to decode ${validation.format.toUpperCase()} file`,
-        });
+        // CLI decoder unavailable -- try Sharp directly as fallback for preview
+        try {
+          await sharp(buffer).metadata();
+        } catch {
+          return reply.status(422).send({
+            error: `Failed to decode ${validation.format.toUpperCase()} file`,
+          });
+        }
       }
     }
 
-    const webp = await sharp(buffer)
-      .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
-      .webp({ quality: 80 })
-      .toBuffer();
-    return reply.header("Content-Type", "image/webp").send(webp);
+    try {
+      const webp = await sharp(buffer)
+        .resize(1200, 1200, { fit: "inside", withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      return reply.header("Content-Type", "image/webp").send(webp);
+    } catch {
+      return reply.status(422).send({
+        error: `Failed to generate preview for ${validation.format.toUpperCase()} file`,
+      });
+    }
   });
 }
 

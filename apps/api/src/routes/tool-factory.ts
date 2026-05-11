@@ -198,14 +198,18 @@ export function createToolRoute<T>(app: FastifyInstance, config: ToolRouteConfig
         try {
           const fileExt = filename.split(".").pop()?.toLowerCase();
           fileBuffer = await decodeToSharpCompat(fileBuffer, validation.format, fileExt);
-          const ext = filename.match(/\.[^.]+$/)?.[0];
-          if (ext) filename = `${filename.slice(0, -ext.length)}.png`;
-        } catch (err) {
-          return reply.status(422).send({
-            error: `Failed to decode ${validation.format.toUpperCase()} file`,
-            details: err instanceof Error ? err.message : String(err),
-          });
+        } catch {
+          try {
+            await sharp(fileBuffer).metadata();
+          } catch (err) {
+            return reply.status(422).send({
+              error: `Failed to decode ${validation.format.toUpperCase()} file`,
+              details: err instanceof Error ? err.message : String(err),
+            });
+          }
         }
+        const ext = filename.match(/\.[^.]+$/)?.[0];
+        if (ext) filename = `${filename.slice(0, -ext.length)}.png`;
       }
 
       // Sanitize SVG input to prevent XXE, SSRF, and script injection

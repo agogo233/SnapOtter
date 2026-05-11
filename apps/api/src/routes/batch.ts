@@ -13,6 +13,7 @@ import { getBundleForTool, TOOL_BUNDLE_MAP } from "@snapotter/shared";
 import archiver from "archiver";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import PQueue from "p-queue";
+import sharp from "sharp";
 import { env } from "../config.js";
 import { autoOrient } from "../lib/auto-orient.js";
 import { resolveConcurrency } from "../lib/env.js";
@@ -169,7 +170,11 @@ export async function registerBatchRoutes(app: FastifyInstance): Promise<void> {
                 if (ext) processFilename = `${processFilename.slice(0, -ext.length)}.png`;
               }
               if (!skipPreprocess && needsCliDecode(validation.format)) {
-                processBuffer = await decodeToSharpCompat(processBuffer, validation.format);
+                try {
+                  processBuffer = await decodeToSharpCompat(processBuffer, validation.format);
+                } catch {
+                  await sharp(processBuffer).metadata();
+                }
                 const ext = processFilename.match(/\.[^.]+$/)?.[0];
                 if (ext) processFilename = `${processFilename.slice(0, -ext.length)}.png`;
               }
