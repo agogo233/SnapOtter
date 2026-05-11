@@ -7,7 +7,9 @@ import { autoOrient } from "../../lib/auto-orient.js";
 import { formatZodErrors } from "../../lib/errors.js";
 import { validateImageBuffer } from "../../lib/file-validation.js";
 import { sanitizeFilename } from "../../lib/filename.js";
-import { ensureSharpCompat } from "../../lib/heic-converter.js";
+import { decodeToSharpCompat, needsCliDecode } from "../../lib/format-decoders.js";
+import { decodeHeic } from "../../lib/heic-converter.js";
+import { decompressSvgz, sanitizeSvg } from "../../lib/svg-sanitize.js";
 
 const settingsSchema = z.object({}).passthrough();
 
@@ -56,14 +58,69 @@ export function registerFavicon(app: FastifyInstance) {
       return reply.status(400).send({ error: "No image file provided" });
     }
 
-    // Validate all uploaded files
+    // Validate and decode all files before streaming the ZIP response.
+    // This ensures format errors are caught before reply.hijack() is called.
+    // Files that fail to decode are skipped (noted in the ZIP) rather than
+    // aborting the entire batch.
+    interface DecodedFile {
+      buffer: Buffer;
+      filename: string;
+    }
+    const decodedFiles: DecodedFile[] = [];
+    const skippedFiles: { filename: string; reason: string }[] = [];
+
     for (const file of uploadedFiles) {
       const validation = await validateImageBuffer(file.buffer, file.filename);
       if (!validation.valid) {
-        return reply
-          .status(400)
-          .send({ error: `Invalid file "${file.filename}": ${validation.reason}` });
+        skippedFiles.push({ filename: file.filename, reason: validation.reason });
+        continue;
       }
+
+      let buf = file.buffer;
+      const fileExt = file.filename.split(".").pop()?.toLowerCase();
+
+      try {
+        // Decode HEIC/HEIF via system decoder
+        if (validation.format === "heif") {
+          buf = await decodeHeic(buf);
+        }
+
+        // Decode exotic formats (PSD, EXR, HDR, BMP, JXL, JP2, RAW, etc.)
+        if (needsCliDecode(validation.format)) {
+          try {
+            buf = await decodeToSharpCompat(buf, validation.format, fileExt);
+          } catch {
+            await sharp(buf).metadata();
+          }
+        }
+
+        // Sanitize SVG input
+        if (validation.format === "svg") {
+          buf = decompressSvgz(buf);
+          buf = sanitizeSvg(buf);
+        }
+
+        // Auto-orient EXIF rotation (skip for SVG)
+        if (validation.format !== "svg") {
+          buf = await autoOrient(buf);
+        }
+
+        decodedFiles.push({ buffer: buf, filename: file.filename });
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : "Unknown decode error";
+        skippedFiles.push({ filename: file.filename, reason });
+      }
+    }
+
+    if (decodedFiles.length === 0) {
+      const first = skippedFiles[0];
+      return reply.status(400).send({
+        error:
+          skippedFiles.length === 1
+            ? `Invalid file "${first.filename}": ${first.reason}`
+            : "No images could be decoded",
+        skipped: skippedFiles.length > 1 ? skippedFiles : undefined,
+      });
     }
 
     if (settingsRaw) {
@@ -82,7 +139,7 @@ export function registerFavicon(app: FastifyInstance) {
 
     try {
       const jobId = randomUUID();
-      const isSingleFile = uploadedFiles.length === 1;
+      const isSingleFile = decodedFiles.length === 1;
 
       reply.hijack();
       reply.raw.writeHead(200, {
@@ -94,27 +151,21 @@ export function registerFavicon(app: FastifyInstance) {
       const archive = archiver("zip", { zlib: { level: 5 } });
       archive.pipe(reply.raw);
 
-      for (const file of uploadedFiles) {
-        // Decode HEIC/HEIF if needed, then normalize EXIF orientation
-        const decoded = await autoOrient(await ensureSharpCompat(file.buffer));
+      for (const file of decodedFiles) {
         const stem = sanitizeFilename(file.filename).replace(/\.[^.]+$/, "");
-        // Single file: flat structure. Multiple files: per-image folders.
         const prefix = isSingleFile ? "" : `${stem}/`;
 
-        // Generate each size
         for (const icon of FAVICON_SIZES) {
-          const buffer = await sharp(decoded)
+          const buffer = await sharp(file.buffer)
             .resize(icon.size, icon.size, { fit: "cover" })
             .png()
             .toBuffer();
           archive.append(buffer, { name: `${prefix}${icon.name}` });
         }
 
-        // Generate ICO (32x32 PNG as ICO)
-        const ico32 = await sharp(decoded).resize(32, 32, { fit: "cover" }).png().toBuffer();
+        const ico32 = await sharp(file.buffer).resize(32, 32, { fit: "cover" }).png().toBuffer();
         archive.append(ico32, { name: `${prefix}favicon.ico` });
 
-        // Generate manifest.json (for PWA)
         const manifest = {
           name: stem,
           short_name: stem,
@@ -128,7 +179,6 @@ export function registerFavicon(app: FastifyInstance) {
         };
         archive.append(JSON.stringify(manifest, null, 2), { name: `${prefix}manifest.json` });
 
-        // Generate HTML snippet
         const htmlSnippet = `<!-- Favicons -->
 <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
@@ -137,6 +187,13 @@ export function registerFavicon(app: FastifyInstance) {
 <link rel="manifest" href="/manifest.json">
 `;
         archive.append(htmlSnippet, { name: `${prefix}favicon-snippet.html` });
+      }
+
+      if (skippedFiles.length > 0) {
+        const lines = skippedFiles.map((s) => `- ${s.filename}: ${s.reason}`);
+        archive.append(`The following files could not be processed:\n\n${lines.join("\n")}\n`, {
+          name: "skipped-files.txt",
+        });
       }
 
       await archive.finalize();
