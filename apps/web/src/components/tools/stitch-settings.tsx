@@ -23,6 +23,7 @@ export function StitchSettings() {
   const [format, setFormat] = useState<OutputFormat>("png");
   const [quality, setQuality] = useState(90);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleProcess = async () => {
     if (files.length < 2) return;
@@ -30,6 +31,7 @@ export function StitchSettings() {
     setProcessing(true);
     setError(null);
     setDownloadUrl(null);
+    setUploadProgress(0);
 
     try {
       const formData = new FormData();
@@ -52,18 +54,47 @@ export function StitchSettings() {
         }),
       );
 
-      const res = await fetch("/api/v1/tools/stitch", {
-        method: "POST",
-        headers: formatHeaders(),
-        body: formData,
+      const result = await new Promise<{
+        jobId: string;
+        downloadUrl: string;
+        originalSize: number;
+        processedSize: number;
+      }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", "/api/v1/tools/stitch");
+
+        const headers = formatHeaders();
+        headers.forEach((value, key) => {
+          xhr.setRequestHeader(key, value);
+        });
+
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setUploadProgress(Math.round((e.loaded / e.total) * 100));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              resolve(JSON.parse(xhr.responseText));
+            } catch {
+              reject(new Error("Invalid response"));
+            }
+          } else {
+            try {
+              const body = JSON.parse(xhr.responseText);
+              reject(new Error(body.error || `Failed: ${xhr.status}`));
+            } catch {
+              reject(new Error(`Failed: ${xhr.status}`));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error("Network error"));
+        xhr.send(formData);
       });
 
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Failed: ${res.status}`);
-      }
-
-      const result = await res.json();
       setJobId(result.jobId);
       setProcessedUrl(result.downloadUrl);
       setDownloadUrl(result.downloadUrl);
@@ -262,6 +293,25 @@ export function StitchSettings() {
 
       {error && <p className="text-xs text-red-500">{error}</p>}
 
+      {processing && (
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-muted-foreground">
+            <span>{uploadProgress < 100 ? "Uploading..." : "Stitching..."}</span>
+            {uploadProgress < 100 && <span>{uploadProgress}%</span>}
+          </div>
+          <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+            {uploadProgress < 100 ? (
+              <div
+                className="h-full bg-primary rounded-full transition-[width] duration-200"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            ) : (
+              <div className="h-full bg-primary rounded-full animate-pulse" />
+            )}
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
         data-testid="stitch-submit"
@@ -270,7 +320,11 @@ export function StitchSettings() {
         className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
       >
         {processing && <Loader2 className="h-4 w-4 animate-spin" />}
-        {processing ? "Stitching..." : `Stitch ${files.length} images`}
+        {processing
+          ? uploadProgress < 100
+            ? `Uploading... ${uploadProgress}%`
+            : "Stitching..."
+          : `Stitch ${files.length} images`}
       </button>
 
       {downloadUrl && (
