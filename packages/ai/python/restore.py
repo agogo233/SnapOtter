@@ -431,8 +431,13 @@ def enhance_faces(img_bgr, fidelity=0.7):
         w = face_box["w"]
         h = face_box["h"]
 
-        if w < 24 or h < 24:
+        if w < 48 or h < 48:
             continue
+
+        # Clamp fidelity for small faces to prevent over-smoothing
+        face_fidelity = fidelity
+        if max(w, h) < 120:
+            face_fidelity = max(fidelity, 0.85)
 
         # Expand bounding box by ~80% for hair, forehead, chin
         pad_x = int(w * 0.8)
@@ -463,7 +468,7 @@ def enhance_faces(img_bgr, fidelity=0.7):
             if name == "input":
                 model_inputs[name] = face_input.astype(np.float32)
             elif name == "weight":
-                model_inputs[name] = np.array([fidelity]).astype(np.float64)
+                model_inputs[name] = np.array([face_fidelity]).astype(np.float64)
 
         # Run inference
         try:
@@ -628,25 +633,13 @@ def main():
     output_path = sys.argv[2]
     settings = json.loads(sys.argv[3]) if len(sys.argv) > 3 else {}
 
-    mode = settings.get("mode", "auto")
     scratch_removal = settings.get("scratchRemoval", True)
     face_enhancement = settings.get("faceEnhancement", True)
     fidelity = float(settings.get("fidelity", 0.7))
     do_denoise = settings.get("denoise", True)
-    denoise_strength = float(settings.get("denoiseStrength", 40))
+    denoise_strength = float(settings.get("denoiseStrength", 25))
     do_colorize = settings.get("colorize", False)
-
-    # Mode presets override individual settings
-    if mode == "light":
-        scratch_sensitivity = "light"
-        if denoise_strength > 30:
-            denoise_strength = 30
-    elif mode == "heavy":
-        scratch_sensitivity = "heavy"
-        if denoise_strength < 60:
-            denoise_strength = 60
-    else:
-        scratch_sensitivity = "medium"
+    colorize_strength = float(settings.get("colorizeStrength", 85)) / 100.0
 
     try:
         from gpu import gpu_available
@@ -662,21 +655,18 @@ def main():
         result = img_bgr.copy()
         steps_applied = []
 
-        # ── Step 1: Analyze photo ────────────────────────────────
         emit_progress(8, "Analyzing photo")
         bw_detected = is_grayscale(img_bgr)
-        scratch_mask = None
         scratch_coverage = 0.0
 
-        # ── Step 2: Scratch detection & inpainting ───────────────
         if scratch_removal:
             emit_progress(10, "Detecting damage")
-            scratch_mask = detect_scratches(result, scratch_sensitivity)
+            scratch_mask = detect_scratches(result)
             scratch_pixels = np.count_nonzero(scratch_mask)
             total_pixels = scratch_mask.shape[0] * scratch_mask.shape[1]
             scratch_coverage = float(scratch_pixels / total_pixels)
 
-            if scratch_coverage > 0.001:  # At least 0.1% coverage
+            if scratch_coverage > 0.001:
                 emit_progress(15, f"Repairing damage ({scratch_coverage:.1%} affected)")
                 result = inpaint_damage(result, scratch_mask)
                 steps_applied.append("scratch_removal")
@@ -686,7 +676,6 @@ def main():
         else:
             emit_progress(15, "Scratch removal disabled")
 
-        # ── Step 3: Face enhancement ─────────────────────────────
         faces_found = 0
         if face_enhancement:
             emit_progress(35, "Detecting faces")
@@ -702,7 +691,6 @@ def main():
         else:
             emit_progress(65, "Face enhancement disabled")
 
-        # ── Step 4: Noise reduction ──────────────────────────────
         if do_denoise and denoise_strength > 0:
             emit_progress(70, "Reducing noise")
             result = denoise_image(result, denoise_strength)
@@ -711,7 +699,6 @@ def main():
         else:
             emit_progress(80, "Denoising disabled")
 
-        # ── Step 5: Colorization ─────────────────────────────────
         colorized = False
         if do_colorize and bw_detected:
             total_pixels = orig_h * orig_w
@@ -726,7 +713,7 @@ def main():
             else:
                 emit_progress(82, "Colorizing B&W photo")
                 try:
-                    result, colorized = colorize_bw(result, intensity=0.85)
+                    result, colorized = colorize_bw(result, intensity=colorize_strength)
                     if colorized:
                         steps_applied.append("colorize")
                         emit_progress(92, "Colorization complete")
@@ -737,7 +724,6 @@ def main():
         else:
             emit_progress(92, "Colorization skipped")
 
-        # ── Save result ──────────────────────────────────────────
         emit_progress(95, "Saving result")
         cv2.imwrite(output_path, result)
 
