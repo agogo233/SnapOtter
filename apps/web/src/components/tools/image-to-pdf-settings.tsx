@@ -110,6 +110,7 @@ export function ImageToPdfSettings() {
   const [pageSize, setPageSize] = useState<"A4" | "Letter" | "A3" | "A5">("A4");
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [margin, setMargin] = useState(20);
+  const [collate, setCollate] = useState(true);
   const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
   const [targetSizeValue, setTargetSizeValue] = useState<string>("");
   const [targetSizeUnit, setTargetSizeUnit] = useState<"KB" | "MB">("MB");
@@ -171,7 +172,7 @@ export function ImageToPdfSettings() {
     for (const file of files) {
       formData.append("file", file);
     }
-    const settings: Record<string, unknown> = { pageSize, orientation, margin };
+    const settings: Record<string, unknown> = { pageSize, orientation, margin, collate };
     if (targetSizeValue.trim() !== "") {
       const numVal = Number.parseFloat(targetSizeValue);
       if (!Number.isNaN(numVal) && numVal > 0) {
@@ -245,6 +246,7 @@ export function ImageToPdfSettings() {
     pageSize,
     orientation,
     margin,
+    collate,
     targetSizeValue,
     targetSizeUnit,
     setProcessing,
@@ -256,9 +258,21 @@ export function ImageToPdfSettings() {
   return (
     <div className="space-y-4">
       <p className="text-xs text-muted-foreground">
-        {files.length} image{files.length !== 1 ? "s" : ""} will be combined into a PDF, one image
-        per page.
+        {files.length} image{files.length !== 1 ? "s" : ""} will be converted to{" "}
+        {collate ? "a single PDF, one image per page" : "separate PDFs, one per image"}.
       </p>
+
+      {files.length > 1 && (
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={collate}
+            onChange={(e) => setCollate(e.target.checked)}
+            className="rounded border-border"
+          />
+          <span className="text-xs text-foreground">Combine all images into one PDF</span>
+        </label>
+      )}
 
       <div>
         <label htmlFor="image-to-pdf-page-size" className="text-xs text-muted-foreground">
@@ -374,7 +388,7 @@ export function ImageToPdfSettings() {
           disabled={!hasFiles || busy}
           className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
-          Create PDF ({files.length} pages)
+          {collate ? `Create PDF (${files.length} pages)` : `Create ${files.length} PDFs`}
         </button>
       )}
 
@@ -386,7 +400,7 @@ export function ImageToPdfSettings() {
           className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
-          Download PDF
+          {collate ? "Download PDF" : "Download ZIP"}
         </a>
       )}
 

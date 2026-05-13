@@ -1,6 +1,8 @@
 import { randomUUID } from "node:crypto";
+import { createWriteStream } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import { join } from "node:path";
+import archiver from "archiver";
 import type { FastifyInstance } from "fastify";
 import PDFDocument from "pdfkit";
 import sharp from "sharp";
@@ -24,6 +26,7 @@ const settingsSchema = z.object({
   orientation: z.enum(["portrait", "landscape"]).default("portrait"),
   margin: z.number().min(0).max(500).default(20),
   targetSize: targetSizeSchema.optional(),
+  collate: z.boolean().default(true),
 });
 
 const PAGE_SIZES: Record<string, [number, number]> = {
@@ -166,20 +169,6 @@ export function registerImageToPdf(app: FastifyInstance) {
       const contentW = pageW - margin * 2;
       const contentH = pageH - margin * 2;
 
-      const doc = new PDFDocument({
-        size: [pageW, pageH],
-        margin,
-        autoFirstPage: false,
-        compress: targetBytes !== null,
-      });
-
-      const pdfChunks: Buffer[] = [];
-      doc.on("data", (chunk: Buffer) => pdfChunks.push(chunk));
-
-      const pdfDone = new Promise<Buffer>((resolve) => {
-        doc.on("end", () => resolve(Buffer.concat(pdfChunks)));
-      });
-
       const preparedBuffers: Buffer[] = [];
       for (const file of files) {
         let buf = file.buffer;
@@ -247,43 +236,99 @@ export function registerImageToPdf(app: FastifyInstance) {
         imageBuffers = await Promise.all(preparedBuffers.map((buf) => sharp(buf).png().toBuffer()));
       }
 
-      for (let i = 0; i < imageBuffers.length; i++) {
-        doc.addPage({ size: [pageW, pageH], margin });
+      async function buildPdf(buffers: Buffer[]): Promise<Buffer> {
+        const doc = new PDFDocument({
+          size: [pageW, pageH],
+          margin,
+          autoFirstPage: false,
+          compress: targetBytes !== null,
+        });
 
-        const imgBuf = imageBuffers[i];
-        const meta = await sharp(imgBuf).metadata();
-        const imgW = meta.width ?? 100;
-        const imgH = meta.height ?? 100;
+        const pdfChunks: Buffer[] = [];
+        doc.on("data", (chunk: Buffer) => pdfChunks.push(chunk));
 
-        const scale = Math.min(contentW / imgW, contentH / imgH, 1);
-        const scaledW = imgW * scale;
-        const scaledH = imgH * scale;
+        const pdfDone = new Promise<Buffer>((resolve) => {
+          doc.on("end", () => resolve(Buffer.concat(pdfChunks)));
+        });
 
-        const x = margin + (contentW - scaledW) / 2;
-        const y = margin + (contentH - scaledH) / 2;
+        for (const imgBuf of buffers) {
+          doc.addPage({ size: [pageW, pageH], margin });
+          const meta = await sharp(imgBuf).metadata();
+          const imgW = meta.width ?? 100;
+          const imgH = meta.height ?? 100;
 
-        doc.image(imgBuf, x, y, { width: scaledW, height: scaledH });
-      }
+          const scale = Math.min(contentW / imgW, contentH / imgH, 1);
+          const scaledW = imgW * scale;
+          const scaledH = imgH * scale;
 
-      doc.end();
-      const pdfBuffer = await pdfDone;
+          const x = margin + (contentW - scaledW) / 2;
+          const y = margin + (contentH - scaledH) / 2;
 
-      if (compression && targetBytes !== null) {
-        compression.targetMet = pdfBuffer.length <= targetBytes;
+          doc.image(imgBuf, x, y, { width: scaledW, height: scaledH });
+        }
+
+        doc.end();
+        return pdfDone;
       }
 
       const jobId = randomUUID();
       const workspacePath = await createWorkspace(jobId);
-      const filename = "images.pdf";
-      const outputPath = join(workspacePath, "output", filename);
-      await writeFile(outputPath, pdfBuffer);
+      const outputDir = join(workspacePath, "output");
+      const originalSize = files.reduce((s, f) => s + f.buffer.length, 0);
+
+      if (settings.collate) {
+        const pdfBuffer = await buildPdf(imageBuffers);
+
+        if (compression && targetBytes !== null) {
+          compression.targetMet = pdfBuffer.length <= targetBytes;
+        }
+
+        const filename = "images.pdf";
+        await writeFile(join(outputDir, filename), pdfBuffer);
+
+        return reply.send({
+          jobId,
+          downloadUrl: `/api/v1/download/${jobId}/${filename}`,
+          originalSize,
+          processedSize: pdfBuffer.length,
+          pages: files.length,
+          ...(compression ? { compression } : {}),
+        });
+      }
+
+      let totalProcessedSize = 0;
+      const pdfFilenames: string[] = [];
+
+      for (let i = 0; i < imageBuffers.length; i++) {
+        const pdfBuffer = await buildPdf([imageBuffers[i]]);
+        const baseName = files[i].filename.replace(/\.[^.]+$/, "");
+        const pdfName = `${baseName}.pdf`;
+        await writeFile(join(outputDir, pdfName), pdfBuffer);
+        pdfFilenames.push(pdfName);
+        totalProcessedSize += pdfBuffer.length;
+      }
+
+      const zipFilename = "images.zip";
+      const zipPath = join(outputDir, zipFilename);
+      await new Promise<void>((resolve, reject) => {
+        const output = createWriteStream(zipPath);
+        const archive = archiver("zip", { zlib: { level: 5 } });
+        output.on("close", resolve);
+        archive.on("error", reject);
+        archive.pipe(output);
+        for (const name of pdfFilenames) {
+          archive.file(join(outputDir, name), { name });
+        }
+        archive.finalize();
+      });
 
       return reply.send({
         jobId,
-        downloadUrl: `/api/v1/download/${jobId}/${filename}`,
-        originalSize: files.reduce((s, f) => s + f.buffer.length, 0),
-        processedSize: pdfBuffer.length,
+        downloadUrl: `/api/v1/download/${jobId}/${zipFilename}`,
+        originalSize,
+        processedSize: totalProcessedSize,
         pages: files.length,
+        collated: false,
         ...(compression ? { compression } : {}),
       });
     } catch (err) {
