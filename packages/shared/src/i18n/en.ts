@@ -201,6 +201,7 @@ export const en = {
     },
     pipeline: { name: "Pipeline Builder", description: "Chain multiple tools into a workflow" },
   },
+  colorizeStrength: "Colorize Strength",
   imageEnhancement: {
     deepEnhance: "Deep Enhance (AI)",
     deepEnhanceDescription: "Removes noise and artifacts using AI",

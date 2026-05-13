@@ -4,14 +4,6 @@ import { ProgressCard } from "@/components/common/progress-card";
 import { useToolProcessor } from "@/hooks/use-tool-processor";
 import { useFileStore } from "@/stores/file-store";
 
-type Mode = "auto" | "light" | "heavy";
-
-const MODES: { id: Mode; label: string; desc: string }[] = [
-  { id: "light", label: "Light", desc: "Gentle touch, preserves details" },
-  { id: "auto", label: "Auto", desc: "Balanced restoration" },
-  { id: "heavy", label: "Heavy", desc: "Aggressive repair for severe damage" },
-];
-
 export interface RestorePhotoControlsProps {
   settings?: Record<string, unknown>;
   onChange?: (settings: Record<string, unknown>) => void;
@@ -21,20 +13,19 @@ export function RestorePhotoControls({
   settings: initialSettings,
   onChange,
 }: RestorePhotoControlsProps) {
-  const [mode, setMode] = useState<Mode>("auto");
   const [scratchRemoval, setScratchRemoval] = useState(true);
   const [faceEnhancement, setFaceEnhancement] = useState(true);
   const [fidelity, setFidelity] = useState(70);
   const [denoise, setDenoise] = useState(true);
-  const [denoiseStrength, setDenoiseStrength] = useState(40);
+  const [denoiseStrength, setDenoiseStrength] = useState(25);
   const [colorize, setColorize] = useState(false);
+  const [colorizeStrength, setColorizeStrength] = useState(85);
 
   // One-time init from pipeline settings
   const initializedRef = useRef(false);
   useEffect(() => {
     if (!initialSettings || initializedRef.current) return;
     initializedRef.current = true;
-    if (initialSettings.mode != null) setMode(initialSettings.mode as Mode);
     if (initialSettings.scratchRemoval != null)
       setScratchRemoval(Boolean(initialSettings.scratchRemoval));
     if (initialSettings.faceEnhancement != null)
@@ -44,6 +35,8 @@ export function RestorePhotoControls({
     if (initialSettings.denoiseStrength != null)
       setDenoiseStrength(Number(initialSettings.denoiseStrength));
     if (initialSettings.colorize != null) setColorize(Boolean(initialSettings.colorize));
+    if (initialSettings.colorizeStrength != null)
+      setColorizeStrength(Number(initialSettings.colorizeStrength));
   }, [initialSettings]);
 
   // Emit settings on change
@@ -54,44 +47,26 @@ export function RestorePhotoControls({
 
   useEffect(() => {
     onChangeRef.current?.({
-      mode,
       scratchRemoval,
       faceEnhancement,
       fidelity: fidelity / 100,
       denoise,
       denoiseStrength,
       colorize,
+      colorizeStrength,
     });
-  }, [mode, scratchRemoval, faceEnhancement, fidelity, denoise, denoiseStrength, colorize]);
-
-  const activeMode = MODES.find((m) => m.id === mode);
+  }, [
+    scratchRemoval,
+    faceEnhancement,
+    fidelity,
+    denoise,
+    denoiseStrength,
+    colorize,
+    colorizeStrength,
+  ]);
 
   return (
     <div className="space-y-4">
-      {/* Mode selector */}
-      <div>
-        <p className="text-xs text-muted-foreground mb-1">Restoration Mode</p>
-        <div className="grid grid-cols-3 gap-1">
-          {MODES.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setMode(m.id)}
-              className={`flex flex-col items-center gap-0.5 text-xs py-2 rounded transition-colors ${
-                mode === m.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {m.label}
-            </button>
-          ))}
-        </div>
-        {activeMode && <p className="text-[10px] text-muted-foreground mt-1">{activeMode.desc}</p>}
-      </div>
-
-      <div className="border-t border-border pt-3" />
-
       {/* Feature toggles */}
       <div className="space-y-3">
         {/* Scratch Removal */}
@@ -205,6 +180,29 @@ export function RestorePhotoControls({
             className="h-4 w-4 rounded border-muted-foreground accent-primary"
           />
         </label>
+
+        {/* Colorize strength slider */}
+        {colorize && (
+          <div className="pl-2 border-l-2 border-primary/20">
+            <div className="flex justify-between items-center">
+              <p className="text-xs text-muted-foreground">Colorize Strength</p>
+              <span className="text-xs font-mono tabular-nums">{colorizeStrength}%</span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={100}
+              step={5}
+              value={colorizeStrength}
+              onChange={(e) => setColorizeStrength(Number(e.target.value))}
+              className="w-full h-1.5 rounded-full appearance-none bg-muted accent-primary"
+            />
+            <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
+              <span>Subtle</span>
+              <span>Vivid</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
