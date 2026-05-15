@@ -51,6 +51,8 @@ stirling-pdf-*.png
 settings-*.png
 layout-*.png
 audit_report.md
+apps/docs/SECURITY_AUDIT_REPORT.md
+docs/QA_REPORT*.md
 .worktrees/
 .release-version
 .models
