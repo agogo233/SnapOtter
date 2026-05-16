@@ -1,4 +1,4 @@
-import { Check, FolderOpen, Loader2, Search, X } from "lucide-react";
+import { Check, FolderOpen, ImageIcon, Loader2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   apiListFiles,
@@ -8,6 +8,52 @@ import {
   type UserFile,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+function AuthImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let revoked = false;
+    fetch(src, { headers: formatHeaders() })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.blob();
+      })
+      .then((blob) => {
+        if (revoked) return;
+        setBlobUrl(URL.createObjectURL(blob));
+      })
+      .catch(() => {
+        if (!revoked) setFailed(true);
+      });
+    return () => {
+      revoked = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [src]);
+
+  if (failed) {
+    return (
+      <div className={cn("flex items-center justify-center bg-muted/50", className)}>
+        <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+    );
+  }
+
+  if (!blobUrl) {
+    return (
+      <div className={cn("flex items-center justify-center bg-muted/30", className)}>
+        <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return <img src={blobUrl} alt={alt} className={className} loading="lazy" />;
+}
 
 interface FileLibraryModalProps {
   open: boolean;
@@ -170,11 +216,10 @@ export function FileLibraryModal({ open, onClose, onImport }: FileLibraryModalPr
                         : "border-border hover:border-primary/50",
                     )}
                   >
-                    <img
+                    <AuthImage
                       src={getFileThumbnailUrl(file.id)}
                       alt={file.originalName}
                       className="w-full h-full object-cover"
-                      loading="lazy"
                     />
                     {checked && (
                       <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">

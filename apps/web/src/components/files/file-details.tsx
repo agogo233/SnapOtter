@@ -1,5 +1,5 @@
 import { TOOLS } from "@snapotter/shared";
-import { FileImage, Workflow } from "lucide-react";
+import { FileImage, ImageIcon, Workflow } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -12,6 +12,52 @@ import {
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/stores/file-store";
 import { useFilesPageStore } from "@/stores/files-page-store";
+
+function AuthImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    let revoked = false;
+    fetch(src, { headers: formatHeaders() })
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.blob();
+      })
+      .then((blob) => {
+        if (revoked) return;
+        setBlobUrl(URL.createObjectURL(blob));
+      })
+      .catch(() => {
+        if (!revoked) setFailed(true);
+      });
+    return () => {
+      revoked = true;
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
+    };
+  }, [src]);
+
+  if (failed) {
+    return (
+      <div className={cn("flex items-center justify-center bg-muted/50", className)}>
+        <ImageIcon className="h-8 w-8 text-muted-foreground/50" />
+      </div>
+    );
+  }
+
+  if (!blobUrl) {
+    return (
+      <div className={cn("flex items-center justify-center bg-muted/30", className)}>
+        <div className="h-4 w-4 border-2 border-muted-foreground/30 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return <img src={blobUrl} alt={alt} className={className} />;
+}
 
 function toolName(toolId: string): string {
   return TOOLS.find((t) => t.id === toolId)?.name ?? toolId;
@@ -130,7 +176,7 @@ export function FileDetails({ mobile = false }: FileDetailsProps) {
     >
       {/* Thumbnail */}
       <div className={cn("border-b border-border", mobile ? "" : "pb-4")}>
-        <img
+        <AuthImage
           src={getFileThumbnailUrl(details.id)}
           alt={details.originalName}
           className="w-full rounded-lg object-contain max-h-48 bg-muted"
