@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { FadeIn } from "@/components/fade-in";
 import { Footer } from "@/components/footer";
+import { JsonLd } from "@/components/json-ld";
 import { Navbar } from "@/components/navbar";
 
 const faqs = [
@@ -71,9 +72,23 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: faq.answer,
+    },
+  })),
+};
+
 export default function FaqPage() {
   return (
     <>
+      <JsonLd data={faqJsonLd} />
       <Navbar />
       <main className="pt-16">
         <section className="px-6 py-24 md:py-32">

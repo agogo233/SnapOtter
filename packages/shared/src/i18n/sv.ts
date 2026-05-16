@@ -1702,7 +1702,7 @@ export const sv: TranslationKeys = {
       "Fungerar helt offline.",
       "Obegransad batchbearbetning.",
       "51 bildverktyg.",
-      "15 AI-modeller. Din hardvara.",
+      "16 AI-modeller. Din hardvara.",
       "Blixtsnabb. Byggd pa Sharp.",
       "Fungerar i slutna natverk.",
       "En enda Docker-container.",

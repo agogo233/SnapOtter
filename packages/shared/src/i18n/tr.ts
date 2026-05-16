@@ -1711,7 +1711,7 @@ export const tr: TranslationKeys = {
       "Tamamen çevrimdışı çalışır.",
       "Sınırsız toplu işleme.",
       "51 görüntü aracı.",
-      "15 AI modeli. Sizin donanımınız.",
+      "16 AI modeli. Sizin donanımınız.",
       "Yıldırım hızında. Sharp ile geliştirildi.",
       "Hava boşluklu ağlar için hazır.",
       "Tek Docker konteyneri.",

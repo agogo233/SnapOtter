@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Terms and Conditions | SnapOtter",
   description:
     "Terms governing your use of the SnapOtter website and self-hosted image processing software.",
+  alternates: { canonical: "https://snapotter.com/terms" },
 };
 
 export default function TermsPage() {

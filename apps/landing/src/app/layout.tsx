@@ -28,12 +28,13 @@ export const metadata: Metadata = {
     url: "https://snapotter.com",
     siteName: "SnapOtter",
     type: "website",
+    locale: "en_US",
     images: [
       {
-        url: "/og-image.svg",
-        width: 1200,
-        height: 630,
-        alt: "SnapOtter | Self-Hosted Image Processing",
+        url: "/og-image.png",
+        width: 1280,
+        height: 640,
+        alt: "SnapOtter - Self-Hosted Image Processing Suite",
       },
     ],
   },
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
     title: "SnapOtter | Self-Hosted Image Processing",
     description:
       "52 image processing tools with local AI. Runs 100% offline. No data leaves your network.",
-    images: ["/og-image.svg"],
+    images: ["/og-image.png"],
   },
 };
 

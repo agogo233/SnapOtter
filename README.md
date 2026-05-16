@@ -15,13 +15,16 @@
 
 ## Key Features
 
-- **52 image tools** - Resize, crop, compress, convert, watermark, color adjust, beautify screenshots, generate memes, vectorize, create GIFs, find duplicates, generate passport photos, and more. Supports 55+ input formats (including 23 camera RAW formats) and 14 output formats
-- **Local AI** - Remove backgrounds, upscale images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR). All on your hardware - no internet required
-- **Pipelines** - Chain tools into reusable workflows with unlimited steps. Batch process unlimited images at once
-- **REST API** - Every tool available via API with API key auth. Interactive docs at `/api/docs`
-- **Single container** - One `docker run`, no Redis, no Postgres, no external services
-- **Multi-arch** - Runs on AMD64 and ARM64 (Intel, Apple Silicon, Raspberry Pi)
-- **Privacy first** - Your images never leave your machine. SnapOtter asks once whether you'd like to share anonymous product analytics (which tools are used, errors encountered — never file data). Change anytime in Settings, or set `ANALYTICS_ENABLED=false` to disable completely
+- **52 image tools** -- Resize, crop, compress, convert, watermark, color adjust, beautify screenshots, generate memes, vectorize, create GIFs, find duplicates, generate passport photos, and more. Supports 55+ input formats (including 23 camera RAW formats) and 14 output formats
+- **Image editor** -- Layer-based editor with brushes, shapes, adjustments, filters, curves, and keyboard shortcuts. Runs in your browser, processes on your hardware
+- **Local AI** -- Remove backgrounds, upscale images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR), expand canvas, fix transparency. All on your hardware, no internet required
+- **OIDC / SSO** -- Login with Google, GitHub, Okta, or any OpenID Connect provider
+- **20 languages** -- Arabic, Chinese, Czech, Dutch, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Thai, Turkish, Ukrainian, Vietnamese. RTL support for Arabic
+- **Pipelines** -- Chain tools into reusable workflows with unlimited steps. Import/export as JSON. Batch process unlimited images at once
+- **REST API** -- Every tool available via API with API key auth. Interactive docs at `/api/docs`
+- **Single container** -- One `docker run`, no Redis, no Postgres, no external services
+- **Multi-arch** -- Runs on AMD64 and ARM64 (Intel, Apple Silicon, Raspberry Pi)
+- **Privacy first** -- Your images never leave your machine. SnapOtter asks once whether you'd like to share anonymous product analytics (which tools are used, errors encountered, never file data). Change anytime in Settings, or set `ANALYTICS_ENABLED=false` to disable completely
 
 ## Quick Start
 

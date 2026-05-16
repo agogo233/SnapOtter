@@ -12,14 +12,24 @@ export default defineConfig({
   outDir: "./.vitepress/dist",
   ignoreDeadLinks: [/localhost/],
 
+  sitemap: { hostname: "https://docs.snapotter.com" },
+
   head: [
     ["meta", { name: "theme-color", content: "#3b82f6" }],
     ["link", { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" }],
     ["link", { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     ["link", { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }],
     ["link", { rel: "llms-txt", href: "/llms.txt" }],
-    ["meta", { property: "og:image", content: "https://docs.snapotter.com/logo.png" }],
+    ["meta", { property: "og:type", content: "website" }],
+    ["meta", { property: "og:site_name", content: "SnapOtter Docs" }],
+    ["meta", { property: "og:image", content: "https://docs.snapotter.com/og-image.png" }],
+    ["meta", { property: "og:image:width", content: "1280" }],
+    ["meta", { property: "og:image:height", content: "640" }],
+    ["meta", { property: "og:image:alt", content: "SnapOtter - Self-Hosted Image Processing" }],
     ["meta", { property: "og:url", content: "https://docs.snapotter.com" }],
+    ["meta", { property: "og:locale", content: "en_US" }],
+    ["meta", { name: "twitter:card", content: "summary_large_image" }],
+    ["meta", { name: "twitter:image", content: "https://docs.snapotter.com/og-image.png" }],
   ],
 
   vite: {

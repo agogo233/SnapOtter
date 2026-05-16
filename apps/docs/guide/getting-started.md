@@ -1,3 +1,7 @@
+---
+description: Install SnapOtter with Docker in one command. Includes Docker Compose setup, building from source, and a full feature overview.
+---
+
 # Getting Started
 
 ## Quick Start
@@ -71,10 +75,10 @@ pnpm dev
 | **Essentials** | Resize, Crop, Rotate & Flip, Convert, Compress |
 | **Optimization** | Optimize for Web, Strip Metadata, Edit Metadata, Bulk Rename, Image to PDF, Favicon Generator |
 | **Adjustments** | Adjust Colors, Sharpening, Replace Color, Color Blindness Simulation |
-| **AI Tools** | Remove Background, Upscale, Erase Object, OCR, Blur Faces, Smart Crop, Image Enhancement, Enhance Faces, Colorize, Noise Removal, Red Eye Removal, Restore Photo, Passport Photo, Content-Aware Resize, PNG Transparency Fixer |
-| **Watermark & Overlay** | Text Watermark, Image Watermark, Text Overlay, Image Composition |
+| **AI Tools** | Remove Background, Upscale, Erase Object, OCR, Blur Faces, Smart Crop, Image Enhancement, Enhance Faces, Colorize, Noise Removal, Red Eye Removal, Restore Photo, Passport Photo, Content-Aware Resize, AI Canvas Expand, PNG Transparency Fixer |
+| **Watermark & Overlay** | Text Watermark, Image Watermark, Text Overlay, Image Composition, Meme Generator |
 | **Utilities** | Image Info, Compare, Find Duplicates, Color Palette, QR Code Generator, Barcode Reader, Image to Base64 |
-| **Layout** | Collage, Stitch, Split, Border & Frame |
+| **Layout** | Collage, Stitch, Split, Border & Frame, Beautify |
 | **Format** | SVG to Raster, Vectorize, GIF Tools, PDF to Image |
 
 ### Pipelines

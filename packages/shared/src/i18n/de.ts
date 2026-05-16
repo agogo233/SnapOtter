@@ -1719,7 +1719,7 @@ export const de: TranslationKeys = {
       "Funktioniert komplett offline.",
       "Unbegrenzte Stapelverarbeitung.",
       "51 Bildwerkzeuge.",
-      "15 AI-Modelle. Ihre Hardware.",
+      "16 AI-Modelle. Ihre Hardware.",
       "Blitzschnell. Basiert auf Sharp.",
       "Geeignet fuer abgeschottete Netzwerke.",
       "Ein einziger Docker-Container.",

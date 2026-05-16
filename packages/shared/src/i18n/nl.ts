@@ -1707,7 +1707,7 @@ export const nl: TranslationKeys = {
       "Werkt volledig offline.",
       "Onbeperkte batchverwerking.",
       "51 afbeeldingstools.",
-      "15 AI-modellen. Jouw hardware.",
+      "16 AI-modellen. Jouw hardware.",
       "Razendsnel. Gebouwd op Sharp.",
       "Geschikt voor air-gapped netwerken.",
       "Een enkele Docker-container.",

@@ -1651,7 +1651,7 @@ export const en = {
       "Works fully offline.",
       "Unlimited batch processing.",
       "52 image tools.",
-      "15 AI models. Your hardware.",
+      "16 AI models. Your hardware.",
       "Lightning fast. Built on Sharp.",
       "Air-gapped ready.",
       "One Docker container.",

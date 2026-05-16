@@ -8,6 +8,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy | SnapOtter",
   description:
     "SnapOtter is self-hosted software. We do not process, store, or have access to your images or data. Learn about our privacy practices.",
+  alternates: { canonical: "https://snapotter.com/privacy" },
 };
 
 export default function PrivacyPage() {
