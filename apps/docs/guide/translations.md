@@ -75,23 +75,35 @@ function MyComponent() {
 }
 ```
 
-## Requesting a translation
+## Contributing a translation
 
-To request a new language or report a mistranslation, open a [GitHub Issue](https://github.com/snapotter-hq/SnapOtter/issues) with:
+We welcome translation PRs directly. You can improve an existing locale or add a new one.
 
-- The language name and locale code (e.g., German / `de`)
-- Any specific strings or sections you want translated
-- If you have a translation ready, paste the translated strings directly in the issue
+To report a mistranslation without submitting code, open a [GitHub Issue](https://github.com/snapotter-hq/SnapOtter/issues) with the language, the incorrect string, and the suggested fix.
 
-## How to create a translation (for your own fork)
+::: tip
+Translation PRs do not require prior approval. Fork the repo, make your changes, and open a PR. See the [Contributing Guide](/guide/contributing) for the full PR process and CLA requirement.
+:::
 
-### 1. Copy the reference file
+## How to create or update a translation
+
+### 1. Fork and clone
+
+```bash
+git clone https://github.com/<your-username>/snapotter.git
+cd snapotter
+pnpm install
+```
+
+### 2. Copy the reference file (new language only)
+
+Skip this step if you are improving an existing translation.
 
 ```bash
 cp packages/shared/src/i18n/en.ts packages/shared/src/i18n/XX.ts
 ```
 
-### 2. Translate the strings
+### 3. Translate the strings
 
 Open your new file and translate every string value. Keep the object structure and keys exactly the same.
 
@@ -115,7 +127,7 @@ Rules:
 - Arrays (`rotatingPhrases`, `progressMessages`) must have the same number of entries
 - Do not translate: SnapOtter, JPEG, PNG, WebP, EXIF, API, and other technical terms
 
-### 3. Register the locale
+### 4. Register the locale (new language only)
 
 Add your locale to `SUPPORTED_LOCALES` in `packages/shared/src/i18n/index.ts`:
 
@@ -123,13 +135,17 @@ Add your locale to `SUPPORTED_LOCALES` in `packages/shared/src/i18n/index.ts`:
 { code: "xx", name: "Language Name", nativeName: "Native Name", dir: "ltr" },
 ```
 
-### 4. Verify
+### 5. Verify
 
 ```bash
 pnpm typecheck    # catches missing or mistyped keys
 pnpm lint         # formatting check
 pnpm dev          # manually verify strings appear correctly
 ```
+
+### 6. Submit
+
+Open a PR against `main` with a title like `feat(i18n): add Swedish translation` or `fix(i18n): correct German typos`. The CLA bot will ask you to sign on your first contribution.
 
 ## Adding new translation keys
 
