@@ -15,7 +15,12 @@ import { buildCsp } from "./lib/csp.js";
 import { ensureAiDirs, recoverInterruptedInstalls } from "./lib/feature-status.js";
 import { shutdownWorkerPool } from "./lib/worker-pool.js";
 import { requirePermission } from "./permissions.js";
-import { authMiddleware, authRoutes, ensureDefaultAdmin } from "./plugins/auth.js";
+import {
+  authMiddleware,
+  authRoutes,
+  ensureAnonymousUser,
+  ensureDefaultAdmin,
+} from "./plugins/auth.js";
 import { oidcRoutes } from "./plugins/oidc.js";
 import { registerStatic } from "./plugins/static.js";
 import { registerUpload } from "./plugins/upload.js";
@@ -41,9 +46,10 @@ import { userFileRoutes } from "./routes/user-files.js";
 runMigrations();
 console.log("Database initialized");
 
-// Create default admin user if no users exist and auth is enabled
 if (env.AUTH_ENABLED) {
   await ensureDefaultAdmin();
+} else {
+  ensureAnonymousUser();
 }
 
 function ensureInstanceId() {
@@ -63,6 +69,7 @@ function ensureDefaultSettings() {
   const defaults: Record<string, string> = {
     defaultTheme: env.DEFAULT_THEME,
     defaultLocale: env.DEFAULT_LOCALE,
+    defaultToolView: env.DEFAULT_TOOL_VIEW,
   };
   for (const [key, value] of Object.entries(defaults)) {
     const existing = db.select().from(schema.settings).where(eq(schema.settings.key, key)).get();

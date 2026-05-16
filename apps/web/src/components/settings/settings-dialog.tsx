@@ -63,6 +63,7 @@ interface NavItem {
   label: string;
   icon: React.ComponentType<{ className?: string }>;
   requiredPermission?: string;
+  authRequired?: boolean;
 }
 
 function useNavItems() {
@@ -76,24 +77,27 @@ function useNavItems() {
         icon: Monitor,
         requiredPermission: "settings:write",
       },
-      { id: "security", label: t.settings.nav.security, icon: Shield },
+      { id: "security", label: t.settings.nav.security, icon: Shield, authRequired: true },
       {
         id: "people",
         label: t.settings.nav.people,
         icon: Users,
         requiredPermission: "users:manage",
+        authRequired: true,
       },
       {
         id: "teams",
         label: t.settings.nav.teams,
         icon: UsersRound,
         requiredPermission: "teams:manage",
+        authRequired: true,
       },
       {
         id: "roles",
         label: t.settings.nav.roles,
         icon: Shield,
         requiredPermission: "users:manage",
+        authRequired: true,
       },
       {
         id: "audit-log",
@@ -118,12 +122,14 @@ function useNavItems() {
 
 export function SettingsDialog({ open, onClose }: SettingsDialogProps) {
   const [section, setSection] = useState<Section>("general");
-  const { hasPermission } = useAuth();
+  const { hasPermission, authEnabled } = useAuth();
   const { t } = useTranslation();
   const NAV_ITEMS = useNavItems();
 
   const visibleNavItems = NAV_ITEMS.filter(
-    (item) => !item.requiredPermission || hasPermission(item.requiredPermission),
+    (item) =>
+      (!item.requiredPermission || hasPermission(item.requiredPermission)) &&
+      (!item.authRequired || authEnabled),
   );
 
   // Close on Escape

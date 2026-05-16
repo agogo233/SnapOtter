@@ -63,6 +63,7 @@ All configuration is done through environment variables. Every variable has a se
 |---|---|---|
 | `DEFAULT_THEME` | `light` | Default theme for new sessions. `light` or `dark`. |
 | `DEFAULT_LOCALE` | `en` | Default interface language. |
+| `DEFAULT_TOOL_VIEW` | `sidebar` | Default tool layout. `sidebar` or `fullscreen`. |
 
 ### Docker permissions
 

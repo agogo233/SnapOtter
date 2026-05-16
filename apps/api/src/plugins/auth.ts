@@ -136,6 +136,22 @@ export function createSessionToken(): string {
 
 // ── Default admin creation ─────────────────────────────────────────
 
+export function ensureAnonymousUser(): void {
+  const existing = db.select().from(schema.users).where(eq(schema.users.id, "anonymous")).get();
+  if (existing) return;
+
+  db.insert(schema.users)
+    .values({
+      id: "anonymous",
+      username: "anonymous",
+      role: "admin",
+      mustChangePassword: false,
+      authProvider: "local",
+    })
+    .onConflictDoNothing()
+    .run();
+}
+
 export async function ensureDefaultAdmin(): Promise<void> {
   const existingUsers = db.select().from(schema.users).all();
   if (existingUsers.length > 0) return;
@@ -297,9 +313,9 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         user: {
           id: "anonymous",
           username: "anonymous",
-          role: "user",
+          role: "admin",
           mustChangePassword: false,
-          permissions: getPermissions("user"),
+          permissions: getPermissions("admin"),
           analyticsEnabled: null,
           analyticsConsentShownAt: null,
           analyticsConsentRemindAt: null,
@@ -847,13 +863,11 @@ function isPublicRoute(url: string): boolean {
 
 export async function authMiddleware(app: FastifyInstance): Promise<void> {
   app.addHook("preHandler", async (request: FastifyRequest, reply: FastifyReply) => {
-    // When auth is disabled, attach a synthetic non-admin user so tools work
-    // but admin-only routes (user management, settings write, etc.) stay locked
     if (!env.AUTH_ENABLED) {
       (request as FastifyRequest & { user?: AuthUser }).user = {
         id: "anonymous",
         username: "anonymous",
-        role: "user",
+        role: "admin",
       };
       return;
     }
