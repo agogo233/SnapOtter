@@ -43,9 +43,13 @@ jobs:
       - run: pnpm typecheck
 
   test:
-    name: Test
+    name: Test (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
@@ -61,7 +65,7 @@ jobs:
           fi
 
       - uses: ./.github/actions/setup
-      - run: pnpm test:ci
+      - run: pnpm vitest run --reporter=verbose --shard=${{ matrix.shard }}/4
 
   pip-audit:
     name: Python Dependency Audit
