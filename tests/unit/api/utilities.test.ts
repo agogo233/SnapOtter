@@ -874,6 +874,7 @@ describe("loadEnv", () => {
       "WORKSPACE_PATH",
       "DEFAULT_THEME",
       "DEFAULT_LOCALE",
+      "DEFAULT_TOOL_VIEW",
     ];
     for (const key of keysToClean) {
       delete process.env[key];
@@ -915,6 +916,7 @@ describe("loadEnv", () => {
     expect(typeof env.WORKSPACE_PATH).toBe("string");
     expect(["light", "dark"]).toContain(env.DEFAULT_THEME);
     expect(typeof env.DEFAULT_LOCALE).toBe("string");
+    expect(["sidebar", "fullscreen"]).toContain(env.DEFAULT_TOOL_VIEW);
   });
 
   it("parses custom PORT as a number via coercion", async () => {
@@ -949,6 +951,30 @@ describe("loadEnv", () => {
 
   it("rejects DEFAULT_THEME with an invalid enum value", async () => {
     process.env.DEFAULT_THEME = "solarized";
+    const { loadEnv } = await import("../../../apps/api/src/lib/env.js");
+    expect(() => loadEnv()).toThrow();
+  });
+
+  it("accepts DEFAULT_TOOL_VIEW=fullscreen", async () => {
+    process.env.DEFAULT_TOOL_VIEW = "fullscreen";
+    const { loadEnv } = await import("../../../apps/api/src/lib/env.js");
+    expect(loadEnv().DEFAULT_TOOL_VIEW).toBe("fullscreen");
+  });
+
+  it("accepts DEFAULT_TOOL_VIEW=sidebar", async () => {
+    process.env.DEFAULT_TOOL_VIEW = "sidebar";
+    const { loadEnv } = await import("../../../apps/api/src/lib/env.js");
+    expect(loadEnv().DEFAULT_TOOL_VIEW).toBe("sidebar");
+  });
+
+  it("defaults DEFAULT_TOOL_VIEW to sidebar when not set", async () => {
+    delete process.env.DEFAULT_TOOL_VIEW;
+    const { loadEnv } = await import("../../../apps/api/src/lib/env.js");
+    expect(loadEnv().DEFAULT_TOOL_VIEW).toBe("sidebar");
+  });
+
+  it("rejects DEFAULT_TOOL_VIEW with an invalid value", async () => {
+    process.env.DEFAULT_TOOL_VIEW = "grid";
     const { loadEnv } = await import("../../../apps/api/src/lib/env.js");
     expect(() => loadEnv()).toThrow();
   });

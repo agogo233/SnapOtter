@@ -27,6 +27,7 @@ const envSchema = z
     WORKSPACE_PATH: z.string().default("./tmp/workspace"),
     DEFAULT_THEME: z.enum(["light", "dark", "system"]).default("light"),
     DEFAULT_LOCALE: z.string().default("en"),
+    DEFAULT_TOOL_VIEW: z.enum(["sidebar", "fullscreen"]).default("sidebar"),
     CORS_ORIGIN: z.string().default(""),
     MAX_USERS: z.coerce.number().default(0),
     LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).default("info"),

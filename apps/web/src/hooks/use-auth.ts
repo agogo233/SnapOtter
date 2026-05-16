@@ -18,12 +18,21 @@ interface AuthState {
   hasLocalPassword: boolean;
 }
 
-const USER_PERMISSIONS = [
+const ANON_ADMIN_PERMISSIONS = [
   "tools:use",
   "files:own",
+  "files:all",
   "apikeys:own",
+  "apikeys:all",
   "pipelines:own",
+  "pipelines:all",
   "settings:read",
+  "settings:write",
+  "users:manage",
+  "teams:manage",
+  "features:manage",
+  "system:health",
+  "audit:read",
 ];
 
 export function useAuth() {
@@ -58,8 +67,8 @@ export function useAuth() {
               authEnabled: false,
               isAuthenticated: true,
               mustChangePassword: false,
-              role: "user",
-              permissions: USER_PERMISSIONS,
+              role: "admin",
+              permissions: ANON_ADMIN_PERMISSIONS,
               analyticsEnabled: null,
               analyticsConsentShownAt: null,
               analyticsConsentRemindAt: null,

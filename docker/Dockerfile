@@ -255,6 +255,7 @@ ENV PORT=1349 \
     U2NET_HOME=/data/ai/models/rembg \
     DEFAULT_THEME=light \
     DEFAULT_LOCALE=en \
+    DEFAULT_TOOL_VIEW=sidebar \
     FILE_MAX_AGE_HOURS=72 \
     CLEANUP_INTERVAL_MINUTES=60 \
     MAX_UPLOAD_SIZE_MB=0 \

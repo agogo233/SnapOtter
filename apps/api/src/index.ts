@@ -63,6 +63,7 @@ function ensureDefaultSettings() {
   const defaults: Record<string, string> = {
     defaultTheme: env.DEFAULT_THEME,
     defaultLocale: env.DEFAULT_LOCALE,
+    defaultToolView: env.DEFAULT_TOOL_VIEW,
   };
   for (const [key, value] of Object.entries(defaults)) {
     const existing = db.select().from(schema.settings).where(eq(schema.settings.key, key)).get();
