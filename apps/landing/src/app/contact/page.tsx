@@ -6,7 +6,17 @@ import { useState } from "react";
 
 import { FadeIn } from "@/components/fade-in";
 import { Footer } from "@/components/footer";
+import { JsonLd } from "@/components/json-ld";
 import { Navbar } from "@/components/navbar";
+
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://snapotter.com" },
+    { "@type": "ListItem", position: 2, name: "Contact", item: "https://snapotter.com/contact" },
+  ],
+};
 
 const benefits = [
   {
@@ -63,6 +73,7 @@ export default function ContactPage() {
 
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd} />
       <Navbar />
       <main className="pt-16">
         <section className="px-6 py-24 md:py-32">

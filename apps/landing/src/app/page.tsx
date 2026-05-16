@@ -15,13 +15,27 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://snapotter.com" },
 };
 
-const organizationJsonLd = {
+const websiteJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "WebSite",
   name: "SnapOtter",
   url: "https://snapotter.com",
-  logo: "https://snapotter.com/logo.png",
-  sameAs: ["https://github.com/snapotter-hq/snapotter", "https://discord.gg/hr3s7HPUsr"],
+  description:
+    "52 image processing tools with local AI. Runs 100% offline. No data leaves your network.",
+  publisher: {
+    "@type": "Organization",
+    name: "SnapOtter",
+    url: "https://snapotter.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://snapotter.com/logo.png",
+    },
+    sameAs: [
+      "https://github.com/snapotter-hq/snapotter",
+      "https://discord.gg/hr3s7HPUsr",
+      "https://hub.docker.com/r/snapotter/snapotter",
+    ],
+  },
 };
 
 const softwareJsonLd = {
@@ -41,15 +55,60 @@ const softwareJsonLd = {
   url: "https://snapotter.com",
   downloadUrl: "https://hub.docker.com/r/snapotter/snapotter",
   screenshot: "https://snapotter.com/og-image.png",
+  image: "https://snapotter.com/og-image.png",
   featureList:
     "Image Resize, Image Crop, Image Compression, Format Conversion, Watermarking, Background Removal, Image Upscaling, OCR, Face Detection, Photo Restoration, Batch Processing, REST API, Pipeline Automation",
+};
+
+const navigationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "SnapOtter Site Navigation",
+  itemListElement: [
+    {
+      "@type": "SiteNavigationElement",
+      position: 1,
+      name: "Documentation",
+      description: "Installation guides, API reference, and configuration docs",
+      url: "https://docs.snapotter.com",
+    },
+    {
+      "@type": "SiteNavigationElement",
+      position: 2,
+      name: "FAQ",
+      description: "Frequently asked questions about SnapOtter",
+      url: "https://snapotter.com/faq",
+    },
+    {
+      "@type": "SiteNavigationElement",
+      position: 3,
+      name: "GitHub",
+      description: "Source code, issues, and discussions",
+      url: "https://github.com/snapotter-hq/snapotter",
+    },
+    {
+      "@type": "SiteNavigationElement",
+      position: 4,
+      name: "Contact",
+      description: "Book a demo or discuss enterprise licensing",
+      url: "https://snapotter.com/contact",
+    },
+    {
+      "@type": "SiteNavigationElement",
+      position: 5,
+      name: "Discord",
+      description: "Community chat and support",
+      url: "https://discord.gg/hr3s7HPUsr",
+    },
+  ],
 };
 
 export default function Home() {
   return (
     <>
-      <JsonLd data={organizationJsonLd} />
+      <JsonLd data={websiteJsonLd} />
       <JsonLd data={softwareJsonLd} />
+      <JsonLd data={navigationJsonLd} />
       <Navbar />
       <main>
         <Hero />

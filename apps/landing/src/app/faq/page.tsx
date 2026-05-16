@@ -85,10 +85,20 @@ const faqJsonLd = {
   })),
 };
 
+const breadcrumbJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    { "@type": "ListItem", position: 1, name: "Home", item: "https://snapotter.com" },
+    { "@type": "ListItem", position: 2, name: "FAQ", item: "https://snapotter.com/faq" },
+  ],
+};
+
 export default function FaqPage() {
   return (
     <>
       <JsonLd data={faqJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Navbar />
       <main className="pt-16">
         <section className="px-6 py-24 md:py-32">
