@@ -126,7 +126,7 @@ export function Hero() {
           <TypingCursor />
         </p>
 
-        <div className="mt-10 animate-[fadeUp_0.6s_ease-out_0.3s_both]">
+        <div className="mt-10 animate-[fadeUp_0.6s_ease-out_0.3s_both] text-center">
           <a
             href="https://github.com/snapotter-hq/snapotter"
             target="_blank"
@@ -138,6 +138,7 @@ export function Hero() {
               &rarr;
             </span>
           </a>
+          <p className="mt-4 text-sm text-muted">No sign-ups. No credit card.</p>
         </div>
       </div>
     </section>

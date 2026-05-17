@@ -618,7 +618,7 @@ export function RemoveBgSettings({ onBgPreview }: RemoveBgSettingsProps = {}) {
     const shadowOpacity = (settings.shadowOpacity as number) ?? 35;
 
     if (!blurEnabled && !shadowEnabled && bgType === "transparent") {
-      onBgPreview({ showCheckerboard: true });
+      onBgPreview(null);
       return;
     }
 

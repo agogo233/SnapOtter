@@ -92,10 +92,12 @@ export function Navbar() {
             )}
           </a>
           <a
-            href="/contact"
+            href="https://demo.snapotter.com"
+            target="_blank"
+            rel="noopener noreferrer"
             className="rounded-lg bg-accent px-4 py-1.5 text-sm font-medium text-accent-foreground transition-colors hover:bg-accent-hover"
           >
-            Book a Demo
+            Try Demo
           </a>
         </div>
 
@@ -142,10 +144,12 @@ export function Navbar() {
               Star on GitHub
             </a>
             <a
-              href="/contact"
+              href="https://demo.snapotter.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="block rounded-lg bg-accent px-4 py-2 text-center text-sm font-medium text-accent-foreground"
             >
-              Book a Demo
+              Try Demo
             </a>
           </div>
         </div>

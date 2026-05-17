@@ -4,6 +4,10 @@ description: Install SnapOtter with Docker in one command. Includes Docker Compo
 
 # Getting Started
 
+::: tip Try before installing
+Explore the full UI at [demo.snapotter.com](https://demo.snapotter.com) -- no signup or install required.
+:::
+
 ## Quick Start
 
 ```bash
@@ -11,14 +15,6 @@ docker run -d --name SnapOtter -p 1349:1349 -v SnapOtter-data:/data snapotter/sn
 ```
 
 You will be asked to change your password on first login.
-
-::: tip Also on GHCR
-```bash
-docker run -d --name SnapOtter -p 1349:1349 -v SnapOtter-data:/data ghcr.io/snapotter-hq/snapotter:latest
-```
-
-Both registries publish the same image on every release.
-:::
 
 ::: tip NVIDIA GPU acceleration
 Add `--gpus all` for GPU-accelerated background removal, upscaling, OCR, face enhancement, and restoration:
@@ -28,6 +24,14 @@ docker run -d --name SnapOtter -p 1349:1349 --gpus all -v SnapOtter-data:/data s
 ```
 
 Requires the [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html). Falls back to CPU automatically. See [Docker Tags](/guide/docker-tags) for benchmarks.
+:::
+
+::: details Also on GHCR
+```bash
+docker run -d --name SnapOtter -p 1349:1349 -v SnapOtter-data:/data ghcr.io/snapotter-hq/snapotter:latest
+```
+
+Both registries publish the same image on every release.
 :::
 
 ## Docker Compose
