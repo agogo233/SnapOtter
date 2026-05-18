@@ -50,23 +50,24 @@ export function registerInfo(app: FastifyInstance) {
       const validation = await validateImageBuffer(fileBuffer, filename);
       const detectedFormat = validation.valid ? validation.format : null;
 
-      // For metadata reading, try Sharp on the raw buffer first -- it handles
-      // TIFF-based formats (DNG, CR2, NEF) without needing a full decode via
-      // ImageMagick/darktable. Only fall back to the decode pipeline for
-      // formats Sharp can't open at all (PSD, ICO, TGA, etc.).
+      // Pre-decode formats Sharp can't fully handle (needs pixel decoding for stats).
+      // HEIC/HEIF: Sharp can read container headers but can't decode HEVC pixels,
+      // so unconditionally pre-decode to PNG (matching createToolRoute behavior).
       let metaBuffer = fileBuffer;
       const ext = filename.split(".").pop()?.toLowerCase();
-      let sharpDirectFailed = false;
-      try {
-        await sharp(fileBuffer).metadata();
-      } catch {
-        sharpDirectFailed = true;
-      }
 
-      if (sharpDirectFailed) {
-        if (detectedFormat && needsCliDecode(detectedFormat)) {
-          metaBuffer = await decodeToSharpCompat(fileBuffer, detectedFormat, ext);
-        } else {
+      if (detectedFormat === "heif") {
+        metaBuffer = await decodeHeic(fileBuffer);
+      } else if (detectedFormat && needsCliDecode(detectedFormat)) {
+        metaBuffer = await decodeToSharpCompat(fileBuffer, detectedFormat, ext);
+      } else {
+        let sharpDirectFailed = false;
+        try {
+          await sharp(fileBuffer).metadata();
+        } catch {
+          sharpDirectFailed = true;
+        }
+        if (sharpDirectFailed) {
           metaBuffer = await decodeHeic(fileBuffer);
         }
       }
