@@ -4,7 +4,7 @@ layout: home
 hero:
   name: "SnapOtter"
   text: "A Self Hosted Image Manipulator"
-  tagline: 52 tools. Local AI. No cloud. Your images never leave your home.
+  tagline: 50+ tools. Local AI. No cloud. Your images never leave your home.
   actions:
     - theme: brand
       text: Get started

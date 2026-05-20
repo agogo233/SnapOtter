@@ -392,7 +392,7 @@ export default async function ToolPage({ params }: PageProps) {
                 Ready to try {tool.name}?
               </h2>
               <p className="mx-auto mt-4 max-w-lg text-muted">
-                Deploy SnapOtter in under a minute. All 52 tools included. Open source and free
+                Deploy SnapOtter in under a minute. All 50+ tools included. Open source and free
                 forever.
               </p>
               <div className="mt-8 flex flex-wrap justify-center gap-4">

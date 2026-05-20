@@ -25,7 +25,7 @@ function getCountText(): string {
 describe("BentoGrid", () => {
   it("renders the section heading", () => {
     render(<BentoGrid />);
-    expect(screen.getByText("52 tools. Zero cloud dependency.")).toBeDefined();
+    expect(screen.getByText("50+ tools. Zero cloud dependency.")).toBeDefined();
   });
 
   it("renders the search input", () => {

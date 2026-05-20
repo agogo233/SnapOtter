@@ -21,7 +21,7 @@ const websiteJsonLd = {
   name: "SnapOtter",
   url: "https://snapotter.com",
   description:
-    "52 image processing tools with local AI. Runs 100% offline. No data leaves your network.",
+    "50+ image processing tools with local AI. Runs 100% offline. No data leaves your network.",
   publisher: {
     "@type": "Organization",
     name: "SnapOtter",
@@ -44,7 +44,7 @@ const softwareJsonLd = {
   "@type": "SoftwareApplication",
   name: "SnapOtter",
   description:
-    "52 image processing tools with local AI. Runs 100% offline. No data leaves your network. Open source and free forever.",
+    "50+ image processing tools with local AI. Runs 100% offline. No data leaves your network. Open source and free forever.",
   applicationCategory: "MultimediaApplication",
   operatingSystem: "Linux, macOS, Windows (via Docker)",
   offers: {

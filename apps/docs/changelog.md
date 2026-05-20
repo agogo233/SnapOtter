@@ -11,8 +11,8 @@ Live demo, per-tool landing pages, and a batch of polish fixes.
 ### New features
 
 - **Live demo** -- [demo.snapotter.com](https://demo.snapotter.com) lets people try SnapOtter without installing anything.
-- **Tools index page** -- Browse all 52 tools at `/tools` with search and category filters.
-- **52 SEO landing pages** -- Every tool now has a dedicated landing page with FAQs, use cases, and comparison tables.
+- **Tools index page** -- Browse all 50+ tools at `/tools` with search and category filters.
+- **50+ SEO landing pages** -- Every tool now has a dedicated landing page with FAQs, use cases, and comparison tables.
 - **Background preview** -- Before-after slider shows a checkered background behind transparent images.
 - **Strong password generator** -- One-click button in the Add Members form.
 
