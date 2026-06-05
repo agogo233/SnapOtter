@@ -6,6 +6,7 @@ import { ConnectionMonitor } from "./components/common/connection-monitor";
 import { KeyboardShortcutProvider } from "./components/common/keyboard-shortcut-provider";
 import { I18nProvider } from "./contexts/i18n-context";
 import { useAuth } from "./hooks/use-auth";
+import { useMobile } from "./hooks/use-mobile";
 import { identify, initAnalytics, setAnalyticsConsent } from "./lib/analytics";
 import { useAnalyticsStore } from "./stores/analytics-store";
 
@@ -177,6 +178,7 @@ function PageLoader() {
 }
 
 export function App() {
+  const isMobile = useMobile();
   const analyticsConfig = useAnalyticsStore((s) => s.config);
   const analyticsConfigLoaded = useAnalyticsStore((s) => s.configLoaded);
   const fetchAnalyticsConfig = useAnalyticsStore((s) => s.fetchConfig);
@@ -217,7 +219,7 @@ export function App() {
     <ErrorBoundary>
       <I18nProvider>
         <ConnectionMonitor />
-        <Toaster position="bottom-right" />
+        <Toaster position={isMobile ? "top-center" : "bottom-right"} />
         <BrowserRouter>
           <KeyboardShortcutProvider>
             <AuthGuard>

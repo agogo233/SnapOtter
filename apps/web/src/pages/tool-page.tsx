@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Crop } from "react-image-crop";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { BeforeAfterSlider } from "@/components/common/before-after-slider";
 import { BottomSheet } from "@/components/common/bottom-sheet";
 import { Dropzone } from "@/components/common/dropzone";
@@ -347,8 +347,14 @@ export function ToolPage() {
   if (!tool || !registryEntry) {
     return (
       <AppLayout>
-        <div className="flex items-center justify-center h-full text-muted-foreground">
-          {t.toolPage.notFound}
+        <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+          <p className="text-lg font-medium">{t.toolPage.notFound}</p>
+          <Link
+            to="/"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
+          >
+            {t.common.goHome}
+          </Link>
         </div>
       </AppLayout>
     );

@@ -9,12 +9,13 @@ const MOBILE_BREAKPOINT = 768;
 export function useMediaQuery(query: string): boolean {
   const [matches, setMatches] = useState(() => {
     if (typeof window === "undefined" || typeof window.matchMedia !== "function") return false;
-    return window.matchMedia(query).matches;
+    return window.matchMedia(query)?.matches ?? false;
   });
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
     const mq = window.matchMedia(query);
+    if (!mq) return;
     const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
     mq.addEventListener("change", handler);
     setMatches(mq.matches);
