@@ -261,6 +261,10 @@ RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store/v3 \
     npm pkg delete scripts.prepare && \
     pnpm install --frozen-lockfile --prod
 
+# Install Playwright Chromium for HTML-to-Image tool
+RUN npx playwright install chromium --with-deps && \
+    rm -rf /tmp/* /root/.cache/ms-playwright/.links
+
 # Copy source code for API (tsx runs TS directly - no build step needed)
 COPY apps/api/src ./apps/api/src
 COPY apps/api/drizzle ./apps/api/drizzle
