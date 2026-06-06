@@ -386,6 +386,14 @@ async function shutdown(signal: string) {
   }
 
   try {
+    const { shutdownBrowser } = await import("./lib/browser-service.js");
+    await shutdownBrowser();
+    console.log("Browser service shut down");
+  } catch {
+    // Browser service may not have been initialized
+  }
+
+  try {
     await shutdownAnalytics();
     console.log("Analytics flushed");
   } catch {
