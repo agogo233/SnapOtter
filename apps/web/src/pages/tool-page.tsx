@@ -35,6 +35,7 @@ import { useCollageStore } from "@/stores/collage-store";
 import { useDuplicateStore } from "@/stores/duplicate-store";
 import { useFeaturesStore } from "@/stores/features-store";
 import { useFileStore } from "@/stores/file-store";
+import { useHtmlToImageStore } from "@/stores/html-to-image-store";
 import { usePdfToImageStore } from "@/stores/pdf-to-image-store";
 import { useQrStore } from "@/stores/qr-store";
 import { useSplitStore } from "@/stores/split-store";
@@ -263,6 +264,7 @@ export function ToolPage() {
     usePdfToImageStore.getState().reset();
     useQrStore.getState().reset();
     useSplitStore.getState().reset();
+    useHtmlToImageStore.getState().reset();
 
     setPreviewTransform(null);
     setPreviewFilter("");

@@ -170,6 +170,16 @@ const QrGeneratePreview = lazy(() =>
     default: m.QrGeneratePreview,
   })),
 );
+const HtmlToImageSettings = lazy(() =>
+  import("@/components/tools/html-to-image-settings").then((m) => ({
+    default: m.HtmlToImageSettings,
+  })),
+);
+const HtmlToImageResults = lazy(() =>
+  import("@/components/tools/html-to-image-results").then((m) => ({
+    default: m.HtmlToImageResults,
+  })),
+);
 const BarcodeReadSettings = lazy(() =>
   import("@/components/tools/barcode-read-settings").then((m) => ({
     default: m.BarcodeReadSettings,
@@ -421,6 +431,14 @@ export const toolRegistry = new Map<string, ToolRegistryEntry>([
   [
     "qr-generate",
     { displayMode: "no-dropzone", Settings: QrGenerateSettings, ResultsPanel: QrGeneratePreview },
+  ],
+  [
+    "html-to-image",
+    {
+      displayMode: "no-dropzone",
+      Settings: HtmlToImageSettings,
+      ResultsPanel: HtmlToImageResults,
+    },
   ],
   ["barcode-read", { displayMode: "before-after", Settings: BarcodeReadSettings }],
   [
