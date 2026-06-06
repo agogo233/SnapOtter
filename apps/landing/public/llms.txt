@@ -67,6 +67,7 @@ SnapOtter runs entirely on your own infrastructure. Images are processed locally
 - [QR Code Generator](https://snapotter.com/tools/qr-generate): Custom QR codes with colors, logos, and patterns
 - [Barcode Reader](https://snapotter.com/tools/barcode-read): Decode QR, Code 128, EAN-13, and more from images
 - [Image to Base64](https://snapotter.com/tools/image-to-base64): Generate data URIs for HTML/CSS embedding
+- [HTML to Image](https://snapotter.com/tools/html-to-image): Capture webpages as high-quality images (PNG, JPG, WebP)
 
 ## Layout and Composition Tools
 

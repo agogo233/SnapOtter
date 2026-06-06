@@ -4138,6 +4138,84 @@ paths:
               schema:
                 $ref: "#/components/schemas/UnauthorizedError"
 
+  /api/v1/tools/html-to-image:
+    post:
+      operationId: captureWebpage
+      tags: [Tools]
+      summary: Capture webpage as image
+      description: Capture a webpage as a high-quality screenshot image. Accepts a JSON body with a URL and capture options.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                  description: URL to capture (http/https only)
+                format:
+                  type: string
+                  enum: [jpg, png, webp]
+                  default: png
+                quality:
+                  type: integer
+                  minimum: 1
+                  maximum: 100
+                  default: 90
+                fullPage:
+                  type: boolean
+                  default: false
+                devicePreset:
+                  type: string
+                  enum: [desktop, tablet, mobile, custom]
+                  default: desktop
+                viewportWidth:
+                  type: integer
+                  minimum: 320
+                  maximum: 3840
+                  default: 1280
+                viewportHeight:
+                  type: integer
+                  minimum: 320
+                  maximum: 2160
+                  default: 720
+      responses:
+        "200":
+          description: Screenshot captured successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ToolResponse"
+        "400":
+          description: Invalid URL or parameters
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UnauthorizedError"
+        "503":
+          description: Browser service unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "504":
+          description: Page load timeout
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
   /api/v1/tools/strip-metadata/inspect:
     post:
       operationId: inspectMetadata

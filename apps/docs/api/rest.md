@@ -180,6 +180,7 @@ All AI tools run on your hardware (CPU or NVIDIA GPU). No internet required.
 | `qr-generate` | QR Code Generator | `data`, `size`, `margin`, `colorDark`, `colorLight`, `errorCorrectionLevel`, `dotStyle`, `cornerStyle`, `logo` (optional file) |
 | `barcode-read` | Barcode Reader | - (auto-detects QR, EAN, Code128, DataMatrix, etc.) |
 | `image-to-base64` | Image to Base64 | `format` (data-uri/plain), `mimeType` |
+| `html-to-image` | HTML to Image | `url`, `format` (png/jpg/webp), `quality`, `fullPage`, `devicePreset` (desktop/tablet/mobile/custom), `viewportWidth`, `viewportHeight` |
 
 ### Layout & Composition
 
@@ -199,6 +200,44 @@ All AI tools run on your hardware (CPU or NVIDIA GPU). No internet required.
 | `vectorize` | Image to SVG | `colorMode` (bw/color), `threshold`, `colorPrecision`, `filterSpeckle`, `pathMode` (none/polygon/spline) |
 | `gif-tools` | GIF Tools | `action` (resize/optimize/reverse/speed/extract-frames/rotate/add-text), action-specific params |
 | `pdf-to-image` | PDF to Image | `pages` (all/range), `format`, `dpi`, `quality` |
+
+### HTML to Image
+
+Capture a webpage as an image. Unlike other tools, this endpoint accepts `application/json` instead of multipart form data (no file upload needed).
+
+**Endpoint:** `POST /api/v1/tools/html-to-image`
+
+**Content-Type:** `application/json`
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `url` | string | (required) | URL to capture (http/https only) |
+| `format` | string | `"png"` | Output format: `jpg`, `png`, `webp` |
+| `quality` | number | `90` | Quality 1-100 (JPG/WebP only) |
+| `fullPage` | boolean | `false` | Capture full scrollable page |
+| `devicePreset` | string | `"desktop"` | `desktop`, `tablet`, `mobile`, `custom` |
+| `viewportWidth` | number | `1280` | Custom viewport width 320-3840 |
+| `viewportHeight` | number | `720` | Custom viewport height 320-2160 |
+
+**Example:**
+
+```bash
+curl -X POST http://localhost:1349/api/v1/tools/html-to-image \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://example.com", "format": "png", "devicePreset": "desktop"}'
+```
+
+**Response:**
+
+```json
+{
+  "jobId": "uuid",
+  "downloadUrl": "/api/v1/download/{jobId}/screenshot.png",
+  "originalSize": 0,
+  "processedSize": 54321
+}
+```
 
 ### Tool Sub-Routes
 
