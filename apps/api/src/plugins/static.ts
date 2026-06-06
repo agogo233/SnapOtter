@@ -18,6 +18,7 @@ export async function registerStatic(app: FastifyInstance) {
     root: webDistPath,
     prefix: "/",
     wildcard: false,
+    decorateReply: !app.hasReplyDecorator("sendFile"),
   });
 
   // SPA fallback — serve index.html for all non-API routes

@@ -388,7 +388,7 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
         .header("Content-Type", file.mimeType)
         .header(
           "Content-Disposition",
-          `attachment; filename="${encodeURIComponent(file.originalName)}"`,
+          `attachment; filename="${encodeURIComponent(file.originalName)}"; filename*=UTF-8''${encodeURIComponent(file.originalName)}`,
         )
         .send(stream);
     },

@@ -128,7 +128,10 @@ export async function fileRoutes(app: FastifyInstance): Promise<void> {
 
       return reply
         .header("Content-Type", contentType)
-        .header("Content-Disposition", `attachment; filename="${encodeURIComponent(filename)}"`)
+        .header(
+          "Content-Disposition",
+          `attachment; filename="${encodeURIComponent(filename)}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        )
         .send(buffer);
     },
   );

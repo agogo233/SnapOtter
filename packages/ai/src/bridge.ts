@@ -153,7 +153,20 @@ function startDispatcher(): ChildProcess | null {
       env: buildMinimalEnv(),
     });
 
-    child.stdin?.on("error", () => {});
+    child.stdin?.on("error", (err: NodeJS.ErrnoException) => {
+      if (err.code === "EPIPE" || err.code === "ERR_STREAM_DESTROYED") {
+        console.error(
+          `[bridge] Dispatcher stdin pipe broken (${err.code}), rejecting pending requests`,
+        );
+        for (const [id, req] of pendingRequests.entries()) {
+          req.reject(new Error("Python dispatcher stdin closed unexpectedly"));
+          pendingRequests.delete(id);
+        }
+        recordCrash();
+        dispatcher = null;
+        dispatcherReady = false;
+      }
+    });
 
     let stderrBuffer = "";
 

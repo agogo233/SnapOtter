@@ -44,8 +44,17 @@ export function shouldRunStartupCleanup(): boolean {
 }
 
 export function startCleanupCron(): { stop: () => void } {
-  // Ensure workspace directory exists
-  mkdirSync(env.WORKSPACE_PATH, { recursive: true });
+  try {
+    mkdirSync(env.WORKSPACE_PATH, { recursive: true });
+  } catch (err: unknown) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "EACCES") {
+      console.error(
+        `WARNING: Cannot create workspace directory "${env.WORKSPACE_PATH}". Check volume permissions (PUID/PGID).`,
+      );
+    }
+    throw err;
+  }
 
   const intervalMs = env.CLEANUP_INTERVAL_MINUTES * 60 * 1000;
 

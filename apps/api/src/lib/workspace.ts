@@ -61,8 +61,15 @@ async function checkWorkspaceCapacity(workspaceRoot: string): Promise<void> {
 export async function createWorkspace(jobId: string): Promise<string> {
   await checkWorkspaceCapacity(env.WORKSPACE_PATH);
   const root = getWorkspacePath(jobId);
-  await mkdir(join(root, "input"), { recursive: true });
-  await mkdir(join(root, "output"), { recursive: true });
+  try {
+    await mkdir(join(root, "input"), { recursive: true });
+    await mkdir(join(root, "output"), { recursive: true });
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === "EACCES") {
+      throw Object.assign(new Error("Workspace directory is not writable"), { statusCode: 503 });
+    }
+    throw err;
+  }
   return root;
 }
 

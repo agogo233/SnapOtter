@@ -75,8 +75,11 @@ if [ "$(id -u)" = "0" ]; then
     fi
   fi
 
+  # Ensure all writable subdirectories exist before chown
+  mkdir -p /data/files /data/ai/models /data/ai/pip-cache /data/ai/venv /tmp/workspace
+
   # Chown writable directories (/data is the persistent volume, /tmp/workspace is ephemeral).
-  # /app and /opt/venv are read-only at runtime — no chown needed.
+  # /app and /opt/venv are read-only at runtime -- no chown needed.
   chown -R snapotter:snapotter /data /tmp/workspace 2>&1 || \
     echo "WARNING: Could not fix volume permissions. Use named volumes (not Windows bind mounts) to avoid this. See docs for details." >&2
 

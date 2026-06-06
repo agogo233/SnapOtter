@@ -41,9 +41,20 @@ export function getManifestPath(): string {
 
 export function ensureAiDirs(): void {
   if (!isDockerEnvironment()) return;
-  mkdirSync(join(AI_DIR, "venv"), { recursive: true });
-  mkdirSync(MODELS_DIR, { recursive: true });
-  mkdirSync(join(AI_DIR, "pip-cache"), { recursive: true });
+  try {
+    mkdirSync(join(AI_DIR, "venv"), { recursive: true });
+    mkdirSync(MODELS_DIR, { recursive: true });
+    mkdirSync(join(AI_DIR, "pip-cache"), { recursive: true });
+  } catch (err: unknown) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "EACCES") {
+      console.error(
+        `WARNING: Cannot create AI directories under "${AI_DIR}". AI features will be unavailable. Check volume permissions (PUID/PGID).`,
+      );
+      return;
+    }
+    throw err;
+  }
 }
 
 // ── Docker detection ────────────────────────────────────────────────────

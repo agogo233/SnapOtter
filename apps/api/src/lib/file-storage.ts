@@ -115,7 +115,14 @@ let thumbDirReady = false;
 
 async function ensureThumbDir(): Promise<void> {
   if (thumbDirReady) return;
-  await mkdir(join(env.FILES_STORAGE_PATH, THUMB_DIR), { recursive: true });
+  try {
+    await mkdir(join(env.FILES_STORAGE_PATH, THUMB_DIR), { recursive: true });
+  } catch (err: unknown) {
+    if ((err as NodeJS.ErrnoException).code === "EACCES") {
+      throw Object.assign(new Error("Storage directory is not writable"), { statusCode: 503 });
+    }
+    throw err;
+  }
   thumbDirReady = true;
 }
 

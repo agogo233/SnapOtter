@@ -38,6 +38,7 @@ describe("registerStatic", () => {
     const app = {
       register: vi.fn().mockResolvedValue(undefined),
       setNotFoundHandler: vi.fn(),
+      hasReplyDecorator: vi.fn().mockReturnValue(false),
       log: { warn: vi.fn() },
     };
 
@@ -46,6 +47,7 @@ describe("registerStatic", () => {
       root: expect.stringContaining("web/dist"),
       prefix: "/",
       wildcard: false,
+      decorateReply: true,
     });
     expect(app.setNotFoundHandler).toHaveBeenCalled();
   });
@@ -58,6 +60,7 @@ describe("registerStatic", () => {
       setNotFoundHandler: vi.fn((handler: typeof notFoundHandler) => {
         notFoundHandler = handler;
       }),
+      hasReplyDecorator: vi.fn().mockReturnValue(false),
       log: { warn: vi.fn() },
     };
 
@@ -77,6 +80,7 @@ describe("registerStatic", () => {
       setNotFoundHandler: vi.fn((handler: typeof notFoundHandler) => {
         notFoundHandler = handler;
       }),
+      hasReplyDecorator: vi.fn().mockReturnValue(false),
       log: { warn: vi.fn() },
     };
 
