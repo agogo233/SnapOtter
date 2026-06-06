@@ -111,7 +111,7 @@ jobs:
           rm -rf tests .github .husky scripts
           rm -rf .releaserc.json biome.json .editorconfig .gitattributes
           rm -rf .git .gitignore
-          rm -f CHANGELOG.md LICENSE README.md CONTRIBUTING.md SECURITY.md
+          rm -f CHANGELOG.md README.md CONTRIBUTING.md SECURITY.md
 
           ARCHIVE_NAME="snapotter-v${VERSION}-linux-${ARCH}.tar.gz"
           cd ..
@@ -123,11 +123,14 @@ jobs:
           echo "archive_name=${ARCHIVE_NAME}" >> "$GITHUB_ENV"
           echo "Archive: ${ARCHIVE_NAME} ($(du -sh /tmp/${ARCHIVE_NAME} | cut -f1))"
 
+      - name: Generate checksum
+        run: cd /tmp && sha256sum "${archive_name}" > "${archive_name}.sha256"
+
       - name: Upload to GitHub Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.release.outputs.new_version }}
-        run: gh release upload "v${VERSION}" "/tmp/${archive_name}" --clobber
+        run: gh release upload "v${VERSION}" "/tmp/${archive_name}" "/tmp/${archive_name}.sha256" --clobber
 
   docker:
     name: Build (${{ matrix.platform }})
