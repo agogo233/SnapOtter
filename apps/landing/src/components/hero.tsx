@@ -115,11 +115,12 @@ export function Hero() {
 
       <div className="relative mx-auto max-w-4xl text-center">
         <h1 className="animate-[fadeUp_0.6s_ease-out_both] font-[family-name:var(--font-nunito)] text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Your images. Stay yours.
+          50+ image tools. One Docker container.
         </h1>
 
         <p className="mt-4 animate-[fadeUp_0.6s_ease-out_0.1s_both] text-base text-muted md:text-lg">
-          A free, open-source image toolkit with 50+ tools that runs entirely on your network.
+          Resize, compress, convert, remove backgrounds, upscale, OCR, and more. Open source. Runs
+          on your network.
         </p>
 
         <p className="mt-4 animate-[fadeUp_0.6s_ease-out_0.2s_both] text-xl font-medium md:text-2xl">

@@ -3,8 +3,8 @@ layout: home
 
 hero:
   name: "SnapOtter"
-  text: "A Self Hosted Image Manipulator"
-  tagline: 50+ tools. Local AI. No cloud. Your images never leave your home.
+  text: "Self-Hosted Image Toolkit"
+  tagline: 50+ tools. Resize, compress, convert, remove backgrounds, upscale, OCR, and more. One Docker container, fully offline.
   actions:
     - theme: brand
       text: Get started
