@@ -72,7 +72,7 @@ pnpm dev
 
 ## What You Can Do
 
-### Image Processing (52 Tools)
+### Image Processing (53 Tools)
 
 | Category | Tools |
 |----------|-------|
@@ -81,7 +81,7 @@ pnpm dev
 | **Adjustments** | Adjust Colors, Sharpening, Replace Color, Color Blindness Simulation |
 | **AI Tools** | Remove Background, Upscale, Erase Object, OCR, Blur Faces, Smart Crop, Image Enhancement, Enhance Faces, Colorize, Noise Removal, Red Eye Removal, Restore Photo, Passport Photo, Content-Aware Resize, AI Canvas Expand, PNG Transparency Fixer |
 | **Watermark & Overlay** | Text Watermark, Image Watermark, Text Overlay, Image Composition, Meme Generator |
-| **Utilities** | Image Info, Compare, Find Duplicates, Color Palette, QR Code Generator, Barcode Reader, Image to Base64 |
+| **Utilities** | Image Info, Compare, Find Duplicates, Color Palette, QR Code Generator, Barcode Reader, Image to Base64, HTML to Image |
 | **Layout** | Collage, Stitch, Split, Border & Frame, Beautify |
 | **Format** | SVG to Raster, Vectorize, GIF Tools, PDF to Image |
 

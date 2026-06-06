@@ -1388,6 +1388,38 @@ export const TOOL_SEO: Record<string, ToolSeo> = {
       },
     ],
   },
+  "html-to-image": {
+    searchTitle: "HTML to Image Converter - Render HTML as PNG or JPEG",
+    longDescription:
+      "Convert HTML and CSS to high-quality images. Render any HTML snippet, webpage fragment, or styled markup as a PNG, JPEG, or WebP image at any resolution. Useful for generating social cards, email previews, and dynamic image content from templates.",
+    useCases: [
+      "Generate social media cards and Open Graph images from HTML templates",
+      "Create email preview thumbnails from HTML email markup",
+      "Render styled text and layouts as images for sharing",
+      "Produce dynamic banner images from data-driven HTML templates",
+    ],
+    features: [
+      "Renders full HTML and CSS including web fonts",
+      "Output as PNG, JPEG, or WebP",
+      "Custom viewport width and height",
+      "Transparent background support for PNG output",
+      "Batch convert multiple HTML snippets",
+    ],
+    faqs: [
+      {
+        q: "What HTML and CSS features are supported?",
+        a: "Most modern HTML5 and CSS3 features are supported including flexbox, grid, web fonts, gradients, shadows, and transforms. JavaScript is not executed.",
+      },
+      {
+        q: "Can I set a custom image size?",
+        a: "Yes. Specify the viewport width and height to control the rendered area. The output image matches the viewport dimensions you set.",
+      },
+      {
+        q: "Does it support transparent backgrounds?",
+        a: "Yes, when outputting as PNG. Set no background color on the root element and the transparent areas will be preserved in the output image.",
+      },
+    ],
+  },
   collage: {
     searchTitle: "Photo Collage Maker - Grid Layouts and Templates",
     longDescription:

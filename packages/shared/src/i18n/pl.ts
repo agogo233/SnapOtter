@@ -1731,7 +1731,7 @@ export const pl: TranslationKeys = {
       heading: "Informacje",
       appName: "SnapOtter",
       appDescription:
-        "Samoobsługowy pakiet narzędzi do przetwarzania obrazów z priorytetem prywatności. 51 narzędzi. Zmiana rozmiaru, kompresja, konwersja, znaki wodne i automatyzacja procesów bez wysyłania danych do chmury.",
+        "Samoobsługowy pakiet narzędzi do przetwarzania obrazów z priorytetem prywatności. 53 narzędzi. Zmiana rozmiaru, kompresja, konwersja, znaki wodne i automatyzacja procesów bez wysyłania danych do chmury.",
       versionLabel: "Wersja:",
       linksHeading: "Odnośniki",
       githubLink: "Repozytorium GitHub",
@@ -1778,7 +1778,7 @@ export const pl: TranslationKeys = {
       "Bez ograniczeń. Bez ukrytych limitów.",
       "Działa w pełni offline.",
       "Przetwarzanie wsadowe bez ograniczeń.",
-      "51 narzędzi do obrazów.",
+      "53 narzędzi do obrazów.",
       "15 modeli AI. Na Twoim sprzęcie.",
       "Błyskawiczna szybkość. Oparte na Sharp.",
       "Gotowe do sieci izolowanych.",

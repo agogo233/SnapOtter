@@ -1720,7 +1720,7 @@ export const vi: TranslationKeys = {
       heading: "Giới thiệu",
       appName: "SnapOtter",
       appDescription:
-        "Bộ công cụ xử lý ảnh tự lưu trữ, ưu tiên quyền riêng tư với 51 công cụ. Thay đổi kích thước, nén, chuyển đổi, thêm hình mờ và tự động hóa quy trình xử lý ảnh mà không cần gửi dữ liệu lên đám mây.",
+        "Bộ công cụ xử lý ảnh tự lưu trữ, ưu tiên quyền riêng tư với 53 công cụ. Thay đổi kích thước, nén, chuyển đổi, thêm hình mờ và tự động hóa quy trình xử lý ảnh mà không cần gửi dữ liệu lên đám mây.",
       versionLabel: "Phiên bản:",
       linksHeading: "Liên kết",
       githubLink: "Kho mã nguồn GitHub",
@@ -1766,7 +1766,7 @@ export const vi: TranslationKeys = {
       "Không giới hạn. Không ẩn giấu.",
       "Hoạt động hoàn toàn ngoại tuyến.",
       "Xử lý hàng loạt không giới hạn.",
-      "51 công cụ xử lý ảnh.",
+      "53 công cụ xử lý ảnh.",
       "15 mô hình AI. Chạy trên phần cứng của bạn.",
       "Nhanh như chớp. Xây dựng trên Sharp.",
       "Sẵn sàng cho môi trường cách ly mạng.",

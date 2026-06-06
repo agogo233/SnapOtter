@@ -14,7 +14,7 @@ hero:
       link: /api/rest
 
 features:
-  - title: 52 Image Tools
+  - title: 53 Image Tools
     details: Resize, crop, compress, convert, watermark, color adjust, vectorize, create GIFs, build collages, generate passport photos, find duplicates, and more.
   - title: Local AI
     details: 16 AI-powered tools - remove backgrounds, upscale, enhance images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR), fix fake transparency, expand canvas with AI fill. All on your hardware, no internet required.

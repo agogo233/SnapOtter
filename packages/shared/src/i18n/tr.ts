@@ -1728,7 +1728,7 @@ export const tr: TranslationKeys = {
       heading: "Hakkında",
       appName: "SnapOtter",
       appDescription:
-        "51 araçla gizlilik odaklı, kendi sunucunuzda barındırılan bir görüntü işleme paketi. Buluta veri göndermeden boyutlandırma, sıkıştırma, dönüştürme, filigran ekleme ve görüntü iş akışlarınızı otomatikleştirme.",
+        "53 araçla gizlilik odaklı, kendi sunucunuzda barındırılan bir görüntü işleme paketi. Buluta veri göndermeden boyutlandırma, sıkıştırma, dönüştürme, filigran ekleme ve görüntü iş akışlarınızı otomatikleştirme.",
       versionLabel: "Sürüm:",
       linksHeading: "Bağlantılar",
       githubLink: "GitHub Deposu",
@@ -1775,7 +1775,7 @@ export const tr: TranslationKeys = {
       "Limit yok. Gizli kota yok.",
       "Tamamen çevrimdışı çalışır.",
       "Sınırsız toplu işleme.",
-      "51 görüntü aracı.",
+      "53 görüntü aracı.",
       "16 AI modeli. Sizin donanımınız.",
       "Yıldırım hızında. Sharp ile geliştirildi.",
       "Hava boşluklu ağlar için hazır.",

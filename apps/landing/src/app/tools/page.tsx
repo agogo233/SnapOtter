@@ -9,13 +9,13 @@ import { Navbar } from "@/components/navbar";
 import { ToolIcon } from "@/components/tool-icon";
 
 export const metadata: Metadata = {
-  title: "All 52 Image Processing Tools | SnapOtter",
+  title: "All 53 Image Processing Tools | SnapOtter",
   description:
-    "Browse all 52 self-hosted image tools: resize, compress, convert, remove backgrounds, upscale with AI, add watermarks, generate QR codes, and more. Free, open source, runs on your hardware.",
+    "Browse all 53 self-hosted image tools: resize, compress, convert, remove backgrounds, upscale with AI, add watermarks, generate QR codes, and more. Free, open source, runs on your hardware.",
   alternates: { canonical: "https://snapotter.com/tools" },
   openGraph: {
-    title: "All 52 Image Processing Tools | SnapOtter",
-    description: "Browse all 52 self-hosted image tools. Free, open source, runs on your hardware.",
+    title: "All 53 Image Processing Tools | SnapOtter",
+    description: "Browse all 53 self-hosted image tools. Free, open source, runs on your hardware.",
     url: "https://snapotter.com/tools",
     siteName: "SnapOtter",
     type: "website",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1280,
         height: 640,
-        alt: "SnapOtter - 52 Image Processing Tools",
+        alt: "SnapOtter - 53 Image Processing Tools",
       },
     ],
   },
@@ -67,7 +67,7 @@ export default function ToolsIndexPage() {
     "@type": "CollectionPage",
     name: "SnapOtter Image Processing Tools",
     description:
-      "52 self-hosted image processing tools with local AI. Resize, compress, convert, remove backgrounds, upscale, OCR, and more.",
+      "53 self-hosted image processing tools with local AI. Resize, compress, convert, remove backgrounds, upscale, OCR, and more.",
     url: "https://snapotter.com/tools",
     isPartOf: {
       "@type": "WebSite",

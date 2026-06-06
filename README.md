@@ -18,7 +18,7 @@
 
 ## Key Features
 
-- **50+ image tools:** Resize, crop, compress, convert, watermark, color adjust, beautify screenshots, generate memes, vectorize, create GIFs, find duplicates, generate passport photos, and more. Supports 55+ input formats (including 23 camera RAW formats) and 14 output formats
+- **53 image tools:** Resize, crop, compress, convert, watermark, color adjust, beautify screenshots, generate memes, vectorize, create GIFs, find duplicates, generate passport photos, and more. Supports 55+ input formats (including 23 camera RAW formats) and 14 output formats
 - **Image editor:** Layer-based editor with brushes, shapes, adjustments, filters, curves, and keyboard shortcuts. Runs in your browser, processes on your hardware
 - **Local AI:** Remove backgrounds, upscale images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR), expand canvas, fix transparency. All on your hardware, no internet required
 - **OIDC / SSO:** Login with Google, GitHub, Okta, or any OpenID Connect provider

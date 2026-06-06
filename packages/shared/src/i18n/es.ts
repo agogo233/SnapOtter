@@ -1714,7 +1714,7 @@ export const es: TranslationKeys = {
       heading: "Acerca de",
       appName: "SnapOtter",
       appDescription:
-        "Una suite de procesamiento de imagenes autoalojada y con privacidad como prioridad, con 51 herramientas. Redimensiona, comprime, convierte, agrega marcas de agua y automatiza tus flujos de trabajo de imagenes sin enviar datos a la nube.",
+        "Una suite de procesamiento de imagenes autoalojada y con privacidad como prioridad, con 53 herramientas. Redimensiona, comprime, convierte, agrega marcas de agua y automatiza tus flujos de trabajo de imagenes sin enviar datos a la nube.",
       versionLabel: "Version:",
       linksHeading: "Enlaces",
       githubLink: "Repositorio en GitHub",
@@ -1761,7 +1761,7 @@ export const es: TranslationKeys = {
       "Sin limites. Sin topes ocultos.",
       "Funciona totalmente sin conexion.",
       "Procesamiento por lotes ilimitado.",
-      "51 herramientas de imagen.",
+      "53 herramientas de imagen.",
       "15 modelos AI. Tu hardware.",
       "Ultra rapido. Construido sobre Sharp.",
       "Listo para redes aisladas.",
