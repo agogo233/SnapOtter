@@ -75,6 +75,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
     transparent: true,
   });
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [estimatedSize, setEstimatedSize] = useState<number | null>(null);
   const [copyStatus, setCopyStatus] = useState<"idle" | "copied">("idle");
 
   const aspectRatio = canvasSize.width / canvasSize.height;
@@ -103,7 +104,22 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
       height: canvasSize.height,
     });
     setPreviewUrl(url);
-  }, [canvasSize, settings.format, settings.quality]);
+
+    const pixelRatio = settings.width / canvasSize.width;
+    const fullUrl = stage.toDataURL({
+      pixelRatio,
+      mimeType: previewMime,
+      quality: settings.quality / 100,
+      x: 0,
+      y: 0,
+      width: canvasSize.width,
+      height: canvasSize.height,
+    });
+    fetch(fullUrl)
+      .then((res) => res.blob())
+      .then((blob) => setEstimatedSize(blob.size))
+      .catch(() => setEstimatedSize(null));
+  }, [canvasSize, settings.format, settings.quality, settings.width, settings.height]);
 
   // Generate preview thumbnail on format/transparency change
   useEffect(() => {
@@ -454,6 +470,14 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
                 alt="Export preview"
                 className="max-h-[120px] object-contain rounded"
               />
+              {estimatedSize !== null && (
+                <p className="text-[10px] text-muted-foreground text-center mt-1">
+                  ~
+                  {estimatedSize < 1024 * 1024
+                    ? `${(estimatedSize / 1024).toFixed(0)} KB`
+                    : `${(estimatedSize / (1024 * 1024)).toFixed(1)} MB`}
+                </p>
+              )}
             </div>
           )}
 

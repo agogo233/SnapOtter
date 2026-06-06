@@ -1,5 +1,6 @@
 import { Check, FolderOpen, ImageIcon, Loader2, Search, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "@/contexts/i18n-context";
 import {
   apiListFiles,
   formatHeaders,
@@ -62,6 +63,7 @@ interface FileLibraryModalProps {
 }
 
 export function FileLibraryModal({ open, onClose, onImport }: FileLibraryModalProps) {
+  const { t } = useTranslation();
   const [files, setFiles] = useState<UserFile[]>([]);
   const [loading, setLoading] = useState(false);
   const [importing, setImporting] = useState(false);
@@ -151,7 +153,7 @@ export function FileLibraryModal({ open, onClose, onImport }: FileLibraryModalPr
         {/* Header */}
         <div className="flex items-center gap-3 px-4 py-3 border-b border-border shrink-0">
           <FolderOpen className="h-5 w-5 text-primary" />
-          <h2 className="text-sm font-semibold text-foreground flex-1">Import from Library</h2>
+          <h2 className="text-sm font-semibold text-foreground flex-1">{t.automate.importFromLibrary}</h2>
           <button
             type="button"
             onClick={onClose}

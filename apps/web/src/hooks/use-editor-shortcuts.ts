@@ -394,6 +394,7 @@ export function useEditorShortcuts(callbacks?: {
   useHotkeys(
     "mod+a",
     (e) => {
+      if (isInputFocused()) return;
       e.preventDefault();
       const state = useEditorStore.getState();
       const allIds = state.objects.map((o) => o.id);
@@ -406,6 +407,7 @@ export function useEditorShortcuts(callbacks?: {
   useHotkeys(
     "mod+d",
     (e) => {
+      if (isInputFocused()) return;
       e.preventDefault();
       useEditorStore.getState().setSelectedObjects([]);
       useEditorStore.getState().setSelection(null);
@@ -496,6 +498,7 @@ export function useEditorShortcuts(callbacks?: {
   useHotkeys(
     "mod+t",
     (e) => {
+      if (isInputFocused()) return;
       e.preventDefault();
       useEditorStore.getState().setTool("transform");
     },
@@ -506,6 +509,7 @@ export function useEditorShortcuts(callbacks?: {
   useHotkeys(
     "mod+j",
     (e) => {
+      if (isInputFocused()) return;
       e.preventDefault();
       const state = useEditorStore.getState();
       state.duplicateLayer(state.activeLayerId);
@@ -517,6 +521,7 @@ export function useEditorShortcuts(callbacks?: {
   useHotkeys(
     "mod+shift+n",
     (e) => {
+      if (isInputFocused()) return;
       e.preventDefault();
       useEditorStore.getState().addLayer();
     },
