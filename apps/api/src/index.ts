@@ -144,12 +144,16 @@ app.addContentTypeParser("application/json", { parseAs: "string" }, (_request, b
 
 app.setErrorHandler((error: Error & { statusCode?: number }, request, reply) => {
   const statusCode = error.statusCode ?? 500;
-  request.log.error(
-    { err: error, url: request.url, method: request.method },
-    "Unhandled request error",
-  );
-  if (statusCode >= 500) {
+  if (statusCode === 429) {
+    request.log.warn({ url: request.url, method: request.method }, "Rate limit exceeded");
+  } else if (statusCode >= 500) {
+    request.log.error(
+      { err: error, url: request.url, method: request.method },
+      "Unhandled request error",
+    );
     captureException(error, request);
+  } else {
+    request.log.warn({ err: error, url: request.url, method: request.method }, "Request error");
   }
   reply.status(statusCode).send({
     error: statusCode >= 500 ? "Internal server error" : error.message,
@@ -178,9 +182,8 @@ app.addHook("onSend", async (_request, reply) => {
 });
 
 // Always register rate-limit plugin so per-route limits (login brute-force protection) work.
-// RATE_LIMIT_PER_MIN=0 means no global limit (per-route limits still apply).
 await app.register(rateLimit, {
-  max: env.RATE_LIMIT_PER_MIN > 0 ? env.RATE_LIMIT_PER_MIN : 50_000,
+  max: env.RATE_LIMIT_PER_MIN,
   timeWindow: "1 minute",
   allowList: (request) => !request.url.startsWith("/api/"),
 });
