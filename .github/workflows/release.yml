@@ -254,7 +254,7 @@ jobs:
     needs: [release, docker]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: read
       security-events: write
     steps:
@@ -308,6 +308,25 @@ jobs:
         if: always()
         with:
           sarif_file: "trivy-results.sarif"
+
+      - name: Run Trivy (JSON report)
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: "ghcr.io/snapotter-hq/snapotter@sha256:${{ steps.digest.outputs.sha }}"
+          format: "json"
+          output: "snapotter-v${{ needs.release.outputs.new_version }}-trivy.json"
+          ignore-unfixed: true
+
+      - name: Upload Trivy report to GitHub Release
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.new_version }}
+        run: |
+          gh release upload "v${VERSION}" \
+            "snapotter-v${VERSION}-trivy.json" \
+            --clobber --repo snapotter-hq/SnapOtter
 
   sbom:
     name: Generate SBOM
