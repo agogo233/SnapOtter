@@ -254,7 +254,7 @@ jobs:
     needs: [release, docker]
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: read
       security-events: write
     steps:
@@ -308,6 +308,73 @@ jobs:
         if: always()
         with:
           sarif_file: "trivy-results.sarif"
+
+      - name: Run Trivy (JSON report)
+        if: always()
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: "ghcr.io/snapotter-hq/snapotter@sha256:${{ steps.digest.outputs.sha }}"
+          format: "json"
+          output: "snapotter-v${{ needs.release.outputs.new_version }}-trivy.json"
+          ignore-unfixed: true
+
+      - name: Upload Trivy report to GitHub Release
+        if: always()
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.new_version }}
+        run: |
+          gh release upload "v${VERSION}" \
+            "snapotter-v${VERSION}-trivy.json" \
+            --clobber --repo snapotter-hq/SnapOtter
+
+  sbom:
+    name: Generate SBOM
+    needs: [release, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: read
+    steps:
+      - name: Download amd64 digest
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: digests-linux-amd64
+          path: /tmp/digests
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Get digest
+        id: digest
+        run: |
+          sha=$(ls /tmp/digests | head -1)
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Install Syft
+        uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
+
+      - name: Generate SBOMs
+        env:
+          IMAGE: "ghcr.io/snapotter-hq/snapotter@sha256:${{ steps.digest.outputs.sha }}"
+          VERSION: ${{ needs.release.outputs.new_version }}
+        run: |
+          syft scan "$IMAGE" -o "cyclonedx-json=snapotter-v${VERSION}-sbom.cdx.json"
+          syft scan "$IMAGE" -o "spdx-json=snapotter-v${VERSION}-sbom.spdx.json"
+
+      - name: Upload SBOMs to GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.release.outputs.new_version }}
+        run: |
+          gh release upload "v${VERSION}" \
+            "snapotter-v${VERSION}-sbom.cdx.json" \
+            "snapotter-v${VERSION}-sbom.spdx.json" \
+            --clobber --repo snapotter-hq/SnapOtter
 
   manifest:
     name: Create Multi-Arch Manifests
