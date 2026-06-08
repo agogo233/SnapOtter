@@ -48,7 +48,7 @@ docs/*
 PRD.md
 
 # Ad-hoc test screenshots and reports
-tests/e2e/screenshots/qa/**/*.png
+tests/e2e/screenshots/qa/
 test-*.png
 !tests/fixtures/*.png
 stirling-pdf-*.png

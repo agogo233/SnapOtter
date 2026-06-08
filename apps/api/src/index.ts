@@ -184,8 +184,9 @@ app.addHook("onSend", async (_request, reply) => {
 });
 
 // Always register rate-limit plugin so per-route limits (login brute-force protection) work.
+// max=0 means "unlimited" (50k/min) -- @fastify/rate-limit treats literal 0 as "block all".
 await app.register(rateLimit, {
-  max: env.RATE_LIMIT_PER_MIN,
+  max: env.RATE_LIMIT_PER_MIN > 0 ? env.RATE_LIMIT_PER_MIN : 50_000,
   timeWindow: "1 minute",
   allowList: (request) => !request.url.startsWith("/api/"),
 });

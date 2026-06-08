@@ -194,7 +194,7 @@ RUN for i in 1 2 3; do apt-get -o Acquire::Retries=3 update && break || sleep $(
     tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu tesseract-ocr-fra tesseract-ocr-spa \
     tesseract-ocr-chi-sim tesseract-ocr-jpn tesseract-ocr-kor \
     gcc g++ \
-    libgl1 libglib2.0-0 \
+    libgl1 libglib2.0-0 libgles2 \
     libegl1 libwayland-egl1 libwayland-client0 libwayland-cursor0 \
     libxkbcommon-x11-0 libxkbcommon0 libxcursor1 \
     && if apt-cache show libmagickcore-6.q16-7-extra >/dev/null 2>&1; then \
@@ -225,9 +225,11 @@ RUN POLICY_FILE=$(find /etc/ImageMagick* -name policy.xml 2>/dev/null | head -1)
 # Caire binary (content-aware seam carving)
 COPY --from=caire-builder /tmp/caire /usr/local/bin/caire
 
-# libheif tools (heif-convert, heif-dec, heif-enc) built from source
+# libheif tools (heif-convert, heif-dec, heif-enc) built from source.
+# LD_LIBRARY_PATH ensures our custom 1.21.2 libs take precedence over distro libheif1.
 COPY --from=libheif-builder /opt/libheif/bin/ /usr/local/bin/
 COPY --from=libheif-builder /opt/libheif/lib/ /usr/local/lib/
+ENV LD_LIBRARY_PATH=/usr/local/lib
 RUN ldconfig
 
 # Python venv - Base packages (rarely change, cached aggressively)
@@ -235,6 +237,7 @@ RUN ldconfig
 RUN --mount=type=cache,target=/root/.cache/pip \
     python3 -m venv /opt/venv && \
     /opt/venv/bin/pip install --upgrade "pip==25.1.1" && \
+    /opt/venv/bin/pip install wheel setuptools && \
     /opt/venv/bin/pip install \
         Pillow==11.1.0 \
         numpy==1.26.4 \
