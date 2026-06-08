@@ -15,17 +15,17 @@ hero:
 
 features:
   - title: 53 Image Tools
-    details: Resize, crop, compress, convert, watermark, adjust colors, vectorize, create GIFs, build collages, and more.
+    details: Resize, crop, compress, convert, watermark, color adjust, vectorize, create GIFs, build collages, generate passport photos, find duplicates, and more.
   - title: Local AI
-    details: "16 ML tools: background removal, upscaling, enhancement, colorization, OCR, object erasure. Fully local."
+    details: 16 AI-powered tools - remove backgrounds, upscale, enhance images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR), fix fake transparency, expand canvas with AI fill. All on your hardware, no internet required.
   - title: Pipelines
-    details: Chain tools into reusable workflows. Batch process unlimited images at once.
+    details: Chain tools into reusable workflows with unlimited steps. Batch process unlimited images at once with a single request.
   - title: REST API
-    details: Every tool via API with key auth. Interactive docs at /api/docs plus /llms.txt for AI agents.
+    details: Every tool available via API with API key auth. Interactive docs at /api/docs, plus /llms.txt and /llms-full.txt for AI agents.
   - title: File Library
-    details: Persistent storage with full version history. Trace every step from original to output.
+    details: Persistent file storage with full version history. Every processing step is tracked so you can trace the full tool chain from original to final output.
   - title: Teams & Access Control
-    details: "Multi-user with admin/user roles, per-resource permissions, and audit logging."
+    details: Multi-user support with admin/user roles, team grouping, per-resource permissions, and audit logging for all sensitive actions.
 ---
 
 <div class="quick-start-banner">

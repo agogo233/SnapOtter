@@ -1,8 +1,7 @@
-/* Homepage layout: order sections and remove VitePress default 128px gap */
+/* Move the docker command banner between hero and features */
 .VPHome {
   display: flex;
   flex-direction: column;
-  margin-bottom: 0 !important;
 }
 
 .VPHome > .VPHomeHero {
@@ -17,48 +16,10 @@
   order: 2;
 }
 
-/* Hero: center content, tighten padding */
-.VPHero {
-  padding-top: calc(var(--vp-nav-height) + 20px) !important;
-  padding-bottom: 10px !important;
-}
-
-.VPHero .main {
-  display: flex !important;
-  flex-direction: column !important;
-  align-items: center !important;
-  text-align: center !important;
-  max-width: 100% !important;
-}
-
-.VPHero .main .name.clip {
-  font-size: 44px !important;
-  line-height: 1.1 !important;
-  max-width: none !important;
-}
-
-.VPHero .main .text {
-  font-size: 34px !important;
-  line-height: 1.15 !important;
-  max-width: none !important;
-}
-
-.VPHero .main .tagline {
-  font-size: 16px !important;
-  line-height: 1.5 !important;
-  padding-top: 6px !important;
-  max-width: 520px !important;
-}
-
-.VPHero .main .actions {
-  padding-top: 14px !important;
-  justify-content: center !important;
-}
-
-/* Quick start command banner */
+/* Quick start command banner on homepage */
 .quick-start-banner {
   max-width: 960px;
-  margin: 0 auto 12px;
+  margin: 0 auto 48px;
   padding: 0 24px;
   text-align: center;
 }
@@ -66,66 +27,6 @@
 .quick-start-banner div[class*="language-"] {
   margin: 0;
   border-radius: 10px;
-}
-
-/* Features: 3-column grid, no extra section padding */
-.VPHomeFeatures {
-  padding-top: 0 !important;
-  padding-bottom: 0 !important;
-}
-
-.VPFeatures .container {
-  max-width: 1152px !important;
-}
-
-.VPFeatures .items {
-  display: grid !important;
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 12px !important;
-}
-
-.VPFeatures .item.grid-6 {
-  width: 100% !important;
-  padding: 0 !important;
-}
-
-.VPFeature {
-  padding: 20px !important;
-  height: 100% !important;
-}
-
-.VPFeature .title {
-  font-size: 14px !important;
-  font-weight: 600 !important;
-}
-
-.VPFeature .details {
-  font-size: 13px !important;
-  line-height: 1.5 !important;
-}
-
-/* Footer */
-.VPFooter {
-  padding: 12px 24px !important;
-}
-
-.VPFooter .message,
-.VPFooter .copyright {
-  font-size: 12px !important;
-}
-
-@media (max-width: 768px) {
-  .VPFeatures .items {
-    grid-template-columns: 1fr !important;
-  }
-
-  .VPHero .main .name.clip {
-    font-size: 32px !important;
-  }
-
-  .VPHero .main .text {
-    font-size: 28px !important;
-  }
 }
 
 /* Hide the three-dots extra menu - its contents are now in the navbar directly */
