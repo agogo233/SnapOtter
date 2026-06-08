@@ -1,4 +1,4 @@
-/* Move the docker command banner between hero and features */
+/* Homepage layout: order sections and remove VitePress default 128px gap */
 .VPHome {
   display: flex;
   flex-direction: column;
@@ -17,48 +17,48 @@
   order: 2;
 }
 
-/* Compact hero: reduce padding so entire page fits in one viewport */
+/* Hero: center content, tighten padding */
 .VPHero {
-  padding-top: calc(var(--vp-nav-height) + 16px) !important;
-  padding-bottom: 8px !important;
+  padding-top: calc(var(--vp-nav-height) + 20px) !important;
+  padding-bottom: 10px !important;
 }
 
 .VPHero .main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  max-width: 100%;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  max-width: 100% !important;
 }
 
 .VPHero .main .name.clip {
-  font-size: 32px;
-  line-height: 1.15;
-  max-width: none;
+  font-size: 44px !important;
+  line-height: 1.1 !important;
+  max-width: none !important;
 }
 
 .VPHero .main .text {
-  font-size: 32px;
-  line-height: 1.15;
-  max-width: none;
+  font-size: 34px !important;
+  line-height: 1.15 !important;
+  max-width: none !important;
 }
 
 .VPHero .main .tagline {
-  font-size: 15px;
-  line-height: 1.45;
-  padding-top: 4px;
-  max-width: 520px;
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+  padding-top: 6px !important;
+  max-width: 520px !important;
 }
 
 .VPHero .main .actions {
-  padding-top: 12px;
-  justify-content: center;
+  padding-top: 14px !important;
+  justify-content: center !important;
 }
 
-/* Quick start command banner on homepage */
+/* Quick start command banner */
 .quick-start-banner {
   max-width: 960px;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
   padding: 0 24px;
   text-align: center;
 }
@@ -68,49 +68,50 @@
   border-radius: 10px;
 }
 
-/* Compact 3-column feature grid */
+/* Features: 3-column grid, no extra section padding */
 .VPHomeFeatures {
   padding-top: 0 !important;
   padding-bottom: 0 !important;
 }
 
 .VPFeatures .container {
-  max-width: 1100px;
+  max-width: 1152px !important;
 }
 
 .VPFeatures .items {
   display: grid !important;
   grid-template-columns: repeat(3, 1fr) !important;
-  gap: 10px !important;
+  gap: 12px !important;
 }
 
 .VPFeatures .item.grid-6 {
-  width: 100%;
-  padding: 0;
+  width: 100% !important;
+  padding: 0 !important;
 }
 
 .VPFeature {
-  padding: 16px 18px;
-  height: 100%;
+  padding: 20px !important;
+  height: 100% !important;
 }
 
 .VPFeature .title {
-  font-size: 13.5px;
-  line-height: 1.3;
+  font-size: 14px !important;
+  font-weight: 600 !important;
 }
 
 .VPFeature .details {
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
 }
 
+/* Footer */
 .VPFooter {
-  padding: 10px 24px !important;
+  padding: 12px 24px !important;
 }
 
 .VPFooter .message,
 .VPFooter .copyright {
-  font-size: 12px;
+  font-size: 12px !important;
 }
 
 @media (max-width: 768px) {
@@ -119,11 +120,11 @@
   }
 
   .VPHero .main .name.clip {
-    font-size: 24px;
+    font-size: 32px !important;
   }
 
   .VPHero .main .text {
-    font-size: 26px;
+    font-size: 28px !important;
   }
 }
 

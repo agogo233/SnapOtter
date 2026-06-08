@@ -17,7 +17,7 @@ features:
   - title: 53 Image Tools
     details: Resize, crop, compress, convert, watermark, color adjust, vectorize, create GIFs, build collages, generate passport photos, find duplicates, and more.
   - title: Local AI
-    details: 16 AI-powered tools - remove backgrounds, upscale, enhance images, restore and colorize old photos, erase objects, blur faces, enhance faces, extract text (OCR), fix fake transparency, expand canvas with AI fill. All on your hardware, no internet required.
+    details: 16 AI-powered tools including background removal, upscaling, enhancement, colorization, object erasure, face blur, OCR, and more. Runs entirely on your hardware.
   - title: Pipelines
     details: Chain tools into reusable workflows with unlimited steps. Batch process unlimited images at once with a single request.
   - title: REST API
