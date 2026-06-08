@@ -47,7 +47,7 @@ RUN --mount=type=cache,id=turbo-cache,target=/app/.turbo \
 # on Apple Silicon when cross-compiling for linux/amd64.
 # caire imports gioui.org/app which requires CGO on Linux, so we use a
 # proper C cross-compiler instead of CGO_ENABLED=0.
-FROM --platform=$BUILDPLATFORM golang:1.24-bookworm@sha256:1a6d4452c65dea36aac2e2d606b01b4a029ec90cc1ae53890540ce6173ea77ac AS caire-builder
+FROM --platform=$BUILDPLATFORM golang:1.25-bookworm@sha256:a1ae6b6c564f3e0072d70081036827a2705dbcf6b38aaa6d97f5de97fe9abdb4 AS caire-builder
 
 ARG TARGETOS=linux
 ARG TARGETARCH
@@ -239,7 +239,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     /opt/venv/bin/pip install --upgrade "pip==25.1.1" && \
     /opt/venv/bin/pip install wheel setuptools && \
     /opt/venv/bin/pip install \
-        Pillow==12.1.1 \
+        Pillow==12.2.0 \
         numpy==1.26.4 \
         opencv-python-headless==4.10.0.84
 
