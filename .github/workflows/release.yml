@@ -130,7 +130,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ needs.release.outputs.new_version }}
-        run: gh release upload "v${VERSION}" "/tmp/${archive_name}" "/tmp/${archive_name}.sha256" --clobber
+        run: gh release upload "v${VERSION}" "/tmp/${archive_name}" "/tmp/${archive_name}.sha256" --clobber --repo snapotter-hq/SnapOtter
 
   docker:
     name: Build (${{ matrix.platform }})
