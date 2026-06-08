@@ -29,7 +29,7 @@ export function TypingCursor() {
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(advance, 3000);
+    const timer = setInterval(advance, 5000);
     return () => clearInterval(timer);
   }, [advance]);
 
