@@ -11,11 +11,15 @@ import {
   unlinkSync,
   writeFileSync,
 } from "node:fs";
-import { join } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { FeatureBundleState, FeatureStatus } from "@snapotter/shared";
 import { FEATURE_BUNDLES, TOOL_BUNDLE_MAP } from "@snapotter/shared";
 
 // ── Paths ───────────────────────────────────────────────────────────────
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const PROJECT_ROOT = resolve(__dirname, "../../../..");
 
 const DATA_DIR = process.env.DATA_DIR || "/data";
 const AI_DIR = join(DATA_DIR, "ai");
@@ -23,7 +27,8 @@ const MODELS_DIR = join(AI_DIR, "models");
 const INSTALLED_PATH = join(AI_DIR, "installed.json");
 const INSTALLED_TMP_PATH = `${INSTALLED_PATH}.tmp`;
 const LOCK_PATH = join(AI_DIR, "install.lock");
-const MANIFEST_PATH = process.env.FEATURE_MANIFEST_PATH || "/app/docker/feature-manifest.json";
+const MANIFEST_PATH =
+  process.env.FEATURE_MANIFEST_PATH || join(PROJECT_ROOT, "docker/feature-manifest.json");
 
 export function getAiDir(): string {
   return AI_DIR;
@@ -35,6 +40,10 @@ export function getModelsDir(): string {
 
 export function getManifestPath(): string {
   return MANIFEST_PATH;
+}
+
+export function getInstallScriptPath(): string {
+  return join(PROJECT_ROOT, "packages/ai/python/install_feature.py");
 }
 
 // ── Directory setup ─────────────────────────────────────────────────────
