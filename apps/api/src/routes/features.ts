@@ -27,6 +27,7 @@ import {
   acquireInstallLock,
   getAiDir,
   getFeatureStates,
+  getInstallScriptPath,
   getManifestPath,
   getModelsDir,
   invalidateCache,
@@ -35,6 +36,7 @@ import {
   markUninstalled,
   releaseInstallLock,
   setInstallProgress,
+  verifyBundleModels,
 } from "../lib/feature-status.js";
 import { requirePermission } from "../permissions.js";
 import { requireAuth } from "../plugins/auth.js";
@@ -137,7 +139,11 @@ export async function registerFeatureRoutes(app: FastifyInstance): Promise<void>
       }
 
       if (isFeatureInstalled(bundleId)) {
-        return reply.status(409).send({ error: `Bundle "${bundleId}" is already installed` });
+        const modelError = verifyBundleModels(bundleId);
+        if (!modelError) {
+          return reply.status(409).send({ error: `Bundle "${bundleId}" is already installed` });
+        }
+        markUninstalled(bundleId);
       }
 
       if (!acquireInstallLock(bundleId)) {
@@ -145,7 +151,7 @@ export async function registerFeatureRoutes(app: FastifyInstance): Promise<void>
       }
 
       const jobId = crypto.randomUUID();
-      const scriptPath = "/app/packages/ai/python/install_feature.py";
+      const scriptPath = getInstallScriptPath();
       const manifestPath = getManifestPath();
       const modelsDir = getModelsDir();
 

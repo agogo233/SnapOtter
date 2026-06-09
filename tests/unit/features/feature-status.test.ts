@@ -525,6 +525,41 @@ describe("Composite state - getFeatureStates", () => {
   });
 });
 
+describe("auto-repair state transition (install endpoint logic)", () => {
+  it("markUninstalled clears stale entry when models are broken, allowing reinstall", () => {
+    mod.markInstalled("background-removal", "1.0.0", ["u2net.onnx"]);
+    writeTestManifest({
+      "background-removal": {
+        models: [{ id: "u2net", path: "u2net.onnx" }],
+      },
+    });
+    mod.invalidateCache();
+
+    expect(mod.isFeatureInstalled("background-removal")).toBe(true);
+    const modelError = mod.verifyBundleModels("background-removal");
+    expect(modelError).not.toBeNull();
+
+    mod.markUninstalled("background-removal");
+    expect(mod.isFeatureInstalled("background-removal")).toBe(false);
+  });
+
+  it("does not clear entry when models are healthy", () => {
+    mod.markInstalled("background-removal", "1.0.0", ["u2net.onnx"]);
+    writeTestManifest({
+      "background-removal": {
+        models: [{ id: "u2net", path: "u2net.onnx" }],
+      },
+    });
+    writeFileSync(join(modelsDir, "u2net.onnx"), Buffer.alloc(1024));
+    mod.invalidateCache();
+
+    expect(mod.isFeatureInstalled("background-removal")).toBe(true);
+    const modelError = mod.verifyBundleModels("background-removal");
+    expect(modelError).toBeNull();
+    expect(mod.isFeatureInstalled("background-removal")).toBe(true);
+  });
+});
+
 describe("verifyBundleModels", () => {
   it("returns null when all models exist and meet minSize", () => {
     writeTestManifest({
