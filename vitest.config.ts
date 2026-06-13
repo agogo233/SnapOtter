@@ -27,6 +27,7 @@ export default defineConfig({
         maxForks: process.env.CI ? 4 : Math.max(2, Math.floor(os.availableParallelism() / 2)),
       },
     },
+    globalSetup: ["tests/global-setup.ts"],
     setupFiles: ["tests/setup/per-fork-env.ts"],
     exclude: [
       "tests/e2e/**",
@@ -45,7 +46,7 @@ export default defineConfig({
       AUTH_ENABLED: "true",
       DEFAULT_USERNAME: "admin",
       DEFAULT_PASSWORD: "Adminpass1",
-      // DB_PATH and WORKSPACE_PATH are set per-fork in tests/setup/per-fork-env.ts
+      // DATABASE_URL and WORKSPACE_PATH are set per-fork in tests/setup/per-fork-env.ts
       MAX_UPLOAD_SIZE_MB: "10",
       MAX_BATCH_SIZE: "10",
       RATE_LIMIT_PER_MIN: "10000",
@@ -93,6 +94,7 @@ export default defineConfig({
       "@/components/navbar": path.resolve(__dirname, "apps/landing/src/components/navbar"),
       "@": path.resolve(__dirname, "apps/web/src"),
       "framer-motion": path.join(landingNodeModules, "framer-motion"),
+      "@snapotter/enterprise": path.resolve(__dirname, "packages/enterprise/src/index.ts"),
       "@snapotter/image-engine": path.resolve(__dirname, "packages/image-engine/src/index.ts"),
       "@snapotter/shared/i18n": path.resolve(__dirname, "packages/shared/src/i18n"),
       "@snapotter/shared": path.resolve(__dirname, "packages/shared/src/index.ts"),
@@ -105,6 +107,7 @@ export default defineConfig({
       "@fastify/swagger": path.join(apiNodeModules, "@fastify/swagger"),
       "@fastify/swagger-ui": path.join(apiNodeModules, "@fastify/swagger-ui"),
       "better-sqlite3": path.join(apiNodeModules, "better-sqlite3"),
+      pg: path.join(apiNodeModules, "pg"),
       "drizzle-orm": path.join(apiNodeModules, "drizzle-orm"),
       archiver: path.join(apiNodeModules, "archiver"),
       "p-queue": path.join(apiNodeModules, "p-queue"),
@@ -118,7 +121,10 @@ export default defineConfig({
       "opentype.js": path.join(apiNodeModules, "opentype.js"),
       "posthog-node": path.join(apiNodeModules, "posthog-node"),
       "@sentry/node": path.join(apiNodeModules, "@sentry/node"),
-      "@aws-sdk/client-s3": path.join(apiNodeModules, "@aws-sdk/client-s3"),
+      "@aws-sdk/client-s3": path.join(
+        path.resolve(__dirname, "packages/enterprise/node_modules"),
+        "@aws-sdk/client-s3",
+      ),
       react: path.join(webNodeModules, "react"),
       "react-dom": path.join(webNodeModules, "react-dom"),
       "react-router-dom": path.join(webNodeModules, "react-router-dom"),

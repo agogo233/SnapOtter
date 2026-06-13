@@ -47,18 +47,43 @@ const listeners = new Map<string, Set<(data: JobProgress | SingleFileProgress) =
 
 // ── DB persistence helpers ──────────────────────────────────────────
 
-function persistJobProgress(progress: JobProgress): void {
+/**
+ * Per-job serialization queues.  Fire-and-forget persist calls for the same
+ * jobId must run sequentially so that the final "completed" write is never
+ * overwritten by a late-arriving "processing" write.  Without this, the
+ * async Postgres round-trips can re-order concurrent writes.
+ */
+// TODO(phase-2): delete when progress persistence moves to BullMQ job events.
+const persistQueues = new Map<string, Promise<void>>();
+
+/** Await any pending persist writes for a specific job (used by tests). */
+export async function drainPersistQueue(jobId: string): Promise<void> {
+  const pending = persistQueues.get(jobId);
+  if (pending) await pending;
+}
+
+function enqueuePersist(jobId: string, fn: () => Promise<void>): void {
+  const prev = persistQueues.get(jobId) ?? Promise.resolve();
+  const next = prev.then(fn, fn); // run even if prior rejected
+  persistQueues.set(jobId, next);
+  // Clean up the map entry once the queue drains
+  next.then(() => {
+    if (persistQueues.get(jobId) === next) persistQueues.delete(jobId);
+  });
+}
+
+async function persistJobProgress(progress: JobProgress): Promise<void> {
   try {
     const completionRatio =
       progress.totalFiles > 0 ? progress.completedFiles / progress.totalFiles : 0;
-    const existing = db
+    const [existing] = await db
       .select({ id: schema.jobs.id })
       .from(schema.jobs)
-      .where(eq(schema.jobs.id, progress.jobId))
-      .get();
+      .where(eq(schema.jobs.id, progress.jobId));
 
     if (existing) {
-      db.update(schema.jobs)
+      await db
+        .update(schema.jobs)
         .set({
           status: progress.status,
           progress: completionRatio,
@@ -66,26 +91,25 @@ function persistJobProgress(progress: JobProgress): void {
           completedAt:
             progress.status === "completed" || progress.status === "failed" ? new Date() : null,
         })
-        .where(eq(schema.jobs.id, progress.jobId))
-        .run();
+        .where(eq(schema.jobs.id, progress.jobId));
     } else {
-      db.insert(schema.jobs)
-        .values({
-          id: progress.jobId,
-          type: "batch",
-          status: progress.status,
-          progress: completionRatio,
-          inputFiles: JSON.stringify({ totalFiles: progress.totalFiles }),
-          error: progress.errors.length > 0 ? JSON.stringify(progress.errors) : null,
-        })
-        .run();
+      await db.insert(schema.jobs).values({
+        id: progress.jobId,
+        type: "batch",
+        status: progress.status,
+        progress: completionRatio,
+        inputFiles: { totalFiles: progress.totalFiles },
+        error: progress.errors.length > 0 ? JSON.stringify(progress.errors) : null,
+      });
     }
   } catch {
     // DB persistence is best-effort; don't break real-time SSE
   }
 }
 
-function persistSingleFileProgress(progress: Omit<SingleFileProgress, "type">): void {
+async function persistSingleFileProgress(
+  progress: Omit<SingleFileProgress, "type">,
+): Promise<void> {
   try {
     const status =
       progress.phase === "complete"
@@ -93,33 +117,30 @@ function persistSingleFileProgress(progress: Omit<SingleFileProgress, "type">): 
         : progress.phase === "failed"
           ? "failed"
           : "processing";
-    const existing = db
+    const [existing] = await db
       .select({ id: schema.jobs.id })
       .from(schema.jobs)
-      .where(eq(schema.jobs.id, progress.jobId))
-      .get();
+      .where(eq(schema.jobs.id, progress.jobId));
 
     if (existing) {
-      db.update(schema.jobs)
+      await db
+        .update(schema.jobs)
         .set({
           status,
           progress: progress.percent / 100,
           error: progress.error ?? null,
           completedAt: status === "completed" || status === "failed" ? new Date() : null,
         })
-        .where(eq(schema.jobs.id, progress.jobId))
-        .run();
+        .where(eq(schema.jobs.id, progress.jobId));
     } else {
-      db.insert(schema.jobs)
-        .values({
-          id: progress.jobId,
-          type: "single",
-          status,
-          progress: progress.percent / 100,
-          inputFiles: "[]",
-          error: progress.error ?? null,
-        })
-        .run();
+      await db.insert(schema.jobs).values({
+        id: progress.jobId,
+        type: "single",
+        status,
+        progress: progress.percent / 100,
+        inputFiles: [],
+        error: progress.error ?? null,
+      });
     }
   } catch {
     // Best-effort
@@ -130,27 +151,25 @@ function persistSingleFileProgress(progress: Omit<SingleFileProgress, "type">): 
  * Mark any jobs left in "processing" or "queued" state as failed.
  * Called once at startup to recover from unclean shutdown.
  */
-export function recoverStaleJobs(): void {
+export async function recoverStaleJobs(): Promise<void> {
   try {
-    const result = db
+    const result = await db
       .update(schema.jobs)
       .set({
         status: "failed",
         error: "Server restarted while job was in progress",
         completedAt: new Date(),
       })
-      .where(eq(schema.jobs.status, "processing"))
-      .run();
-    const result2 = db
+      .where(eq(schema.jobs.status, "processing"));
+    const result2 = await db
       .update(schema.jobs)
       .set({
         status: "failed",
         error: "Server restarted while job was queued",
         completedAt: new Date(),
       })
-      .where(eq(schema.jobs.status, "queued"))
-      .run();
-    const total = result.changes + result2.changes;
+      .where(eq(schema.jobs.status, "queued"));
+    const total = (result.rowCount ?? 0) + (result2.rowCount ?? 0);
     if (total > 0) {
       console.log(`Recovered ${total} stale jobs from previous run`);
     }
@@ -166,7 +185,7 @@ export function recoverStaleJobs(): void {
  */
 export function updateJobProgress(progress: JobProgress): void {
   jobProgressStore.set(progress.jobId, progress);
-  persistJobProgress(progress);
+  enqueuePersist(progress.jobId, () => persistJobProgress(progress));
   // Notify all SSE listeners (add type: "batch" so the frontend can distinguish
   // batch events from single-file events in the shared SSE stream)
   const subs = listeners.get(progress.jobId);
@@ -187,7 +206,7 @@ export function updateJobProgress(progress: JobProgress): void {
 
 export function updateSingleFileProgress(progress: Omit<SingleFileProgress, "type">): void {
   const event: SingleFileProgress = { ...progress, type: "single" };
-  persistSingleFileProgress(progress);
+  enqueuePersist(progress.jobId, () => persistSingleFileProgress(progress));
 
   if (progress.phase === "complete" || progress.phase === "failed") {
     if (singleFileCompletions.size >= 10_000) {

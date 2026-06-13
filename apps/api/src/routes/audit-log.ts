@@ -18,7 +18,7 @@ export async function auditLogRoutes(app: FastifyInstance): Promise<void> {
       }>,
       reply: FastifyReply,
     ) => {
-      const user = requirePermission("audit:read")(request, reply);
+      const user = await requirePermission("audit:read")(request, reply);
       if (!user) return;
 
       const page = Math.max(1, parseInt(request.query.page ?? "1", 10) || 1);
@@ -45,20 +45,18 @@ export async function auditLogRoutes(app: FastifyInstance): Promise<void> {
 
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
-      const entries = db
+      const entries = await db
         .select()
         .from(schema.auditLog)
         .where(where)
         .orderBy(desc(schema.auditLog.createdAt))
         .limit(limit)
-        .offset(offset)
-        .all();
+        .offset(offset);
 
-      const countResult = db
-        .select({ count: sql<number>`count(*)` })
+      const [countResult] = await db
+        .select({ count: sql<number>`count(*)::int` })
         .from(schema.auditLog)
-        .where(where)
-        .get();
+        .where(where);
 
       return reply.send({
         entries: entries.map((e) => ({
@@ -68,7 +66,7 @@ export async function auditLogRoutes(app: FastifyInstance): Promise<void> {
           action: e.action,
           targetType: e.targetType,
           targetId: e.targetId,
-          details: e.details ? JSON.parse(e.details) : null,
+          details: e.details ?? null,
           ipAddress: e.ipAddress,
           createdAt: e.createdAt.toISOString(),
         })),

@@ -4,10 +4,10 @@ import cors from "@fastify/cors";
 import rateLimit from "@fastify/rate-limit";
 import { getDispatcherStatus, initDispatcher, isGpuAvailable } from "@snapotter/ai";
 import { APP_VERSION } from "@snapotter/shared";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import Fastify from "fastify";
 import { env } from "./config.js";
-import { db, schema } from "./db/index.js";
+import { closeDb, db, schema } from "./db/index.js";
 import { runMigrations } from "./db/migrate.js";
 import { captureException, initAnalytics, shutdownAnalytics } from "./lib/analytics.js";
 import { startCleanupCron } from "./lib/cleanup.js";
@@ -19,6 +19,7 @@ import {
   authMiddleware,
   authRoutes,
   ensureAnonymousUser,
+  ensureBuiltinRoles,
   ensureDefaultAdmin,
 } from "./plugins/auth.js";
 import { oidcRoutes } from "./plugins/oidc.js";
@@ -43,55 +44,86 @@ import { registerToolRoutes } from "./routes/tools/index.js";
 import { userFileRoutes } from "./routes/user-files.js";
 
 // Run before anything else
-runMigrations();
+try {
+  await runMigrations();
+} catch (err) {
+  const safeUrl = env.DATABASE_URL.replace(/:\/\/[^@]*@/, "://***@");
+  console.error(
+    `FATAL: Cannot connect to Postgres at ${safeUrl}. Is the database running? (docker compose up, or set DATABASE_URL)`,
+  );
+  console.error(err);
+  process.exit(1);
+}
 console.log("Database initialized");
+
+// Auto-import 1.x SQLite database on first boot (before default user creation)
+if (env.SQLITE_MIGRATE_PATH) {
+  const { rows } = await db.execute(sql`SELECT count(*)::int AS n FROM users`);
+  if ((rows[0].n as number) === 0) {
+    try {
+      const { migrateFromSqlite } = await import("./db/migrate-from-sqlite.js");
+      const result = await migrateFromSqlite(env.SQLITE_MIGRATE_PATH, { force: false });
+      console.log("Imported 1.x SQLite database:", JSON.stringify(result.tables));
+    } catch (err) {
+      console.error(
+        `FATAL: 1.x SQLite import failed from ${env.SQLITE_MIGRATE_PATH}: ${(err as Error).message}. No partial data was written.`,
+      );
+      process.exit(1);
+    }
+  } else {
+    console.log("SQLITE_MIGRATE_PATH set but target is not empty; skipping import");
+  }
+}
+
+// Seed built-in roles (admin, editor, user) that legacy SQLite migrations
+// inserted via data statements.  The pg baseline is DDL-only, so roles are
+// seeded here at boot time.  onConflictDoNothing makes this idempotent.
+await ensureBuiltinRoles();
 
 if (env.AUTH_ENABLED) {
   await ensureDefaultAdmin();
 } else {
-  ensureAnonymousUser();
+  await ensureAnonymousUser();
 }
 
-function ensureInstanceId() {
-  const existing = db
+async function ensureInstanceId() {
+  const [existing] = await db
     .select()
     .from(schema.settings)
-    .where(eq(schema.settings.key, "instance_id"))
-    .get();
+    .where(eq(schema.settings.key, "instance_id"));
   if (!existing) {
-    db.insert(schema.settings).values({ key: "instance_id", value: randomUUID() }).run();
+    await db.insert(schema.settings).values({ key: "instance_id", value: randomUUID() });
   }
 }
 
-ensureInstanceId();
+await ensureInstanceId();
 
-function ensureDefaultSettings() {
+async function ensureDefaultSettings() {
   const defaults: Record<string, string> = {
     defaultTheme: env.DEFAULT_THEME,
     defaultLocale: env.DEFAULT_LOCALE,
     defaultToolView: env.DEFAULT_TOOL_VIEW,
   };
   for (const [key, value] of Object.entries(defaults)) {
-    const existing = db.select().from(schema.settings).where(eq(schema.settings.key, key)).get();
+    const [existing] = await db.select().from(schema.settings).where(eq(schema.settings.key, key));
     if (!existing) {
-      db.insert(schema.settings).values({ key, value }).run();
+      await db.insert(schema.settings).values({ key, value });
     }
   }
 }
 
-ensureDefaultSettings();
+await ensureDefaultSettings();
 
 if (!env.COOKIE_SECRET) {
-  const existing = db
+  const [existing] = await db
     .select()
     .from(schema.settings)
-    .where(eq(schema.settings.key, "cookie_secret"))
-    .get();
+    .where(eq(schema.settings.key, "cookie_secret"));
   if (existing) {
     (env as Record<string, unknown>).COOKIE_SECRET = existing.value;
   } else {
     const generated = randomUUID() + randomUUID();
-    db.insert(schema.settings).values({ key: "cookie_secret", value: generated }).run();
+    await db.insert(schema.settings).values({ key: "cookie_secret", value: generated });
     (env as Record<string, unknown>).COOKIE_SECRET = generated;
   }
 }
@@ -113,7 +145,7 @@ try {
 }
 
 // Mark any jobs left in processing/queued from a previous unclean shutdown
-recoverStaleJobs();
+await recoverStaleJobs();
 
 // Set up AI feature directories and recover from interrupted installs
 ensureAiDirs();
@@ -271,7 +303,7 @@ await docsRoutes(app);
 app.get("/api/v1/health", async (_request, reply) => {
   let dbOk = false;
   try {
-    db.select().from(schema.settings).limit(1).get();
+    await db.select().from(schema.settings).limit(1);
     dbOk = true;
   } catch {
     /* db unreachable */
@@ -287,12 +319,12 @@ app.get("/api/v1/health", async (_request, reply) => {
 
 // Admin health check (full diagnostics)
 app.get("/api/v1/admin/health", async (request, reply) => {
-  const admin = requirePermission("system:health")(request, reply);
+  const admin = await requirePermission("system:health")(request, reply);
   if (!admin) return;
 
   let dbOk = false;
   try {
-    db.select().from(schema.settings).limit(1).all();
+    await db.select().from(schema.settings).limit(1);
     dbOk = true;
   } catch {
     /* db unreachable */
@@ -330,7 +362,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Start workspace cleanup cron
-const cleanupCron = startCleanupCron();
+const cleanupCron = await startCleanupCron();
 
 // Start
 try {
@@ -414,8 +446,7 @@ async function shutdown(signal: string) {
   }
 
   try {
-    const { sqlite: sqliteConn } = await import("./db/index.js");
-    sqliteConn.close();
+    await closeDb();
     console.log("Database connection closed");
   } catch (err) {
     console.error("Error closing database:", err);

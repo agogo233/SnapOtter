@@ -19,6 +19,7 @@ import {
   ListObjectsV2Command,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { loadS3Storage, type S3StorageModule } from "@snapotter/enterprise";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { env } from "../../apps/api/src/config.js";
 
@@ -38,6 +39,7 @@ const minioAvailable = (() => {
 })();
 
 let s3Client: S3Client;
+let s3Storage: S3StorageModule;
 let originalStorageMode: string;
 
 async function listKeys(): Promise<string[]> {
@@ -67,6 +69,8 @@ describe.skipIf(!minioAvailable)("S3 storage backend", () => {
 
     await s3Client.send(new CreateBucketCommand({ Bucket: BUCKET }));
 
+    s3Storage = await loadS3Storage();
+
     originalStorageMode = env.STORAGE_MODE;
     const e = env as Record<string, unknown>;
     e.STORAGE_MODE = "s3";
@@ -77,6 +81,16 @@ describe.skipIf(!minioAvailable)("S3 storage backend", () => {
     e.S3_SECRET_ACCESS_KEY = CREDS.secretAccessKey;
     e.S3_FORCE_PATH_STYLE = true;
     e.S3_PREFIX = "";
+
+    s3Storage.configureS3({
+      bucket: BUCKET,
+      region: "us-east-1",
+      endpoint: S3_ENDPOINT,
+      accessKeyId: CREDS.accessKeyId,
+      secretAccessKey: CREDS.secretAccessKey,
+      forcePathStyle: true,
+      prefix: "",
+    });
   }, 15_000);
 
   afterAll(async () => {
@@ -160,6 +174,15 @@ describe.skipIf(!minioAvailable)("S3 storage backend", () => {
     const { saveFile, deleteStoredFile } = await import("../../apps/api/src/lib/file-storage.js");
 
     (env as Record<string, unknown>).S3_PREFIX = "tenant-123";
+    s3Storage.configureS3({
+      bucket: BUCKET,
+      region: "us-east-1",
+      endpoint: S3_ENDPOINT,
+      accessKeyId: CREDS.accessKeyId,
+      secretAccessKey: CREDS.secretAccessKey,
+      forcePathStyle: true,
+      prefix: "tenant-123",
+    });
     const name = await saveFile(PNG, "prefixed.png");
 
     expect(await objectExists(`tenant-123/files/${name}`)).toBe(true);
@@ -169,6 +192,15 @@ describe.skipIf(!minioAvailable)("S3 storage backend", () => {
     expect(await objectExists(`tenant-123/files/${name}`)).toBe(false);
 
     (env as Record<string, unknown>).S3_PREFIX = "";
+    s3Storage.configureS3({
+      bucket: BUCKET,
+      region: "us-east-1",
+      endpoint: S3_ENDPOINT,
+      accessKeyId: CREDS.accessKeyId,
+      secretAccessKey: CREDS.secretAccessKey,
+      forcePathStyle: true,
+      prefix: "",
+    });
   });
 
   it("bucket is empty after all operations", async () => {
