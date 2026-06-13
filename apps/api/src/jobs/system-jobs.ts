@@ -15,6 +15,7 @@ import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { getMaxAgeMs } from "../lib/cleanup.js";
 import { deletePrefix, listJobDirs, type ObjectInfo } from "../lib/object-storage.js";
+import { runAuditArchive } from "./audit-archive.js";
 import { getQueue } from "./queues.js";
 import { runSiemForward } from "./siem-forward.js";
 
@@ -23,6 +24,7 @@ export const SYSTEM_JOBS = {
   sessionPurge: "system:session-purge",
   retention: "system:retention",
   siemForward: "system:siem-forward",
+  auditArchive: "system:audit-archive",
 } as const;
 
 // -- Scheduling ---------------------------------------------------------------
@@ -42,6 +44,10 @@ export async function scheduleSystemJobs(): Promise<void> {
   await q.upsertJobScheduler(SYSTEM_JOBS.sessionPurge, { every: 60 * 60_000 });
   await q.upsertJobScheduler(SYSTEM_JOBS.retention, { every: 6 * 60 * 60_000 });
   await q.upsertJobScheduler(SYSTEM_JOBS.siemForward, { every: 30_000 });
+  // Monthly: 2:00 AM on the 1st of each month
+  await q.upsertJobScheduler(SYSTEM_JOBS.auditArchive, {
+    pattern: "0 2 1 * *",
+  });
 }
 
 /** Enqueue a one-shot system job (e.g. startup cleanup trigger). */
@@ -63,6 +69,8 @@ export async function runSystemJob(job: Job): Promise<unknown> {
       return retentionSweep();
     case SYSTEM_JOBS.siemForward:
       return runSiemForward();
+    case SYSTEM_JOBS.auditArchive:
+      return runAuditArchive();
     default:
       // batch-finalize runs on the system pool too but is routed by the
       // worker before calling runSystemJob. Anything else is a bug.
