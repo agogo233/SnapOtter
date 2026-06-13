@@ -1201,8 +1201,17 @@ describe("settings variation matrix", () => {
 
           // For 200 responses, validate response shape
           if (res.statusCode === 200) {
-            const json = JSON.parse(res.body);
-            expect(json.downloadUrl || json.jobId).toBeTruthy();
+            // Some tools (e.g. split) stream a ZIP binary instead of JSON.
+            // Detect by "PK" magic bytes and skip JSON parsing.
+            const isZip =
+              res.headers["content-type"] === "application/zip" || res.body.startsWith("PK");
+            if (isZip) {
+              expect(res.body.length).toBeGreaterThan(0);
+            } else {
+              const json = JSON.parse(res.body);
+              // image-to-base64 returns { results, errors } instead of downloadUrl
+              expect(json.downloadUrl || json.jobId || json.results).toBeTruthy();
+            }
           }
 
           // For 202 (async), just verify the jobId is present
