@@ -3016,6 +3016,11 @@ export const tr: TranslationKeys = {
       "Hesabınız bu uygulamaya erişim yetkisine sahip değil. Yöneticinizle iletişime geçin.",
     oidcUserLimitReached: "Kullanıcı limitine ulaşıldı. Yöneticinizle iletişime geçin.",
     oidcGenericError: "Kimlik doğrulama hatası. Lütfen tekrar deneyin.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider:
       "Parola değişiklikleri kimlik sağlayıcınız tarafından yönetilmektedir.",
     enterUsername: "Kullanıcı adını girin",

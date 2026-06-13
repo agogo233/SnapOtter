@@ -2994,6 +2994,11 @@ export const hi: TranslationKeys = {
       "आपके अकाउंट को इस एप्लिकेशन तक पहुंचने की अनुमति नहीं है। अपने एडमिनिस्ट्रेटर से संपर्क करें।",
     oidcUserLimitReached: "उपयोगकर्ता सीमा पहुंच गई। अपने एडमिनिस्ट्रेटर से संपर्क करें।",
     oidcGenericError: "ऑथेंटिकेशन त्रुटि। कृपया पुनः प्रयास करें।",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "पासवर्ड बदलाव आपके आइडेंटिटी प्रोवाइडर द्वारा प्रबंधित किए जाते हैं।",
     enterUsername: "यूज़रनेम दर्ज करें",
     enterPassword: "अपना पासवर्ड दर्ज करें",

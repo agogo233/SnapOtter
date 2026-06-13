@@ -3008,6 +3008,11 @@ export const vi: TranslationKeys = {
       "Tài khoản của bạn không được phép truy cập ứng dụng này. Liên hệ quản trị viên.",
     oidcUserLimitReached: "Đã đạt giới hạn người dùng. Liên hệ quản trị viên.",
     oidcGenericError: "Lỗi xác thực. Vui lòng thử lại.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Việc đổi mật khẩu được quản lý bởi nhà cung cấp danh tính của bạn.",
     enterUsername: "Nhập tên đăng nhập",
     enterPassword: "Nhập mật khẩu của bạn",

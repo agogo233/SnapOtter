@@ -2935,6 +2935,11 @@ export const zhTW: TranslationKeys = {
     oidcUserNotAuthorized: "您的帳戶無權存取此應用程式。請聯絡管理員。",
     oidcUserLimitReached: "已達使用者上限，請聯絡管理員。",
     oidcGenericError: "驗證錯誤，請重試。",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "密碼由您的身分提供者管理。",
     enterUsername: "輸入使用者名稱",
     enterPassword: "輸入密碼",

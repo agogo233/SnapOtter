@@ -3008,6 +3008,11 @@ export const sv: TranslationKeys = {
       "Ditt konto har inte behorighet till denna applikation. Kontakta din administrator.",
     oidcUserLimitReached: "Anvandargrans nadd. Kontakta din administrator.",
     oidcGenericError: "Autentiseringsfel. Forsok igen.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Losenordsandringar hanteras av din identitetsleverantor.",
     enterUsername: "Ange anvandarnamn",
     enterPassword: "Ange ditt losenord",

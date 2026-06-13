@@ -2967,6 +2967,11 @@ export const ja: TranslationKeys = {
       "お使いのアカウントにはこのアプリケーションへのアクセス権がありません。管理者にお問い合わせください。",
     oidcUserLimitReached: "ユーザー上限に達しました。管理者にお問い合わせください。",
     oidcGenericError: "認証エラー。もう一度お試しください。",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "パスワードはIDプロバイダーで管理されています。",
     enterUsername: "ユーザー名を入力",
     enterPassword: "パスワードを入力",

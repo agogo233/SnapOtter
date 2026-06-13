@@ -3020,6 +3020,11 @@ export const pl: TranslationKeys = {
       "Państwa konto nie ma uprawnień do korzystania z tej aplikacji. Skontaktuj się z administratorem.",
     oidcUserLimitReached: "Osiągnięto limit użytkowników. Skontaktuj się z administratorem.",
     oidcGenericError: "Błąd uwierzytelniania. Spróbuj ponownie.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Zarządzanie hasłem odbywa się przez dostawcę tożsamości.",
     enterUsername: "Wprowadź nazwę użytkownika",
     enterPassword: "Wprowadź hasło",

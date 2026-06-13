@@ -14,6 +14,8 @@ interface AuthState {
   analyticsConsentRemindAt: number | null;
   oidcEnabled: boolean;
   oidcProviderName: string | null;
+  samlEnabled: boolean;
+  samlProviderName: string | null;
   loginMethod: string | null;
   hasLocalPassword: boolean;
 }
@@ -48,6 +50,8 @@ export function useAuth() {
     analyticsConsentRemindAt: null,
     oidcEnabled: false,
     oidcProviderName: null,
+    samlEnabled: false,
+    samlProviderName: null,
     loginMethod: null,
     hasLocalPassword: false,
   });
@@ -74,6 +78,8 @@ export function useAuth() {
               analyticsConsentRemindAt: null,
               oidcEnabled: false,
               oidcProviderName: null,
+              samlEnabled: false,
+              samlProviderName: null,
               loginMethod: null,
               hasLocalPassword: false,
             });
@@ -102,6 +108,8 @@ export function useAuth() {
               analyticsConsentRemindAt: session.user?.analyticsConsentRemindAt ?? null,
               oidcEnabled: config.oidcEnabled ?? false,
               oidcProviderName: config.oidcProviderName ?? null,
+              samlEnabled: config.samlEnabled ?? false,
+              samlProviderName: config.samlProviderName ?? null,
               loginMethod: session.user?.loginMethod ?? null,
               hasLocalPassword: session.user?.hasLocalPassword ?? false,
             });
@@ -120,6 +128,8 @@ export function useAuth() {
               analyticsConsentRemindAt: null,
               oidcEnabled: config.oidcEnabled ?? false,
               oidcProviderName: config.oidcProviderName ?? null,
+              samlEnabled: config.samlEnabled ?? false,
+              samlProviderName: config.samlProviderName ?? null,
               loginMethod: null,
               hasLocalPassword: false,
             });

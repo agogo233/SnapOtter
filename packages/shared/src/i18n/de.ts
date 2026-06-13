@@ -3024,6 +3024,11 @@ export const de: TranslationKeys = {
       "Ihr Konto ist nicht fuer den Zugriff auf diese Anwendung autorisiert. Kontaktieren Sie Ihren Administrator.",
     oidcUserLimitReached: "Benutzerlimit erreicht. Kontaktieren Sie Ihren Administrator.",
     oidcGenericError: "Authentifizierungsfehler. Bitte versuchen Sie es erneut.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider:
       "Passwortaenderungen werden von Ihrem Identitaetsanbieter verwaltet.",
     enterUsername: "Benutzernamen eingeben",

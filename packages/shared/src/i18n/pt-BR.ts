@@ -3013,6 +3013,11 @@ export const ptBR: TranslationKeys = {
       "Sua conta nao esta autorizada a acessar este aplicativo. Entre em contato com o administrador.",
     oidcUserLimitReached: "Limite de usuarios atingido. Entre em contato com o administrador.",
     oidcGenericError: "Erro de autenticacao. Tente novamente.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider:
       "Alteracoes de senha sao gerenciadas pelo seu provedor de identidade.",
     enterUsername: "Digite seu nome de usuario",

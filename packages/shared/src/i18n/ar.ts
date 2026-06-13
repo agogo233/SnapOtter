@@ -2997,6 +2997,11 @@ export const ar: TranslationKeys = {
     oidcUserNotAuthorized: "حسابك غير مصرح له بالوصول إلى هذا التطبيق. تواصل مع المسؤول.",
     oidcUserLimitReached: "تم الوصول لحد المستخدمين. تواصل مع المسؤول.",
     oidcGenericError: "خطأ في المصادقة. يرجى المحاولة مرة أخرى.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "يتم إدارة تغيير كلمة المرور بواسطة مزود الهوية الخاص بك.",
     enterUsername: "أدخل اسم المستخدم",
     enterPassword: "أدخل كلمة المرور",

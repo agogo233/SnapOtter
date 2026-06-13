@@ -2985,6 +2985,11 @@ export const th: TranslationKeys = {
     oidcUserNotAuthorized: "บัญชีของคุณไม่ได้รับอนุญาตให้เข้าถึงแอปพลิเคชันนี้ กรุณาติดต่อผู้ดูแลระบบ",
     oidcUserLimitReached: "ถึงจำนวนผู้ใช้สูงสุดแล้ว กรุณาติดต่อผู้ดูแลระบบ",
     oidcGenericError: "ข้อผิดพลาดในการยืนยันตัวตน กรุณาลองอีกครั้ง",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "การเปลี่ยนรหัสผ่านจัดการโดยผู้ให้บริการยืนยันตัวตนของคุณ",
     enterUsername: "กรอกชื่อผู้ใช้",
     enterPassword: "กรอกรหัสผ่านของคุณ",

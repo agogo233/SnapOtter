@@ -3010,6 +3010,11 @@ export const id: TranslationKeys = {
       "Akun Anda tidak diizinkan mengakses aplikasi ini. Hubungi administrator Anda.",
     oidcUserLimitReached: "Batas pengguna tercapai. Hubungi administrator Anda.",
     oidcGenericError: "Kesalahan autentikasi. Silakan coba lagi.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Perubahan kata sandi dikelola oleh penyedia identitas Anda.",
     enterUsername: "Masukkan nama pengguna",
     enterPassword: "Masukkan kata sandi Anda",

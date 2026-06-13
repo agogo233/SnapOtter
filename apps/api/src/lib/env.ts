@@ -79,6 +79,26 @@ const envSchema = z
     OIDC_PROVIDER_NAME: z.string().default(""),
     OIDC_CLOCK_TOLERANCE: z.coerce.number().min(0).max(300).default(30),
     OIDC_USERNAME_CLAIM: z.string().default("preferred_username"),
+    SAML_ENABLED: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((v) => v === "true"),
+    SAML_ENTITY_ID: z.string().default(""),
+    SAML_CALLBACK_URL: z.string().default(""),
+    SAML_IDP_SSO_URL: z.string().default(""),
+    SAML_IDP_CERTIFICATE: z.string().default(""),
+    SAML_AUTO_CREATE_USERS: z
+      .enum(["true", "false"])
+      .default("true")
+      .transform((v) => v === "true"),
+    SAML_AUTO_LINK_USERS: z
+      .enum(["true", "false"])
+      .default("false")
+      .transform((v) => v === "true"),
+    SAML_DEFAULT_ROLE: z.string().default("user"),
+    SAML_PROVIDER_NAME: z.string().default(""),
+    SAML_USERNAME_ATTRIBUTE: z.string().default(""),
+    SAML_EMAIL_ATTRIBUTE: z.string().default("email"),
     EXTERNAL_URL: z.string().default(""),
     COOKIE_SECRET: z.string().default(""),
     REDIS_URL: z.string().default("redis://localhost:6379"),
@@ -150,6 +170,29 @@ const envSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "EXTERNAL_URL is required when OIDC_ENABLED=true",
+          path: ["EXTERNAL_URL"],
+        });
+      }
+    }
+    if (data.SAML_ENABLED) {
+      if (!data.SAML_IDP_SSO_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "SAML_IDP_SSO_URL is required when SAML_ENABLED=true",
+          path: ["SAML_IDP_SSO_URL"],
+        });
+      }
+      if (!data.SAML_IDP_CERTIFICATE) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "SAML_IDP_CERTIFICATE is required when SAML_ENABLED=true",
+          path: ["SAML_IDP_CERTIFICATE"],
+        });
+      }
+      if (!data.EXTERNAL_URL) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "EXTERNAL_URL is required when SAML_ENABLED=true",
           path: ["EXTERNAL_URL"],
         });
       }

@@ -3012,6 +3012,11 @@ export const ru: TranslationKeys = {
       "Вашей учётной записи не предоставлен доступ к этому приложению. Обратитесь к администратору.",
     oidcUserLimitReached: "Достигнут лимит пользователей. Обратитесь к администратору.",
     oidcGenericError: "Ошибка аутентификации. Попробуйте снова.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Управление паролем осуществляется Вашим провайдером идентификации.",
     enterUsername: "Введите имя пользователя",
     enterPassword: "Введите пароль",

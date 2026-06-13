@@ -3013,6 +3013,11 @@ export const uk: TranslationKeys = {
       "Ваш обліковий запис не має доступу до цього застосунку. Зверніться до адміністратора.",
     oidcUserLimitReached: "Досягнуто ліміту користувачів. Зверніться до адміністратора.",
     oidcGenericError: "Помилка автентифікації. Спробуйте знову.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Керування паролем здійснюється Вашим постачальником ідентифікації.",
     enterUsername: "Введіть ім'я користувача",
     enterPassword: "Введіть пароль",

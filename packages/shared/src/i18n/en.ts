@@ -2963,6 +2963,11 @@ export const en = {
       "Your account is not authorized to access this application. Contact your administrator.",
     oidcUserLimitReached: "User limit reached. Contact your administrator.",
     oidcGenericError: "Authentication error. Please try again.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Password changes are managed by your identity provider.",
     enterUsername: "Enter username",
     enterPassword: "Enter your password",

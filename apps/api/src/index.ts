@@ -30,6 +30,7 @@ import {
   ensureDefaultAdmin,
 } from "./plugins/auth.js";
 import { oidcRoutes } from "./plugins/oidc.js";
+import { registerSaml } from "./plugins/saml.js";
 import { registerStatic } from "./plugins/static.js";
 import { registerUpload } from "./plugins/upload.js";
 import { adminOpsRoutes } from "./routes/admin-ops.js";
@@ -39,6 +40,7 @@ import { auditLogRoutes } from "./routes/audit-log.js";
 import { registerBatchRoutes } from "./routes/batch.js";
 import { configRoutes } from "./routes/config.js";
 import { docsRoutes } from "./routes/docs.js";
+import { registerEnterpriseRoutes } from "./routes/enterprise/index.js";
 import { registerFeatureRoutes } from "./routes/features.js";
 import { registerFetchUrlsRoute } from "./routes/fetch-urls.js";
 import { fileRoutes } from "./routes/files.js";
@@ -50,7 +52,6 @@ import { settingsRoutes } from "./routes/settings.js";
 import { teamsRoutes } from "./routes/teams.js";
 import { registerToolRoutes } from "./routes/tools/index.js";
 import { userFileRoutes } from "./routes/user-files.js";
-import { registerEnterpriseRoutes } from "./routes/enterprise/index.js";
 
 // Run before anything else
 try {
@@ -302,6 +303,9 @@ await authRoutes(app);
 // OIDC routes
 await oidcRoutes(app);
 
+// SAML routes
+await registerSaml(app);
+
 // File upload/download routes
 await fileRoutes(app);
 
@@ -417,6 +421,23 @@ app.get("/api/v1/config/auth", async () => {
     config.oidcProviderName = env.OIDC_PROVIDER_NAME || null;
     config.oidcLoginUrl = "/api/auth/oidc/login";
   }
+
+  // SAML SSO requires both env flag and enterprise license
+  let samlLicensed = false;
+  if (env.SAML_ENABLED) {
+    try {
+      const { isFeatureEnabled } = await import("@snapotter/enterprise");
+      samlLicensed = isFeatureEnabled("saml_sso");
+    } catch {
+      // Enterprise package not available
+    }
+  }
+  if (env.SAML_ENABLED && samlLicensed) {
+    config.samlEnabled = true;
+    config.samlProviderName = env.SAML_PROVIDER_NAME || "SSO";
+    config.samlLoginUrl = "/api/auth/saml/login";
+  }
+
   return config;
 });
 

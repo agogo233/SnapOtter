@@ -458,7 +458,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         mustChangePassword: env.SKIP_MUST_CHANGE_PASSWORD ? false : user.mustChangePassword,
         permissions: await getPermissions(user.role),
         authProvider: user.authProvider ?? "local",
-        loginMethod: session.idToken ? "oidc" : "local",
+        loginMethod: session.idToken ? "oidc" : user.authProvider === "saml" ? "saml" : "local",
         email: user.email ?? null,
         hasLocalPassword: !!user.passwordHash,
         hasOidcLink: !!user.externalId,

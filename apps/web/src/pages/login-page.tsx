@@ -127,7 +127,7 @@ function LanguageSelector() {
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { oidcEnabled, oidcProviderName } = useAuth();
+  const { oidcEnabled, oidcProviderName, samlEnabled, samlProviderName } = useAuth();
   const [searchParams] = useSearchParams();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -135,16 +135,19 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const oidcError = searchParams.get("error");
-    if (oidcError) {
+    const authError = searchParams.get("error");
+    if (authError) {
       const errorMessages: Record<string, string> = {
         oidc_auth_failed: t.auth.oidcAuthFailed,
         oidc_provider_unreachable: t.auth.oidcProviderUnreachable,
         oidc_session_expired: t.auth.oidcSessionExpired,
         oidc_user_not_authorized: t.auth.oidcUserNotAuthorized,
         oidc_user_limit_reached: t.auth.oidcUserLimitReached,
+        saml_auth_failed: t.auth.samlAuthFailed,
+        saml_user_not_authorized: t.auth.samlUserNotAuthorized,
+        saml_user_limit_reached: t.auth.samlUserLimitReached,
       };
-      setError(errorMessages[oidcError] || t.auth.oidcGenericError);
+      setError(errorMessages[authError] || t.auth.oidcGenericError);
     }
   }, [searchParams, t]);
 
@@ -230,19 +233,29 @@ export function LoginPage() {
               {loading ? t.auth.loggingIn : t.auth.loginButton}
             </button>
           </form>
-          {oidcEnabled && (
+          {(oidcEnabled || samlEnabled) && (
             <>
               <div className="flex items-center gap-3 my-4">
                 <div className="flex-1 border-t border-border" />
                 <span className="text-sm text-muted-foreground">{t.auth.or}</span>
                 <div className="flex-1 border-t border-border" />
               </div>
-              <a
-                href="/api/auth/oidc/login"
-                className="w-full py-3 rounded-lg bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
-              >
-                {format(t.auth.signInWith, { provider: oidcProviderName || "SSO" })}
-              </a>
+              {oidcEnabled && (
+                <a
+                  href="/api/auth/oidc/login"
+                  className="w-full py-3 rounded-lg bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2"
+                >
+                  {format(t.auth.signInWith, { provider: oidcProviderName || "SSO" })}
+                </a>
+              )}
+              {samlEnabled && (
+                <a
+                  href="/api/auth/saml/login"
+                  className="w-full py-3 rounded-lg bg-secondary text-secondary-foreground font-medium hover:bg-secondary/80 transition-colors flex items-center justify-center gap-2 mt-2"
+                >
+                  {format(t.auth.signInWith, { provider: samlProviderName || "SSO" })}
+                </a>
+              )}
             </>
           )}
           <div className="pt-2">

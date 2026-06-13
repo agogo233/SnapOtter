@@ -2937,6 +2937,11 @@ export const zhCN: TranslationKeys = {
     oidcUserNotAuthorized: "您的账号无权访问此应用。请联系管理员。",
     oidcUserLimitReached: "用户数量已达上限。请联系管理员。",
     oidcGenericError: "认证错误。请重试。",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "密码修改由您的身份提供商管理。",
     enterUsername: "输入用户名",
     enterPassword: "输入密码",

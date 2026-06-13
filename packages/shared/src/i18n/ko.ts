@@ -2952,6 +2952,11 @@ export const ko: TranslationKeys = {
       "귀하의 계정은 이 애플리케이션에 접근할 권한이 없습니다. 관리자에게 문의하세요.",
     oidcUserLimitReached: "사용자 한도에 도달했습니다. 관리자에게 문의하세요.",
     oidcGenericError: "인증 오류. 다시 시도해 주세요.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "비밀번호는 ID 제공자에서 관리됩니다.",
     enterUsername: "사용자명 입력",
     enterPassword: "비밀번호 입력",

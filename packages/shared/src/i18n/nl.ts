@@ -3013,6 +3013,11 @@ export const nl: TranslationKeys = {
       "Je account heeft geen toegang tot deze applicatie. Neem contact op met je beheerder.",
     oidcUserLimitReached: "Gebruikerslimiet bereikt. Neem contact op met je beheerder.",
     oidcGenericError: "Authenticatiefout. Probeer het opnieuw.",
+    samlAuthFailed: "SAML authentication failed. Please try again.",
+    samlUserNotAuthorized:
+      "Your account is not authorized to access this application. Contact your administrator.",
+    samlUserLimitReached: "User limit reached. Contact your administrator.",
+    methodSaml: "SAML",
     passwordManagedByProvider: "Wachtwoordwijzigingen worden beheerd door je identiteitsprovider.",
     enterUsername: "Voer gebruikersnaam in",
     enterPassword: "Voer je wachtwoord in",
