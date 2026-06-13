@@ -469,6 +469,31 @@ export function createToolRoute<T>(app: FastifyInstance, config: ToolRouteConfig
               is_ai_tool: getBundleForTool(config.toolId) !== null,
             });
 
+            // Fire-and-forget: audit log must never block the response
+            import("../lib/audit.js")
+              .then(({ isToolAuditEnabled, auditLog }) =>
+                isToolAuditEnabled().then((enabled) => {
+                  if (!enabled) return;
+                  const user = getAuthUser(request);
+                  return auditLog(
+                    request.log,
+                    "TOOL_EXECUTED",
+                    {
+                      userId: user?.id,
+                      username: user?.username,
+                      toolId: config.toolId,
+                      inputFileCount: received.length,
+                      totalInputSize: received.reduce((sum, r) => sum + r.size, 0),
+                      outputFormat: (settings as Record<string, unknown>)?.format ?? null,
+                      status: "success",
+                      durationMs: Date.now() - startTime,
+                    },
+                    request.ip,
+                  );
+                }),
+              )
+              .catch(() => {});
+
             return reply.send({
               jobId,
               downloadUrl: `/api/v1/download/${jobId}/${encodeURIComponent(result.filename)}`,

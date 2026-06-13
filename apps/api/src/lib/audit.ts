@@ -1,8 +1,38 @@
 import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
 import { db, schema } from "../db/index.js";
 
 const MAX_AUDIT_INPUT_LENGTH = 200;
+
+/**
+ * Check whether tool operation audit logging is enabled.
+ *
+ * Two paths can enable it:
+ *   1. The `auditToolOperations` admin setting is explicitly "true".
+ *   2. An active enterprise license enables the `audit_export` feature.
+ *
+ * Returns false on any error so a broken check never blocks tool execution.
+ */
+export async function isToolAuditEnabled(): Promise<boolean> {
+  try {
+    const result = await db
+      .select({ value: schema.settings.value })
+      .from(schema.settings)
+      .where(eq(schema.settings.key, "auditToolOperations"))
+      .limit(1);
+    if (result.length > 0 && result[0].value === "true") return true;
+  } catch {
+    // fall through to enterprise check
+  }
+
+  try {
+    const enterprise = await import("@snapotter/enterprise");
+    return enterprise.isFeatureEnabled("audit_export");
+  } catch {
+    return false;
+  }
+}
 
 export function sanitizeAuditInput(raw: string): string {
   return raw.replace(/[<>&"']/g, "").slice(0, MAX_AUDIT_INPUT_LENGTH) || "(empty)";
