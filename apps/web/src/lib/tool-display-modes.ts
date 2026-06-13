@@ -48,6 +48,7 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "qr-generate": "no-dropzone",
   "html-to-image": "no-dropzone",
   "barcode-read": "before-after",
+  "barcode-generate": "no-dropzone",
   "image-to-base64": "custom-results",
 
   // Layout & composition
@@ -56,6 +57,16 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   split: "interactive-split",
   border: "live-preview",
   beautify: "live-preview",
+  "circle-crop": "live-preview",
+  duotone: "live-preview",
+  "image-pad": "live-preview",
+  pixelate: "live-preview",
+  vignette: "live-preview",
+
+  "gif-webp": "live-preview",
+  histogram: "no-comparison",
+  "lqip-placeholder": "no-comparison",
+  "sprite-sheet": "no-comparison",
 
   // Format & conversion
   "svg-to-raster": "before-after",
@@ -177,6 +188,7 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "to-epub": "no-comparison",
 
   // Data tools
+  "chart-maker": "no-comparison",
   "csv-excel": "no-comparison",
   "csv-json": "no-comparison",
   "json-xml": "no-comparison",
@@ -202,4 +214,5 @@ export const MULTI_FILE_TOOLS: ReadonlySet<string> = new Set([
   "burn-subtitles",
   "embed-subtitles",
   "images-to-video",
+  "sprite-sheet",
 ]);

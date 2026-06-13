@@ -8,6 +8,7 @@ import { registerAspectPad } from "./aspect-pad.js";
 import { registerAudioChannels } from "./audio-channels.js";
 import { registerAudioMetadata } from "./audio-metadata.js";
 import { registerAudioSpeed } from "./audio-speed.js";
+import { registerBarcodeGenerate } from "./barcode-generate.js";
 import { registerBarcodeRead } from "./barcode-read.js";
 import { registerBeautify } from "./beautify.js";
 import { registerBlurFaces } from "./blur-faces.js";
@@ -17,6 +18,8 @@ import { registerBorder } from "./border.js";
 import { registerBulkRename } from "./bulk-rename.js";
 import { registerBurnSubtitles } from "./burn-subtitles.js";
 import { registerChangeFps } from "./change-fps.js";
+import { registerChartMaker } from "./chart-maker.js";
+import { registerCircleCrop } from "./circle-crop.js";
 import { registerCollage } from "./collage.js";
 import { registerColorBlindness } from "./color-blindness.js";
 import { registerColorPalette } from "./color-palette.js";
@@ -39,6 +42,7 @@ import { registerCropPdf } from "./crop-pdf.js";
 import { registerCropVideo } from "./crop-video.js";
 import { registerCsvExcel } from "./csv-excel.js";
 import { registerCsvJson } from "./csv-json.js";
+import { registerDuotone } from "./duotone.js";
 import { registerEditMetadata } from "./edit-metadata.js";
 import { registerEmbedSubtitles } from "./embed-subtitles.js";
 import { registerEnhanceFaces } from "./enhance-faces.js";
@@ -55,16 +59,20 @@ import { registerFindDuplicates } from "./find-duplicates.js";
 import { registerFlattenPdf } from "./flatten-pdf.js";
 import { registerGifToVideo } from "./gif-to-video.js";
 import { registerGifTools } from "./gif-tools.js";
+import { registerGifWebp } from "./gif-webp.js";
 import { registerGrayscalePdf } from "./grayscale-pdf.js";
+import { registerHistogram } from "./histogram.js";
 import { registerHtmlToImage } from "./html-to-image.js";
 import { registerHtmlToPdf } from "./html-to-pdf.js";
 import { registerImageEnhancement } from "./image-enhancement.js";
+import { registerImagePad } from "./image-pad.js";
 import { registerImageToBase64 } from "./image-to-base64.js";
 import { registerImageToPdf } from "./image-to-pdf.js";
 import { registerImagesToVideo } from "./images-to-video.js";
 import { registerInfo } from "./info.js";
 import { registerJsonXml } from "./json-xml.js";
 import { registerLinearizePdf } from "./linearize-pdf.js";
+import { registerLqipPlaceholder } from "./lqip-placeholder.js";
 import { registerMarkdownToDocx } from "./markdown-to-docx.js";
 import { registerMarkdownToHtml } from "./markdown-to-html.js";
 import { registerMarkdownToPdf } from "./markdown-to-pdf.js";
@@ -89,6 +97,7 @@ import { registerPdfToText } from "./pdf-to-text.js";
 import { registerPdfToWord } from "./pdf-to-word.js";
 import { registerPdfaConvert } from "./pdfa-convert.js";
 import { registerPitchShift } from "./pitch-shift.js";
+import { registerPixelate } from "./pixelate.js";
 import { registerPowerpointToPdf } from "./powerpoint-to-pdf.js";
 import { registerProtectPdf } from "./protect-pdf.js";
 import { registerQrGenerate } from "./qr-generate.js";
@@ -115,6 +124,7 @@ import { registerSplit } from "./split.js";
 import { registerSplitAudio } from "./split-audio.js";
 import { registerSplitCsv } from "./split-csv.js";
 import { registerSplitPdf } from "./split-pdf.js";
+import { registerSpriteSheet } from "./sprite-sheet.js";
 import { registerStabilizeVideo } from "./stabilize-video.js";
 import { registerStitch } from "./stitch.js";
 import { registerStripMetadata } from "./strip-metadata.js";
@@ -134,6 +144,7 @@ import { registerVideoSpeed } from "./video-speed.js";
 import { registerVideoToFrames } from "./video-to-frames.js";
 import { registerVideoToGif } from "./video-to-gif.js";
 import { registerVideoToWebp } from "./video-to-webp.js";
+import { registerVignette } from "./vignette.js";
 import { registerVolumeAdjust } from "./volume-adjust.js";
 import { registerWatermarkImage } from "./watermark-image.js";
 import { registerWatermarkPdf } from "./watermark-pdf.js";
@@ -201,6 +212,7 @@ export async function registerToolRoutes(app: FastifyInstance): Promise<void> {
     { id: "color-palette", register: registerColorPalette },
     { id: "qr-generate", register: registerQrGenerate },
     { id: "html-to-image", register: registerHtmlToImage },
+    { id: "barcode-generate", register: registerBarcodeGenerate },
     { id: "barcode-read", register: registerBarcodeRead },
     { id: "image-to-base64", register: registerImageToBase64 },
 
@@ -210,11 +222,20 @@ export async function registerToolRoutes(app: FastifyInstance): Promise<void> {
     { id: "split", register: registerSplit },
     { id: "border", register: registerBorder },
     { id: "beautify", register: registerBeautify },
+    { id: "circle-crop", register: registerCircleCrop },
+    { id: "duotone", register: registerDuotone },
+    { id: "histogram", register: registerHistogram },
+    { id: "image-pad", register: registerImagePad },
+    { id: "lqip-placeholder", register: registerLqipPlaceholder },
+    { id: "pixelate", register: registerPixelate },
+    { id: "sprite-sheet", register: registerSpriteSheet },
+    { id: "vignette", register: registerVignette },
 
     // Format & Conversion
     { id: "svg-to-raster", register: registerSvgToRaster },
     { id: "vectorize", register: registerVectorize },
     { id: "gif-tools", register: registerGifTools },
+    { id: "gif-webp", register: registerGifWebp },
     { id: "pdf-to-image", register: registerPdfToImage },
 
     // Optimization extras
@@ -313,6 +334,7 @@ export async function registerToolRoutes(app: FastifyInstance): Promise<void> {
     { id: "to-epub", register: registerToEpub },
 
     // Data Files
+    { id: "chart-maker", register: registerChartMaker },
     { id: "create-zip", register: registerCreateZip },
     { id: "csv-excel", register: registerCsvExcel },
     { id: "csv-json", register: registerCsvJson },

@@ -263,6 +263,42 @@ export const ru: TranslationKeys = {
       description:
         "Добавление градиентных фонов, рамок устройств, теней и размеров для соцсетей к скриншотам",
     },
+    "circle-crop": {
+      name: "Circle Crop",
+      description: "Crop image to a centered circle with transparent corners",
+    },
+    duotone: {
+      name: "Duotone",
+      description: "Apply a two-color duotone effect with custom shadow and highlight colors",
+    },
+    "image-pad": {
+      name: "Image Pad",
+      description: "Pad image to a target aspect ratio with a solid color background",
+    },
+    pixelate: {
+      name: "Pixelate",
+      description: "Apply a pixelation effect to the full image or a specific region",
+    },
+    vignette: {
+      name: "Vignette",
+      description: "Add a vignette effect with adjustable strength and color",
+    },
+    "gif-webp": {
+      name: "GIF/WebP Converter",
+      description: "Convert animated GIF to WebP and vice versa, preserving all frames",
+    },
+    histogram: {
+      name: "Histogram",
+      description: "Generate an RGB histogram chart from an image",
+    },
+    "lqip-placeholder": {
+      name: "LQIP Placeholder",
+      description: "Generate a tiny low-quality image placeholder with base64 data URI",
+    },
+    "sprite-sheet": {
+      name: "Sprite Sheet",
+      description: "Combine multiple images into a single sprite sheet grid",
+    },
     "svg-to-raster": {
       name: "SVG в растр",
       description:
@@ -280,6 +316,14 @@ export const ru: TranslationKeys = {
     "image-to-base64": {
       name: "Изображение в Base64",
       description: "Конвертация изображений в строки Base64 для встраивания в HTML, CSS и другое",
+    },
+    "barcode-generate": {
+      name: "Barcode Generator",
+      description: "Generate barcodes in Code 128, EAN-13, UPC-A, Code 39, ITF-14, and Data Matrix",
+    },
+    "chart-maker": {
+      name: "Chart Maker",
+      description: "Create bar, line, or pie charts from CSV or JSON data",
     },
     "convert-video": {
       name: "Convert Video",
@@ -1514,6 +1558,63 @@ export const ru: TranslationKeys = {
       submitBatch: "Украсить ({count} файлов)",
       progressLabel: "Украшение скриншота",
     },
+    "circle-crop": {
+      submit: "Circle Crop",
+      submitBatch: "Circle Crop ({count} files)",
+      progressLabel: "Cropping to circle",
+    },
+    duotone: {
+      shadow: "Shadow Color",
+      highlight: "Highlight Color",
+      submit: "Apply Duotone",
+      submitBatch: "Apply Duotone ({count} files)",
+      progressLabel: "Applying duotone",
+    },
+    "image-pad": {
+      target: "Target Ratio",
+      color: "Background Color",
+      submit: "Pad Image",
+      submitBatch: "Pad Image ({count} files)",
+      progressLabel: "Padding image",
+    },
+    pixelate: {
+      blockSize: "Block Size",
+      submit: "Pixelate",
+      submitBatch: "Pixelate ({count} files)",
+      progressLabel: "Pixelating",
+    },
+    vignette: {
+      strength: "Strength",
+      color: "Vignette Color",
+      submit: "Apply Vignette",
+      submitBatch: "Apply Vignette ({count} files)",
+      progressLabel: "Applying vignette",
+    },
+    "gif-webp": {
+      submit: "Convert",
+      submitBatch: "Convert ({count} files)",
+      progressLabel: "Converting animation",
+    },
+    histogram: {
+      submit: "Generate Histogram",
+      submitBatch: "Generate Histogram ({count} files)",
+      progressLabel: "Generating histogram",
+    },
+    "lqip-placeholder": {
+      width: "Width",
+      blur: "Blur",
+      submit: "Generate Placeholder",
+      submitBatch: "Generate Placeholder ({count} files)",
+      progressLabel: "Generating placeholder",
+    },
+    "sprite-sheet": {
+      columns: "Columns",
+      padding: "Padding",
+      background: "Background Color",
+      submit: "Create Sprite Sheet",
+      submitBatch: "Create Sprite Sheet",
+      progressLabel: "Creating sprite sheet",
+    },
     "svg-to-raster": {
       outputFormat: "Формат вывода",
       sizing: "Размер",
@@ -1594,6 +1695,23 @@ export const ru: TranslationKeys = {
       copyDataUri: "Копировать Data URI",
       copyImgTag: "Копировать <img>",
       copyCssUrl: "Копировать CSS url()",
+    },
+    "barcode-generate": {
+      text: "Text",
+      type: "Barcode Type",
+      scale: "Scale",
+      includeText: "Include Text",
+      submit: "Generate Barcode",
+      download: "Download Barcode",
+    },
+    "chart-maker": {
+      kind: "Chart Type",
+      title: "Title",
+      width: "Width",
+      height: "Height",
+      submit: "Create Chart",
+      submitBatch: "Create Chart ({count} files)",
+      progressLabel: "Creating chart",
     },
     "enhance-faces-standalone": {
       model: "Модель",

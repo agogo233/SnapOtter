@@ -104,6 +104,82 @@ export async function encodeQoi(inputBuffer: Buffer): Promise<Buffer> {
   return Buffer.from(encoded);
 }
 
+export async function encodePpm(inputBuffer: Buffer): Promise<Buffer> {
+  const cmd = await findMagickCmd();
+  const id = randomUUID();
+  const inputPath = join(tmpdir(), `ppm-enc-in-${id}.png`);
+  const outputPath = join(tmpdir(), `ppm-enc-out-${id}.ppm`);
+  try {
+    const pngBuffer = await sharp(inputBuffer).png().toBuffer();
+    await writeFile(inputPath, pngBuffer);
+    await execFileAsync(cmd, magickArgs(cmd, [inputPath, `ppm:${outputPath}`]), {
+      timeout: 60_000,
+    });
+    return await readFile(outputPath);
+  } finally {
+    await rm(inputPath, { force: true }).catch(() => {});
+    await rm(outputPath, { force: true }).catch(() => {});
+  }
+}
+
+export async function encodeEps(inputBuffer: Buffer): Promise<Buffer> {
+  const cmd = await findMagickCmd();
+  const id = randomUUID();
+  const inputPath = join(tmpdir(), `eps-enc-in-${id}.png`);
+  const outputPath = join(tmpdir(), `eps-enc-out-${id}.eps`);
+  try {
+    const pngBuffer = await sharp(inputBuffer).png().toBuffer();
+    await writeFile(inputPath, pngBuffer);
+    await execFileAsync(cmd, magickArgs(cmd, [inputPath, `eps:${outputPath}`]), {
+      timeout: 60_000,
+    });
+    return await readFile(outputPath);
+  } finally {
+    await rm(inputPath, { force: true }).catch(() => {});
+    await rm(outputPath, { force: true }).catch(() => {});
+  }
+}
+
+export async function encodeTga(inputBuffer: Buffer): Promise<Buffer> {
+  const cmd = await findMagickCmd();
+  const id = randomUUID();
+  const inputPath = join(tmpdir(), `tga-enc-in-${id}.png`);
+  const outputPath = join(tmpdir(), `tga-enc-out-${id}.tga`);
+  try {
+    const pngBuffer = await sharp(inputBuffer).png().toBuffer();
+    await writeFile(inputPath, pngBuffer);
+    await execFileAsync(cmd, magickArgs(cmd, [inputPath, `tga:${outputPath}`]), {
+      timeout: 60_000,
+    });
+    return await readFile(outputPath);
+  } finally {
+    await rm(inputPath, { force: true }).catch(() => {});
+    await rm(outputPath, { force: true }).catch(() => {});
+  }
+}
+
+export async function encodeMultiIco(pngPaths: string[], outputPath: string): Promise<void> {
+  const cmd = await findMagickCmd();
+  const args =
+    cmd === "magick" ? [...pngPaths, `ico:${outputPath}`] : [...pngPaths, `ico:${outputPath}`];
+  await execFileAsync(cmd, cmd === "magick" ? ["convert", ...args] : args, {
+    timeout: 60_000,
+  });
+}
+
+/**
+ * Check whether ImageMagick is available on this system.
+ * Returns true if magick or convert can be found; false otherwise.
+ */
+export async function hasMagick(): Promise<boolean> {
+  try {
+    await findMagickCmd();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export async function encodeJxl(inputBuffer: Buffer, quality?: number): Promise<Buffer> {
   const id = randomUUID();
   const inputPath = join(tmpdir(), `jxl-enc-in-${id}.png`);
