@@ -2791,6 +2791,12 @@ export const ar: TranslationKeys = {
       nameRequired: "اسم الفريق مطلوب",
       nameTooLong: "يجب ألا يتجاوز اسم الفريق 50 حرفًا",
       duplicateName: "يوجد فريق بهذا الاسم بالفعل",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "الأدوار",
@@ -2872,6 +2878,10 @@ export const ar: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "مفاتيح API",

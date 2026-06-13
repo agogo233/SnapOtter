@@ -2801,6 +2801,12 @@ export const ptBR: TranslationKeys = {
       nameRequired: "O nome da equipe e obrigatorio",
       nameTooLong: "O nome da equipe deve ter 50 caracteres ou menos",
       duplicateName: "Ja existe uma equipe com este nome",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Funcoes",
@@ -2883,6 +2889,10 @@ export const ptBR: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "Chaves API",

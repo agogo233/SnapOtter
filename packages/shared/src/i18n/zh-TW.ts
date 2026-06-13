@@ -2729,6 +2729,12 @@ export const zhTW: TranslationKeys = {
       nameRequired: "需要團隊名稱",
       nameTooLong: "團隊名稱不超過50個字元",
       duplicateName: "已存在同名團隊",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "角色",
@@ -2810,6 +2816,10 @@ export const zhTW: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API金鑰",

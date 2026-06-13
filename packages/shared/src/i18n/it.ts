@@ -2803,6 +2803,12 @@ export const it: TranslationKeys = {
       nameRequired: "Il nome del team e obbligatorio",
       nameTooLong: "Il nome del team deve avere al massimo 50 caratteri",
       duplicateName: "Un team con questo nome esiste gia",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Ruoli",
@@ -2885,6 +2891,10 @@ export const it: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "Chiavi API",

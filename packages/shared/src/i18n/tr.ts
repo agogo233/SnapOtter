@@ -2805,6 +2805,12 @@ export const tr: TranslationKeys = {
       nameRequired: "Takım adı gereklidir",
       nameTooLong: "Takım adı en fazla 50 karakter olmalıdır",
       duplicateName: "Bu isimde bir takım zaten var",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Roller",
@@ -2886,6 +2892,10 @@ export const tr: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API Anahtarları",

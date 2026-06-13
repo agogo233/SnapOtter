@@ -2801,6 +2801,12 @@ export const ru: TranslationKeys = {
       nameRequired: "Название команды обязательно",
       nameTooLong: "Название команды не должно превышать 50 символов",
       duplicateName: "Команда с таким именем уже существует",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Роли",
@@ -2882,6 +2888,10 @@ export const ru: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API-ключи",

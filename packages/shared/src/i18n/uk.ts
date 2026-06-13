@@ -2801,6 +2801,12 @@ export const uk: TranslationKeys = {
       nameRequired: "Назва команди обов'язкова",
       nameTooLong: "Назва команди не може перевищувати 50 символів",
       duplicateName: "Команда з такою назвою вже існує",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Ролі",
@@ -2882,6 +2888,10 @@ export const uk: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API-ключі",

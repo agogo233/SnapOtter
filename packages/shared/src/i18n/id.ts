@@ -2800,6 +2800,12 @@ export const id: TranslationKeys = {
       nameRequired: "Nama tim wajib diisi",
       nameTooLong: "Nama tim maksimal 50 karakter",
       duplicateName: "Tim dengan nama ini sudah ada",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Peran",
@@ -2881,6 +2887,10 @@ export const id: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "Kunci API",

@@ -2787,6 +2787,12 @@ export const hi: TranslationKeys = {
       nameRequired: "टीम का नाम आवश्यक है",
       nameTooLong: "टीम का नाम 50 अक्षरों से कम होना चाहिए",
       duplicateName: "इस नाम की टीम पहले से मौजूद है",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "भूमिकाएं",
@@ -2868,6 +2874,10 @@ export const hi: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API कुंजियां",

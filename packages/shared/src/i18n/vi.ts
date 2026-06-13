@@ -2801,6 +2801,12 @@ export const vi: TranslationKeys = {
       nameRequired: "Tên nhóm là bắt buộc",
       nameTooLong: "Tên nhóm phải tối đa 50 ký tự",
       duplicateName: "Đã tồn tại nhóm có tên này",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Vai trò",
@@ -2882,6 +2888,10 @@ export const vi: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "Khóa API",

@@ -2803,6 +2803,12 @@ export const nl: TranslationKeys = {
       nameRequired: "Teamnaam is verplicht",
       nameTooLong: "Teamnaam mag maximaal 50 tekens zijn",
       duplicateName: "Er bestaat al een team met deze naam",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Rollen",
@@ -2885,6 +2891,10 @@ export const nl: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API-sleutels",

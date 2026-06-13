@@ -2799,6 +2799,12 @@ export const sv: TranslationKeys = {
       nameRequired: "Teamnamn kravs",
       nameTooLong: "Teamnamn far vara hogst 50 tecken",
       duplicateName: "Ett team med detta namn finns redan",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "Roller",
@@ -2880,6 +2886,10 @@ export const sv: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API-nycklar",

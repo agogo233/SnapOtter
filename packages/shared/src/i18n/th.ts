@@ -2779,6 +2779,12 @@ export const th: TranslationKeys = {
       nameRequired: "ต้องระบุชื่อทีม",
       nameTooLong: "ชื่อทีมต้องไม่เกิน 50 ตัวอักษร",
       duplicateName: "มีทีมชื่อนี้อยู่แล้ว",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "บทบาท",
@@ -2860,6 +2866,10 @@ export const th: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "คีย์ API",

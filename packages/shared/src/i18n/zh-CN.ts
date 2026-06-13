@@ -2731,6 +2731,12 @@ export const zhCN: TranslationKeys = {
       nameRequired: "团队名称为必填项",
       nameTooLong: "团队名称不能超过 50 个字符",
       duplicateName: "该名称的团队已存在",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "角色",
@@ -2812,6 +2818,10 @@ export const zhCN: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API 密钥",

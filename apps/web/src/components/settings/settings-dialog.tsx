@@ -338,6 +338,8 @@ interface TeamEntry {
   id: string;
   name: string;
   memberCount: number;
+  storageQuota: number | null;
+  retentionHours: number | null;
   createdAt: string;
 }
 
@@ -1916,6 +1918,10 @@ function TeamsSection() {
   const [editingTeamId, setEditingTeamId] = useState<string | null>(null);
   const [editingTeamName, setEditingTeamName] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [expandedTeamId, setExpandedTeamId] = useState<string | null>(null);
+  const [quotaMb, setQuotaMb] = useState("");
+  const [retention, setRetention] = useState("");
+  const [savingQuota, setSavingQuota] = useState(false);
   const [actionMsg, setActionMsg] = useState<{ type: "success" | "error"; text: string } | null>(
     null,
   );
@@ -2004,6 +2010,45 @@ function TeamsSection() {
       setTimeout(() => setActionMsg(null), 3000);
     },
     [loadTeams],
+  );
+
+  const handleExpandTeam = useCallback(
+    (tm: TeamEntry) => {
+      if (expandedTeamId === tm.id) {
+        setExpandedTeamId(null);
+        return;
+      }
+      setExpandedTeamId(tm.id);
+      setQuotaMb(
+        tm.storageQuota ? String(Math.round(tm.storageQuota / (1024 * 1024))) : "",
+      );
+      setRetention(tm.retentionHours ? String(tm.retentionHours) : "");
+    },
+    [expandedTeamId],
+  );
+
+  const handleSaveQuota = useCallback(
+    async (id: string) => {
+      setSavingQuota(true);
+      try {
+        const body: Record<string, number | null> = {};
+        const mbVal = quotaMb.trim() ? Number(quotaMb) : 0;
+        body.storageQuota = mbVal > 0 ? mbVal * 1024 * 1024 : null;
+        const retVal = retention.trim() ? Number(retention) : 0;
+        body.retentionHours = retVal > 0 ? retVal : null;
+        await apiPut(`/v1/teams/${id}`, body);
+        setActionMsg({ type: "success", text: t.settings.teams.quotaSaved });
+        setExpandedTeamId(null);
+        await loadTeams();
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : "Failed to save";
+        setActionMsg({ type: "error", text: msg });
+      } finally {
+        setSavingQuota(false);
+        setTimeout(() => setActionMsg(null), 3000);
+      }
+    },
+    [quotaMb, retention, loadTeams],
   );
 
   if (loading) {
@@ -2095,8 +2140,8 @@ function TeamsSection() {
           </div>
         ) : (
           teams.map((tm) => (
+          <Fragment key={tm.id}>
             <div
-              key={tm.id}
               className={cn(
                 "items-center px-4 py-3 border-b border-border last:border-0 last:rounded-b-lg hover:bg-muted/20 transition-colors",
                 isMobile ? "flex gap-3" : "grid grid-cols-[1fr_100px_60px] gap-2",
@@ -2173,6 +2218,17 @@ function TeamsSection() {
                       <Pencil className="h-3.5 w-3.5" />
                       {t.settings.teams.renameAction}
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleExpandTeam(tm);
+                        setOpenMenuId(null);
+                      }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-foreground hover:bg-muted transition-colors"
+                    >
+                      <Settings className="h-3.5 w-3.5" />
+                      {t.settings.heading}
+                    </button>
                     <div className="border-t border-border my-1" />
                     <button
                       type="button"
@@ -2186,6 +2242,73 @@ function TeamsSection() {
                 )}
               </div>
             </div>
+            {expandedTeamId === tm.id && (
+              <div className="px-4 py-3 border-b border-border last:border-0 bg-muted/10 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <label
+                      htmlFor={`quota-${tm.id}`}
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      {t.settings.teams.teamStorageQuota}
+                    </label>
+                    <input
+                      id={`quota-${tm.id}`}
+                      type="number"
+                      min="0"
+                      value={quotaMb}
+                      onChange={(e) => setQuotaMb(e.target.value)}
+                      placeholder="0"
+                      className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      {t.settings.teams.teamStorageQuotaDesc}
+                    </p>
+                  </div>
+                  <div className="space-y-1">
+                    <label
+                      htmlFor={`retention-${tm.id}`}
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      {t.settings.teams.teamRetentionHours}
+                    </label>
+                    <input
+                      id={`retention-${tm.id}`}
+                      type="number"
+                      min="0"
+                      value={retention}
+                      onChange={(e) => setRetention(e.target.value)}
+                      placeholder="0"
+                      className="w-full px-3 py-1.5 rounded-lg border border-border bg-background text-sm text-foreground"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      {t.settings.teams.teamRetentionHoursDesc}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={savingQuota}
+                    onClick={() => handleSaveQuota(tm.id)}
+                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {savingQuota && (
+                      <Loader2 className="h-3 w-3 animate-spin" aria-hidden="true" />
+                    )}
+                    {t.common.save}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExpandedTeamId(null)}
+                    className="px-3 py-1.5 rounded-lg border border-border text-xs text-muted-foreground hover:bg-muted transition-colors"
+                  >
+                    {t.common.cancel}
+                  </button>
+                </div>
+              </div>
+            )}
+          </Fragment>
           ))
         )}
       </div>

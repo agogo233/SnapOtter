@@ -2742,6 +2742,12 @@ export const ko: TranslationKeys = {
       nameRequired: "팀 이름은 필수입니다",
       nameTooLong: "팀 이름은 50자 이내여야 합니다",
       duplicateName: "같은 이름의 팀이 이미 존재합니다",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "역할",
@@ -2824,6 +2830,10 @@ export const ko: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "API 키",

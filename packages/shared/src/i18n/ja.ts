@@ -2758,6 +2758,12 @@ export const ja: TranslationKeys = {
       nameRequired: "チーム名は必須です",
       nameTooLong: "チーム名は50文字以内にしてください",
       duplicateName: "同じ名前のチームが既にあります",
+      teamStorageQuota: "Storage Quota (MB)",
+      teamStorageQuotaDesc: "Maximum storage for this team in MB. Leave empty for no limit.",
+      teamRetentionHours: "Retention (hours)",
+      teamRetentionHoursDesc:
+        "Processing file retention for this team. Leave empty to use global default.",
+      quotaSaved: "Team settings saved",
     },
     roles: {
       heading: "ロール",
@@ -2839,6 +2845,10 @@ export const ja: TranslationKeys = {
       storageHeading: "Library storage",
       storageFiles: "{count} files",
       unknownUser: "(unknown)",
+      storageByTeam: "Storage by Team",
+      teamColumn: "Team",
+      storageColumn: "Storage",
+      usersColumn: "Users",
     },
     apiKeys: {
       heading: "APIキー",
