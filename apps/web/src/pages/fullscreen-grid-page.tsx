@@ -32,8 +32,7 @@ const MODALITY_TABS = [
   { id: "image", label: "Image", icon: Image },
   { id: "video", label: "Video", icon: Video },
   { id: "audio", label: "Audio", icon: AudioLines },
-  { id: "document", label: "Documents", icon: FileText },
-  { id: "file", label: "Data & Files", icon: Table },
+  { id: "document", label: "Docs", icon: FileText },
 ] as const;
 
 export function FullscreenGridPage() {
@@ -72,6 +71,8 @@ export function FullscreenGridPage() {
 
   const modalityFiltered = useMemo(() => {
     if (modalityTab === "all") return visibleTools;
+    if (modalityTab === "document")
+      return visibleTools.filter((t) => t.modality === "document" || t.modality === "file");
     return visibleTools.filter((t) => t.modality === modalityTab);
   }, [visibleTools, modalityTab]);
 

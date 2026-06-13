@@ -5,12 +5,13 @@ import { useMemo } from "react";
 
 const FUSE_OPTIONS: IFuseOptions<Tool> = {
   keys: [
-    { name: "name", weight: 0.4 },
-    { name: "description", weight: 0.3 },
-    { name: "id", weight: 0.2 },
+    { name: "name", weight: 0.35 },
+    { name: "description", weight: 0.25 },
+    { name: "modality", weight: 0.15 },
+    { name: "id", weight: 0.15 },
     { name: "category", weight: 0.1 },
   ],
-  threshold: 0.4,
+  threshold: 0.45,
   ignoreLocation: true,
   minMatchCharLength: 2,
 };
