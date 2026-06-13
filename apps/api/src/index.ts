@@ -30,6 +30,7 @@ import {
   ensureBuiltinRoles,
   ensureDefaultAdmin,
 } from "./plugins/auth.js";
+import { registerMfa } from "./plugins/mfa.js";
 import { oidcRoutes } from "./plugins/oidc.js";
 import { registerSaml } from "./plugins/saml.js";
 import { registerStatic } from "./plugins/static.js";
@@ -306,6 +307,9 @@ await oidcRoutes(app);
 
 // SAML routes
 await registerSaml(app);
+
+// MFA routes (TOTP enrollment, verification, disable)
+await registerMfa(app);
 
 // File upload/download routes
 await fileRoutes(app);

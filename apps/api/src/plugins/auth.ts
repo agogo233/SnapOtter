@@ -342,6 +342,32 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(401).send({ error: "Invalid credentials" });
       }
 
+      // ── MFA challenge ──────────────────────────────────────────
+      if (user.totpEnabled) {
+        const mfaToken = randomUUID();
+        const redis = sharedRedis();
+        await redis.setex(`mfa:${mfaToken}`, 300, user.id);
+
+        await audit("MFA_CHALLENGE_ISSUED", { userId: user.id, username: user.username });
+
+        // Determine if MFA policy requires enrollment for this user
+        let mfaRequired = false;
+        try {
+          const { getMfaPolicy, isMfaRequiredForUser } = await import("./mfa.js");
+          const policy = await getMfaPolicy();
+          mfaRequired = isMfaRequiredForUser(policy, user.role);
+        } catch {
+          // MFA plugin not loaded
+        }
+
+        return reply.status(200).send({
+          requiresMfa: true,
+          mfaToken,
+          mfaRequired,
+          message: "MFA verification required",
+        });
+      }
+
       // Create session
       const token = createSessionToken();
       const expiresAt = new Date(Date.now() + SESSION_DURATION_MS);
@@ -373,6 +399,16 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
 
       const [teamRow] = await db.select().from(schema.teams).where(eq(schema.teams.id, user.team));
 
+      // Check if MFA enrollment is required by policy but user hasn't enrolled yet
+      let mfaRequired = false;
+      try {
+        const { getMfaPolicy, isMfaRequiredForUser } = await import("./mfa.js");
+        const policy = await getMfaPolicy();
+        mfaRequired = isMfaRequiredForUser(policy, user.role) && !user.totpEnabled;
+      } catch {
+        // MFA plugin not loaded
+      }
+
       return reply.send({
         token,
         user: {
@@ -387,6 +423,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
           analyticsConsentRemindAt: user.analyticsConsentRemindAt?.getTime() ?? null,
         },
         expiresAt: expiresAt.toISOString(),
+        ...(mfaRequired && { mfaRequired: true }),
       });
     },
   );
