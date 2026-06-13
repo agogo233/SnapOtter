@@ -32,7 +32,10 @@ export function runQpdf(args: string[], timeoutMs = 30_000): Promise<string> {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      if (code === 0) resolvePromise(out);
+      // qpdf exit codes: 0 = success, 2 = errors (real failure),
+      // 3 = warnings only (file processed successfully despite minor
+      // structural quirks common in web-generated and scanned PDFs).
+      if (code === 0 || code === 3) resolvePromise(out);
       else
         reject(new Error(`qpdf exited ${code ?? signal}: ${err.slice(-1000) || out.slice(-1000)}`));
     });
