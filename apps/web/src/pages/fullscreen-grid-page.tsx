@@ -1,6 +1,18 @@
 import type { CategoryInfo, Tool } from "@snapotter/shared";
 import { ANALYTICS_EVENTS, CATEGORIES, TOOLS } from "@snapotter/shared";
-import { Eye, EyeOff, FileImage, LayoutGrid, List, Search } from "lucide-react";
+import {
+  AudioLines,
+  Eye,
+  EyeOff,
+  FileImage,
+  FileText,
+  Image,
+  LayoutGrid,
+  List,
+  Search,
+  Table,
+  Video,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { OtterLogo } from "@/components/common/otter-logo";
@@ -14,6 +26,15 @@ import { getCategoryName, getToolDescription, getToolName } from "@/lib/tool-i18
 import { cn } from "@/lib/utils";
 import { useFeaturesStore } from "@/stores/features-store";
 
+const MODALITY_TABS = [
+  { id: "all", label: "All", icon: LayoutGrid },
+  { id: "image", label: "Image", icon: Image },
+  { id: "video", label: "Video", icon: Video },
+  { id: "audio", label: "Audio", icon: AudioLines },
+  { id: "document", label: "Documents", icon: FileText },
+  { id: "file", label: "Data & Files", icon: Table },
+] as const;
+
 export function FullscreenGridPage() {
   const { t } = useTranslation();
   const isMobile = useMobile();
@@ -22,6 +43,7 @@ export function FullscreenGridPage() {
   const navigate = useNavigate();
   const [disabledTools, setDisabledTools] = useState<string[]>([]);
   const [experimentalEnabled, setExperimentalEnabled] = useState(false);
+  const [modalityTab, setModalityTab] = useState<string>("all");
   const fetchFeatures = useFeaturesStore((s) => s.fetch);
 
   useEffect(() => {
@@ -48,15 +70,19 @@ export function FullscreenGridPage() {
   }, [disabledTools, experimentalEnabled]);
 
   const filteredTools = useMemo(() => {
-    if (!search) return visibleTools;
+    let tools = visibleTools;
+    if (modalityTab !== "all") {
+      tools = tools.filter((t) => t.modality === modalityTab);
+    }
+    if (!search) return tools;
     const q = search.toLowerCase();
-    return visibleTools.filter(
+    return tools.filter(
       (t) =>
         t.name.toLowerCase().includes(q) ||
         t.description.toLowerCase().includes(q) ||
         t.category.toLowerCase().includes(q),
     );
-  }, [search, visibleTools]);
+  }, [search, visibleTools, modalityTab]);
 
   useEffect(() => {
     if (!search) return;
@@ -135,6 +161,32 @@ export function FullscreenGridPage() {
           </button>
         </div>
       </header>
+
+      {/* Modality tabs */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="flex flex-wrap gap-2">
+          {MODALITY_TABS.map((tab) => {
+            const TabIcon = tab.icon;
+            const isActive = modalityTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setModalityTab(tab.id)}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors",
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground",
+                )}
+              >
+                <TabIcon className="h-3.5 w-3.5" />
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Grid */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
