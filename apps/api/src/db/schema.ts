@@ -6,6 +6,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -124,19 +125,29 @@ export const pipelines = pgTable("pipelines", {
     .$defaultFn(() => new Date()),
 });
 
-export const auditLog = pgTable("audit_log", {
-  id: text("id").primaryKey(),
-  actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
-  actorUsername: text("actor_username").notNull(),
-  action: text("action").notNull(),
-  targetType: text("target_type"),
-  targetId: text("target_id"),
-  details: jsonb("details").$type<Record<string, unknown>>(),
-  ipAddress: text("ip_address"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: text("id").primaryKey(),
+    actorId: text("actor_id").references(() => users.id, { onDelete: "set null" }),
+    actorUsername: text("actor_username").notNull(),
+    action: text("action").notNull(),
+    targetType: text("target_type"),
+    targetId: text("target_id"),
+    details: jsonb("details").$type<Record<string, unknown>>(),
+    ipAddress: text("ip_address"),
+    integrity: text("integrity"),
+    requestId: text("request_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => [
+    index("audit_log_created_at_idx").on(table.createdAt),
+    index("audit_log_action_idx").on(table.action),
+    index("audit_log_actor_id_idx").on(table.actorId),
+  ],
+);
 
 export const roles = pgTable("roles", {
   id: text("id").primaryKey(),
@@ -169,3 +180,19 @@ export const userFiles = pgTable("user_files", {
     .notNull()
     .$defaultFn(() => new Date()),
 });
+
+export const userPreferences = pgTable(
+  "user_preferences",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    value: jsonb("value").$type<Record<string, unknown>>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.key] })],
+);

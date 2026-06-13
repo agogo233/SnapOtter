@@ -15,6 +15,13 @@
       "when": 1781189798348,
       "tag": "0001_jobs_spine",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781338621449,
+      "tag": "0002_fair_sprite",
+      "breakpoints": true
     }
   ]
 }
