@@ -1,0 +1,325 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# ──────────────────────────────────────────────────────────────────────────────
+# build-bundle.sh -- Build a pre-built AI bundle tar.gz inside the Docker image
+#
+# Usage: build-bundle.sh <bundleId> <arch> <outputDir>
+#
+#   bundleId  - One of the bundle IDs in feature-manifest.json
+#   arch      - Architecture variant: amd64-gpu or arm64-cpu
+#   outputDir - Directory for the output .tar.gz and .sha256 files
+#
+# Runs as root inside the SnapOtter Docker container. The venv at /opt/venv
+# must be activated. Produces:
+#   <outputDir>/<bundleId>-<arch>.tar.gz
+#   <outputDir>/<bundleId>-<arch>.tar.gz.sha256
+# ──────────────────────────────────────────────────────────────────────────────
+
+export BUNDLE_ID="${1:?Usage: build-bundle.sh <bundleId> <arch> <outputDir>}"
+export ARCH="${2:?Usage: build-bundle.sh <bundleId> <arch> <outputDir>}"
+OUTPUT_DIR="${3:?Usage: build-bundle.sh <bundleId> <arch> <outputDir>}"
+
+MANIFEST="/app/docker/feature-manifest.json"
+SITE_PACKAGES="$(python3 -c 'import site; print(site.getsitepackages()[0])')"
+export MODELS_DIR="/tmp/bundle-models"
+export BUILD_DIR="/tmp/bundle-build"
+
+# Parse platform from arch: amd64-gpu -> amd64, arm64-cpu -> arm64
+export PLATFORM="${ARCH%%-*}"
+
+echo "=== Building bundle: ${BUNDLE_ID} arch=${ARCH} platform=${PLATFORM} ==="
+echo "Site-packages: ${SITE_PACKAGES}"
+
+# Validate manifest exists
+if [[ ! -f "${MANIFEST}" ]]; then
+  echo "ERROR: Manifest not found at ${MANIFEST}" >&2
+  exit 1
+fi
+
+# Validate bundle exists in manifest
+python3 -c "
+import json, sys
+with open('${MANIFEST}') as f:
+    m = json.load(f)
+if '${BUNDLE_ID}' not in m['bundles']:
+    print(f'ERROR: Bundle \"${BUNDLE_ID}\" not found in manifest', file=sys.stderr)
+    print(f'Available: {list(m[\"bundles\"].keys())}', file=sys.stderr)
+    sys.exit(1)
+"
+
+# Clean previous build artifacts
+rm -rf "${MODELS_DIR}" "${BUILD_DIR}"
+mkdir -p "${MODELS_DIR}" "${BUILD_DIR}/site-packages" "${BUILD_DIR}/models" "${OUTPUT_DIR}"
+
+# ── Step 1: Record base site-packages ────────────────────────────────────
+echo "=== Recording base site-packages ==="
+find "${SITE_PACKAGES}" -maxdepth 1 -mindepth 1 | sort > /tmp/base-packages.txt
+echo "  Base entries: $(wc -l < /tmp/base-packages.txt)"
+
+# ── Step 2: Install packages ─────────────────────────────────────────────
+echo "=== Installing packages ==="
+python3 << 'PYINSTALL'
+import json, subprocess, sys, os
+
+with open("/app/docker/feature-manifest.json") as f:
+    manifest = json.load(f)
+
+bundle_id = os.environ["BUNDLE_ID"]
+platform = os.environ["PLATFORM"]
+bundle = manifest["bundles"][bundle_id]
+pip_flags = bundle.get("pipFlags", {})
+
+# Collect all packages: common + arch-specific
+packages = list(bundle["packages"].get("common", []))
+packages.extend(bundle["packages"].get(platform, []))
+
+print(f"  Installing {len(packages)} package(s) for {bundle_id} ({platform})")
+
+for pkg_string in packages:
+    # Check if any pipFlags key matches the start of this package string
+    extra_flags = ""
+    for flag_key, flag_val in pip_flags.items():
+        if pkg_string.startswith(flag_key):
+            extra_flags = flag_val
+            break
+
+    # pkg_string may contain embedded flags (e.g. --index-url), so pass as-is
+    cmd = f"pip install --no-cache-dir {extra_flags} {pkg_string}".strip()
+    print(f"  > {cmd}", flush=True)
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode != 0:
+        print(f"ERROR: pip install failed for: {pkg_string}", file=sys.stderr)
+        sys.exit(1)
+
+print("  Package installation complete")
+PYINSTALL
+
+# ── Step 3: Post-install fixups ───────────────────────────────────────────
+echo "=== Running post-install fixups ==="
+python3 << 'PYPOST'
+import json, subprocess, sys, os
+
+with open("/app/docker/feature-manifest.json") as f:
+    manifest = json.load(f)
+
+bundle = manifest["bundles"][os.environ["BUNDLE_ID"]]
+post_install = bundle.get("postInstall", [])
+
+if not post_install:
+    print("  No post-install fixups")
+    sys.exit(0)
+
+for pkg in post_install:
+    cmd = f"pip install --no-cache-dir --force-reinstall {pkg}"
+    print(f"  > {cmd}", flush=True)
+    result = subprocess.run(cmd, shell=True)
+    if result.returncode != 0:
+        print(f"ERROR: post-install fixup failed for: {pkg}", file=sys.stderr)
+        sys.exit(1)
+
+print("  Post-install fixups complete")
+PYPOST
+
+# ── Step 4: Re-pin base packages ─────────────────────────────────────────
+echo "=== Re-pinning base packages ==="
+python3 << 'PYREPIN'
+import json, subprocess, sys
+
+with open("/app/docker/feature-manifest.json") as f:
+    manifest = json.load(f)
+
+base_packages = manifest.get("basePackages", [])
+if not base_packages:
+    print("  No base packages to re-pin")
+    sys.exit(0)
+
+pkgs = " ".join(base_packages)
+cmd = f"pip install --no-cache-dir --force-reinstall {pkgs}"
+print(f"  > {cmd}", flush=True)
+result = subprocess.run(cmd, shell=True)
+if result.returncode != 0:
+    print("ERROR: base package re-pin failed", file=sys.stderr)
+    sys.exit(1)
+
+print("  Base packages re-pinned")
+PYREPIN
+
+# ── Step 5: Download models ──────────────────────────────────────────────
+echo "=== Downloading models ==="
+python3 << 'PYMODELS'
+import json, os, sys, urllib.request, pathlib
+
+with open("/app/docker/feature-manifest.json") as f:
+    manifest = json.load(f)
+
+bundle = manifest["bundles"][os.environ["BUNDLE_ID"]]
+models = bundle.get("models", [])
+models_dir = os.environ["MODELS_DIR"]
+
+if not models:
+    print("  No models to download")
+    sys.exit(0)
+
+print(f"  Downloading {len(models)} model(s)")
+
+for model in models:
+    model_id = model["id"]
+    download_fn = model.get("downloadFn")
+    url = model.get("url")
+
+    if url:
+        # Direct URL download via urllib
+        dest = os.path.join(models_dir, model["path"])
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        print(f"  [{model_id}] URL -> {model['path']}", flush=True)
+        urllib.request.urlretrieve(url, dest)
+        size = os.path.getsize(dest)
+        min_size = model.get("minSize", 0)
+        if min_size and size < min_size:
+            print(f"  WARNING: {model_id} is {size:,} bytes, expected >= {min_size:,}", file=sys.stderr)
+        print(f"  [{model_id}] Done ({size:,} bytes)")
+
+    elif download_fn == "hf_snapshot":
+        from huggingface_hub import snapshot_download
+        args = model["args"]
+        repo_id = args[0]
+        local_dir = os.path.join(models_dir, args[1])
+
+        kwargs = {"repo_id": repo_id, "local_dir": local_dir}
+
+        # Only download specific file if specified
+        if "file" in model:
+            kwargs["allow_patterns"] = [model["file"]]
+
+        # Handle non-default repo types (e.g. "space")
+        if "repoType" in model:
+            kwargs["repo_type"] = model["repoType"]
+
+        print(f"  [{model_id}] HF snapshot: {repo_id} -> {args[1]}", flush=True)
+        snapshot_download(**kwargs)
+        print(f"  [{model_id}] Done")
+
+    elif download_fn == "rembg_session":
+        args = model["args"]
+        session_name = args[0]
+        print(f"  [{model_id}] rembg session: {session_name}", flush=True)
+        from rembg.sessions import new_session
+        new_session(session_name)
+        print(f"  [{model_id}] Done")
+
+    else:
+        print(f"  WARNING: Unknown download method for {model_id}", file=sys.stderr)
+
+print("  Model downloads complete")
+PYMODELS
+
+# ── Step 6: Diff site-packages ────────────────────────────────────────────
+echo "=== Diffing site-packages ==="
+find "${SITE_PACKAGES}" -maxdepth 1 -mindepth 1 | sort > /tmp/after-packages.txt
+DELTA_DIRS="$(comm -13 /tmp/base-packages.txt /tmp/after-packages.txt)"
+DELTA_COUNT="$(echo "${DELTA_DIRS}" | grep -c . || true)"
+echo "  New top-level dirs: ${DELTA_COUNT}"
+
+if [[ "${DELTA_COUNT}" -eq 0 ]]; then
+  echo "WARNING: No new site-packages detected. Bundle may be empty." >&2
+fi
+
+# Copy delta dirs to build staging
+while IFS= read -r dir; do
+  [[ -z "${dir}" ]] && continue
+  cp -a "${dir}" "${BUILD_DIR}/site-packages/"
+done <<< "${DELTA_DIRS}"
+
+# Copy models to build staging
+if [[ -d "${MODELS_DIR}" ]] && [[ -n "$(ls -A "${MODELS_DIR}" 2>/dev/null)" ]]; then
+  cp -a "${MODELS_DIR}"/* "${BUILD_DIR}/models/"
+fi
+
+# ── Step 7: Torch NCCL fixup ─────────────────────────────────────────────
+echo "=== Checking for torch NCCL fixup ==="
+python3 << 'PYNCCL'
+import importlib.metadata, subprocess, os, sys
+
+try:
+    reqs = importlib.metadata.requires("torch")
+except importlib.metadata.PackageNotFoundError:
+    print("  torch not installed, skipping NCCL check")
+    sys.exit(0)
+
+if reqs is None:
+    print("  No torch requirements found")
+    sys.exit(0)
+
+nccl_pkgs = [r.split(";")[0].strip() for r in reqs if "nccl" in r.lower()]
+if not nccl_pkgs:
+    print("  No NCCL requirements found")
+    sys.exit(0)
+
+fixups_dir = os.path.join(os.environ["BUILD_DIR"], "fixups")
+os.makedirs(fixups_dir, exist_ok=True)
+
+for pkg in nccl_pkgs:
+    print(f"  Downloading NCCL wheel: {pkg}", flush=True)
+    result = subprocess.run(
+        ["pip", "download", "--no-cache-dir", "-d", fixups_dir, pkg]
+    )
+    if result.returncode != 0:
+        print(f"  WARNING: Failed to download NCCL wheel: {pkg}", file=sys.stderr)
+
+print("  NCCL fixup complete")
+PYNCCL
+
+# ── Step 8: Write bundle.json ─────────────────────────────────────────────
+echo "=== Writing bundle.json ==="
+python3 << 'PYBUNDLE'
+import json, os, sys
+
+with open("/app/docker/feature-manifest.json") as f:
+    manifest = json.load(f)
+
+bundle_id = os.environ["BUNDLE_ID"]
+arch = os.environ["ARCH"]
+bundle = manifest["bundles"][bundle_id]
+model_ids = [m["id"] for m in bundle.get("models", [])]
+
+py_ver = f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
+
+bundle_meta = {
+    "bundleId": bundle_id,
+    "version": manifest["imageVersion"],
+    "arch": arch,
+    "imageVersion": manifest["imageVersion"],
+    "pythonVersion": py_ver,
+    "models": model_ids,
+}
+
+out_path = os.path.join(os.environ["BUILD_DIR"], "bundle.json")
+with open(out_path, "w") as f:
+    json.dump(bundle_meta, f, indent=2)
+    f.write("\n")
+
+print(f"  {json.dumps(bundle_meta, indent=2)}")
+PYBUNDLE
+
+# ── Step 9: Create archive ────────────────────────────────────────────────
+echo "=== Creating archive ==="
+ARCHIVE_NAME="${BUNDLE_ID}-${ARCH}.tar.gz"
+ARCHIVE_PATH="${OUTPUT_DIR}/${ARCHIVE_NAME}"
+
+tar -czf "${ARCHIVE_PATH}" -C "${BUILD_DIR}" .
+
+sha256sum "${ARCHIVE_PATH}" | awk '{print $1}' > "${ARCHIVE_PATH}.sha256"
+
+ARCHIVE_SIZE="$(stat -c%s "${ARCHIVE_PATH}" 2>/dev/null || stat -f%z "${ARCHIVE_PATH}")"
+SHA256="$(cat "${ARCHIVE_PATH}.sha256")"
+
+echo "  Archive: ${ARCHIVE_PATH}"
+echo "  Size:    ${ARCHIVE_SIZE} bytes"
+echo "  SHA256:  ${SHA256}"
+
+# ── Cleanup ───────────────────────────────────────────────────────────────
+echo "=== Cleaning up ==="
+rm -rf "${MODELS_DIR}" "${BUILD_DIR}" /tmp/base-packages.txt /tmp/after-packages.txt
+
+echo "=== Done: ${BUNDLE_ID} ${ARCH} ==="
