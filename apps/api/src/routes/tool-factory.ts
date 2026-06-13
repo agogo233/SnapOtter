@@ -201,6 +201,15 @@ export function createToolRoute<T>(app: FastifyInstance, config: ToolRouteConfig
     `/api/v1/tools/${config.toolId}`,
     { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request: FastifyRequest, reply: FastifyReply) => {
+      // Check per-tool access before processing uploads
+      const authUser = getAuthUser(request);
+      if (authUser) {
+        const { hasToolAccess } = await import("../permissions.js");
+        if (!(await hasToolAccess(authUser.role, config.toolId))) {
+          return reply.status(403).send({ error: "You don't have permission to use this tool" });
+        }
+      }
+
       const jobId = randomUUID();
       const maxInputs = config.maxInputs ?? 1;
       let filename = "image";
