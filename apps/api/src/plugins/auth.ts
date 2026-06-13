@@ -7,7 +7,7 @@ import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { sharedRedis } from "../jobs/connection.js";
 import { auditFromRequest, sanitizeAuditInput } from "../lib/audit.js";
-import { getSettingNumber } from "../lib/settings-helpers.js";
+import { getSettingNumber, getSettingString } from "../lib/settings-helpers.js";
 import { getPermissions, requirePermission } from "../permissions.js";
 
 const scryptAsync = promisify(scrypt);
@@ -51,14 +51,23 @@ export function computeKeyPrefix(rawKey: string): string {
   return createHash("sha256").update(rawKey).digest("hex").slice(0, 16);
 }
 
-const PASSWORD_RULES =
-  "Password must be at least 8 characters with uppercase, lowercase, and a number";
+async function validatePasswordStrength(password: string): Promise<string | null> {
+  const minLength = await getSettingNumber("passwordMinLength", 8);
+  if (password.length < minLength) return `Password must be at least ${minLength} characters`;
 
-function validatePasswordStrength(password: string): string | null {
-  if (password.length < 8) return PASSWORD_RULES;
-  if (!/[A-Z]/.test(password)) return PASSWORD_RULES;
-  if (!/[a-z]/.test(password)) return PASSWORD_RULES;
-  if (!/[0-9]/.test(password)) return PASSWORD_RULES;
+  const requireUpper = await getSettingString("passwordRequireUppercase", "true");
+  const requireLower = await getSettingString("passwordRequireLowercase", "true");
+  const requireDigit = await getSettingString("passwordRequireDigit", "true");
+  const requireSpecial = await getSettingString("passwordRequireSpecial", "false");
+
+  if (requireUpper === "true" && !/[A-Z]/.test(password))
+    return "Password must contain an uppercase letter";
+  if (requireLower === "true" && !/[a-z]/.test(password))
+    return "Password must contain a lowercase letter";
+  if (requireDigit === "true" && !/\d/.test(password)) return "Password must contain a digit";
+  if (requireSpecial === "true" && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password))
+    return "Password must contain a special character";
+
   return null;
 }
 
@@ -475,7 +484,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     }
     const body = parsed.data;
 
-    const pwError = validatePasswordStrength(body.newPassword);
+    const pwError = await validatePasswordStrength(body.newPassword);
     if (pwError) {
       return reply.status(400).send({
         error: pwError,
@@ -590,7 +599,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       });
     }
 
-    const registerPwError = validatePasswordStrength(body.password);
+    const registerPwError = await validatePasswordStrength(body.password);
     if (registerPwError) {
       return reply.status(400).send({
         error: registerPwError,
@@ -832,7 +841,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       }
       const body = parsed.data;
 
-      const pwError = validatePasswordStrength(body.newPassword);
+      const pwError = await validatePasswordStrength(body.newPassword);
       if (pwError) {
         return reply.status(400).send({
           error: pwError,
