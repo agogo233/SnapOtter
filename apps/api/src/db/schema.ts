@@ -29,6 +29,9 @@ export const users = pgTable("users", {
   authProvider: text("auth_provider").notNull().default("local"),
   externalId: text("external_id"),
   email: text("email"),
+  legalHold: boolean("legal_hold").notNull().default(false),
+  storageUsed: bigint("storage_used", { mode: "number" }).notNull().default(0),
+  storageQuota: bigint("storage_quota", { mode: "number" }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -43,6 +46,9 @@ export const users = pgTable("users", {
 export const teams = pgTable("teams", {
   id: text("id").primaryKey(),
   name: text("name").notNull().unique(),
+  legalHold: boolean("legal_hold").notNull().default(false),
+  storageQuota: bigint("storage_quota", { mode: "number" }),
+  retentionHours: integer("retention_hours"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .$defaultFn(() => new Date()),
@@ -91,6 +97,7 @@ export const jobs = pgTable(
       .$defaultFn(() => new Date()),
     startedAt: timestamp("started_at", { withTimezone: true }),
     completedAt: timestamp("completed_at", { withTimezone: true }),
+    deleteAfter: timestamp("delete_after", { withTimezone: true }),
   },
   (table) => [
     index("jobs_created_at_idx").on(table.createdAt),
