@@ -22,13 +22,14 @@ export function registerPdfToText(app: FastifyInstance) {
 
       const outPath = join(ctx.scratchDir, `${base}.txt`);
       ctx.report(10, "Extracting text");
-      await pdfTextPy(inPath, outPath);
+      const result = await pdfTextPy(inPath, outPath);
       ctx.report(90, "Done");
 
       return {
         scratchPath: outPath,
         filename: `${base}.txt`,
         contentType: "text/plain",
+        resultPayload: { chars: result.chars },
       };
     },
   });
