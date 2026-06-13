@@ -2571,26 +2571,39 @@ function RolesSection() {
 const AUDIT_ACTIONS = [
   "LOGIN_SUCCESS",
   "LOGIN_FAILED",
-  "USER_CREATED",
-  "USER_UPDATED",
-  "USER_DELETED",
+  "LOGOUT",
   "PASSWORD_CHANGED",
   "PASSWORD_RESET",
+  "USER_CREATED",
+  "USER_DELETED",
+  "USER_UPDATED",
+  "FILE_UPLOADED",
+  "FILE_DELETED",
   "API_KEY_CREATED",
   "API_KEY_DELETED",
   "ROLE_CREATED",
   "ROLE_UPDATED",
   "ROLE_DELETED",
   "SETTINGS_UPDATED",
+  "OIDC_LOGIN_SUCCESS",
+  "OIDC_USER_CREATED",
+  "OIDC_USER_LINKED",
+  "OIDC_LOGIN_FAILED",
+  "TOOL_EXECUTED",
+  "BATCH_EXECUTED",
+  "PIPELINE_EXECUTED",
 ] as const;
 
 interface AuditEntry {
   id: string;
+  actorId: string | null;
   actorUsername: string;
   action: string;
   targetType: string | null;
   targetId: string | null;
   details: Record<string, unknown> | null;
+  ipAddress: string | null;
+  requestId: string | null;
   createdAt: string;
 }
 
@@ -2692,6 +2705,11 @@ function AuditLogSection() {
                     </div>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="text-sm text-foreground">{entry.actorUsername}</span>
+                      {entry.ipAddress && (
+                        <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                          {entry.ipAddress}
+                        </span>
+                      )}
                       {entry.targetType && (
                         <span className="text-xs text-muted-foreground">
                           {entry.targetType}
@@ -2721,6 +2739,9 @@ function AuditLogSection() {
                     {t.settings.auditLog.tableHeaderUser}
                   </th>
                   <th className="text-start px-3 py-2 font-medium text-muted-foreground">
+                    IP
+                  </th>
+                  <th className="text-start px-3 py-2 font-medium text-muted-foreground">
                     {t.settings.auditLog.tableHeaderAction}
                   </th>
                   <th className="text-start px-3 py-2 font-medium text-muted-foreground">
@@ -2739,6 +2760,9 @@ function AuditLogSection() {
                         {formatRelativeTime(entry.createdAt)}
                       </td>
                       <td className="px-3 py-2 text-foreground">{entry.actorUsername}</td>
+                      <td className="px-3 py-2 font-mono text-xs text-muted-foreground tabular-nums whitespace-nowrap">
+                        {entry.ipAddress ?? "---"}
+                      </td>
                       <td className="px-3 py-2">
                         <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
                           {entry.action}
@@ -2752,7 +2776,7 @@ function AuditLogSection() {
                     </tr>
                     {expandedId === entry.id && entry.details && (
                       <tr className="border-b border-border last:border-0">
-                        <td colSpan={4} className="px-3 py-2 bg-muted/10">
+                        <td colSpan={5} className="px-3 py-2 bg-muted/10">
                           <pre className="text-xs text-muted-foreground whitespace-pre-wrap font-mono overflow-x-auto">
                             {JSON.stringify(entry.details, null, 2)}
                           </pre>
