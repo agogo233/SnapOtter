@@ -1,4 +1,4 @@
-import { FileImage, ImageUp, Upload } from "lucide-react";
+import { FileUp, Upload } from "lucide-react";
 import { type DragEvent, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useUrlImport } from "@/hooks/use-url-import";
@@ -226,7 +226,7 @@ export function Dropzone({
             isDragging ? "bg-primary/15" : "group-hover:bg-primary/12",
           )}
         >
-          <ImageUp
+          <FileUp
             className={cn(
               "transition-all duration-200",
               compact ? "h-8 w-8" : "h-10 w-10",
