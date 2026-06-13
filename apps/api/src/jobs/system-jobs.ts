@@ -10,7 +10,7 @@
  * calling runSystemJob); anything else is a bug.
  */
 import type { Job } from "bullmq";
-import { inArray, sql } from "drizzle-orm";
+import { eq, inArray, sql } from "drizzle-orm";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { getMaxAgeMs } from "../lib/cleanup.js";
@@ -158,8 +158,19 @@ async function retentionSweep(): Promise<void> {
     );
   }
   if (env.AUDIT_RETENTION_DAYS > 0) {
-    await db.execute(
-      sql`DELETE FROM audit_log WHERE created_at < now() - ${env.AUDIT_RETENTION_DAYS} * interval '1 day'`,
-    );
+    const tamperResult = await db
+      .select({ value: schema.settings.value })
+      .from(schema.settings)
+      .where(eq(schema.settings.key, "tamperResistantAudit"))
+      .limit(1);
+
+    const isTamperResistant = tamperResult.length > 0 && tamperResult[0].value === "true";
+
+    // Only delete audit logs if tamper-resistant mode is OFF
+    if (!isTamperResistant) {
+      await db.execute(
+        sql`DELETE FROM audit_log WHERE created_at < now() - ${env.AUDIT_RETENTION_DAYS} * interval '1 day'`,
+      );
+    }
   }
 }

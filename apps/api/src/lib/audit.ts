@@ -1,7 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import type { FastifyBaseLogger } from "fastify";
+import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
+import { computeHmac } from "./audit-integrity.js";
+import { deriveAuditHmacKey } from "./encryption.js";
 
 const MAX_AUDIT_INPUT_LENGTH = 200;
 
@@ -56,9 +59,10 @@ export async function auditLog(
   const targetId = (details.targetUserId as string) ?? (details.keyId as string) ?? null;
   const targetType = deriveTargetType(event);
 
+  const id = randomUUID();
   try {
     await db.insert(schema.auditLog).values({
-      id: randomUUID(),
+      id,
       actorId,
       actorUsername,
       action: event,
@@ -69,6 +73,38 @@ export async function auditLog(
     });
   } catch {
     logger.warn({ event }, "Failed to write audit log to DB");
+    return;
+  }
+
+  // Compute HMAC for tamper-resistant mode
+  if (env.DATA_ENCRYPTION_KEY) {
+    try {
+      const tamperResult = await db
+        .select({ value: schema.settings.value })
+        .from(schema.settings)
+        .where(eq(schema.settings.key, "tamperResistantAudit"))
+        .limit(1);
+
+      if (tamperResult.length > 0 && tamperResult[0].value === "true") {
+        const hmacKey = await deriveAuditHmacKey(env.DATA_ENCRYPTION_KEY);
+        const rowData = {
+          actorId,
+          actorUsername,
+          action: event,
+          targetType,
+          targetId,
+          details,
+          ipAddress: ip,
+        };
+        const integrity = computeHmac(rowData, hmacKey);
+        await db
+          .update(schema.auditLog)
+          .set({ integrity })
+          .where(eq(schema.auditLog.id, id));
+      }
+    } catch {
+      logger.warn({ event }, "Failed to compute audit HMAC");
+    }
   }
 }
 
