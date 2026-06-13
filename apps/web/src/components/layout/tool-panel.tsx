@@ -66,37 +66,38 @@ export function ToolPanel() {
   return (
     <div className="w-72 border-r border-border bg-background overflow-y-auto flex flex-col shrink-0">
       <div className="p-3 sticky top-0 bg-background z-10">
-        {/* Modality filter tabs -- icon-only, docs+files merged */}
-        <div className="flex items-center gap-1 mb-2">
+        {/* Modality filter tabs -- icons + text, docs+files merged */}
+        <div className="flex flex-wrap gap-1 mb-2">
           <button
             type="button"
             onClick={() => setSelectedModality("all")}
-            title="All tools"
             className={cn(
-              "p-1.5 rounded-md transition-colors",
+              "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
               selectedModality === "all"
                 ? "bg-primary/10 text-primary"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
-            <LayoutGrid className="h-4 w-4" />
+            <LayoutGrid className="h-3.5 w-3.5" />
+            <span>All</span>
           </button>
           {TAB_MODALITIES.map((m) => {
             const Icon = ICON_MAP[m.icon] as React.ComponentType<{ className?: string }>;
             const isActive = selectedModality === m.id;
+            const label = m.id === "document" ? "Docs" : m.name;
             return (
               <button
                 key={m.id}
                 type="button"
                 onClick={() => setSelectedModality(m.id as ModalityFilter)}
-                title={m.id === "document" ? "Documents & Files" : m.name}
                 className={cn(
-                  "p-1.5 rounded-md transition-colors",
+                  "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
                   !isActive && "text-muted-foreground hover:text-foreground hover:bg-muted",
                 )}
                 style={isActive ? { backgroundColor: `${m.color}20`, color: m.color } : undefined}
               >
-                {Icon && <Icon className="h-4 w-4" />}
+                {Icon && <Icon className="h-3.5 w-3.5" />}
+                <span>{label}</span>
               </button>
             );
           })}
