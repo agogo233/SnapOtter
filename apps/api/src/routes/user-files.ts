@@ -17,7 +17,7 @@ import sharp from "sharp";
 import { z } from "zod";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
-import { auditLog } from "../lib/audit.js";
+import { auditFromRequest } from "../lib/audit.js";
 import {
   deleteStoredFile,
   deleteThumbnail,
@@ -259,11 +259,11 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({ error: "No valid files uploaded" });
       }
 
-      await auditLog(request.log, "FILE_UPLOADED", {
+      await auditFromRequest(request)("FILE_UPLOADED", {
         userId,
         count: created.length,
         files: created.map((f) => f.originalName),
-      }, request.ip);
+      });
 
       return reply.status(201).send({ files: created });
     },
@@ -495,7 +495,7 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
       .map((f) => f.id);
 
     if (validIds.length === 0) {
-      await auditLog(request.log, "FILE_DELETED", { userId: user.id, count: 0, ids }, request.ip);
+      await auditFromRequest(request)("FILE_DELETED", { userId: user.id, count: 0, ids });
       return reply.send({ deleted: 0 });
     }
 
@@ -542,11 +542,11 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
       await db.delete(schema.userFiles).where(inArray(schema.userFiles.id, chainIds));
     }
 
-    await auditLog(request.log, "FILE_DELETED", {
+    await auditFromRequest(request)("FILE_DELETED", {
       userId: user.id,
       count: chainRows.length,
       ids,
-    }, request.ip);
+    });
 
     return reply.send({ deleted: chainRows.length });
   });

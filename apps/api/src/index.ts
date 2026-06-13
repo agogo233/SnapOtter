@@ -182,6 +182,7 @@ function parseTrustProxy(value: string): boolean | number | string {
 }
 
 const app = Fastify({
+  genReqId: (req) => (req.headers["x-request-id"] as string) ?? randomUUID(),
   logger: {
     level: env.LOG_LEVEL,
     transport: {
@@ -255,6 +256,7 @@ await app.register(cors, {
 // HTTP so it is safe (and desirable) to send it in dev/staging too. CSP catches
 // injection issues early when applied during development.
 app.addHook("onSend", async (_request, reply) => {
+  reply.header("x-request-id", _request.id);
   reply.header("X-Content-Type-Options", "nosniff");
   reply.header("X-Frame-Options", "DENY");
   reply.header("X-XSS-Protection", "0");

@@ -471,25 +471,20 @@ export function createToolRoute<T>(app: FastifyInstance, config: ToolRouteConfig
 
             // Fire-and-forget: audit log must never block the response
             import("../lib/audit.js")
-              .then(({ isToolAuditEnabled, auditLog }) =>
+              .then(({ isToolAuditEnabled, auditFromRequest }) =>
                 isToolAuditEnabled().then((enabled) => {
                   if (!enabled) return;
                   const user = getAuthUser(request);
-                  return auditLog(
-                    request.log,
-                    "TOOL_EXECUTED",
-                    {
-                      userId: user?.id,
-                      username: user?.username,
-                      toolId: config.toolId,
-                      inputFileCount: received.length,
-                      totalInputSize: received.reduce((sum, r) => sum + r.size, 0),
-                      outputFormat: (settings as Record<string, unknown>)?.format ?? null,
-                      status: "success",
-                      durationMs: Date.now() - startTime,
-                    },
-                    request.ip,
-                  );
+                  return auditFromRequest(request)("TOOL_EXECUTED", {
+                    userId: user?.id,
+                    username: user?.username,
+                    toolId: config.toolId,
+                    inputFileCount: received.length,
+                    totalInputSize: received.reduce((sum, r) => sum + r.size, 0),
+                    outputFormat: (settings as Record<string, unknown>)?.format ?? null,
+                    status: "success",
+                    durationMs: Date.now() - startTime,
+                  });
                 }),
               )
               .catch(() => {});

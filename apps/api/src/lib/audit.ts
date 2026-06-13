@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import type { FastifyBaseLogger } from "fastify";
+import type { FastifyBaseLogger, FastifyRequest } from "fastify";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { computeHmac } from "./audit-integrity.js";
@@ -51,8 +51,9 @@ export async function auditLog(
   event: string,
   details: Record<string, unknown> = {},
   ip: string | null = null,
+  requestId: string | null = null,
 ): Promise<void> {
-  logger.info({ audit: true, event, ip, ...details }, `[AUDIT] ${event}`);
+  logger.info({ audit: true, event, ip, requestId, ...details }, `[AUDIT] ${event}`);
 
   const actorId = (details.userId as string) ?? (details.adminId as string) ?? null;
   const actorUsername = (details.username as string) ?? (details.newUsername as string) ?? "system";
@@ -70,6 +71,7 @@ export async function auditLog(
       targetId,
       details,
       ipAddress: ip,
+      requestId,
     });
   } catch {
     logger.warn({ event }, "Failed to write audit log to DB");
@@ -95,6 +97,7 @@ export async function auditLog(
           targetId,
           details,
           ipAddress: ip,
+          requestId,
         };
         const integrity = computeHmac(rowData, hmacKey);
         await db
@@ -106,6 +109,15 @@ export async function auditLog(
       logger.warn({ event }, "Failed to compute audit HMAC");
     }
   }
+}
+
+/**
+ * Create a bound audit logger from a Fastify request.
+ * Captures request.ip and request.id so call sites only need event + details.
+ */
+export function auditFromRequest(request: FastifyRequest) {
+  return (event: string, details: Record<string, unknown> = {}) =>
+    auditLog(request.log, event, details, request.ip, request.id);
 }
 
 function deriveTargetType(event: string): string | null {

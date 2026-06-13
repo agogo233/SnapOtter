@@ -3,7 +3,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { env } from "../../config.js";
 import { db, schema } from "../../db/index.js";
-import { auditLog } from "../../lib/audit.js";
+import { auditFromRequest } from "../../lib/audit.js";
 import { encrypt, isEncrypted } from "../../lib/encryption.js";
 import { requirePermission } from "../../permissions.js";
 
@@ -115,11 +115,11 @@ export async function registerSiemRoutes(app: FastifyInstance): Promise<void> {
         await db.insert(schema.settings).values({ key: SETTINGS_KEY, value });
       }
 
-      await auditLog(request.log, "SETTINGS_UPDATED", {
+      await auditFromRequest(request)("SETTINGS_UPDATED", {
         adminId: user.id,
         username: user.username,
         keys: [SETTINGS_KEY],
-      }, request.ip);
+      });
 
       return reply.send({ ok: true });
     },

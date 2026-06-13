@@ -5,7 +5,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import * as oidc from "openid-client";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
-import { auditLog, sanitizeAuditInput } from "../lib/audit.js";
+import { auditFromRequest, sanitizeAuditInput } from "../lib/audit.js";
 import { createSessionToken } from "./auth.js";
 
 // ── Types ─────────────────────────────────────────────────────────
@@ -221,15 +221,17 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
       return redirectToLogin(reply, "oidc_session_expired");
     }
 
+    const audit = auditFromRequest(request);
+
     // Check for error response from the IdP
     if (query.error) {
       request.log.warn(
         { error: query.error, description: query.error_description },
         "OIDC IdP returned error",
       );
-      await auditLog(request.log, "OIDC_LOGIN_FAILED", {
+      await audit("OIDC_LOGIN_FAILED", {
         reason: sanitizeAuditInput(String(query.error)),
-      }, request.ip);
+      });
       return redirectToLogin(reply, "oidc_auth_failed");
     }
 
@@ -257,7 +259,7 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
       });
     } catch (err) {
       request.log.error({ err }, "OIDC token exchange failed");
-      await auditLog(request.log, "OIDC_LOGIN_FAILED", { reason: "token_exchange_failed" }, request.ip);
+      await audit("OIDC_LOGIN_FAILED", { reason: "token_exchange_failed" });
       return redirectToLogin(reply, "oidc_auth_failed");
     }
 
@@ -265,7 +267,7 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
     const claims = tokenResponse.claims();
     if (!claims) {
       request.log.error("OIDC callback: no ID token claims");
-      await auditLog(request.log, "OIDC_LOGIN_FAILED", { reason: "no_id_token" }, request.ip);
+      await audit("OIDC_LOGIN_FAILED", { reason: "no_id_token" });
       return redirectToLogin(reply, "oidc_auth_failed");
     }
 
@@ -314,11 +316,11 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
           })
           .where(eq(schema.users.id, existingByEmail.id));
         userId = existingByEmail.id;
-        await auditLog(request.log, "OIDC_USER_LINKED", {
+        await audit("OIDC_USER_LINKED", {
           userId: existingByEmail.id,
           username: existingByEmail.username,
           email,
-        }, request.ip);
+        });
       }
     }
 
@@ -356,21 +358,21 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
       });
 
       userId = newUserId;
-      await auditLog(request.log, "OIDC_USER_CREATED", {
+      await audit("OIDC_USER_CREATED", {
         userId: newUserId,
         username: uniqueUsername,
         email,
         role: env.OIDC_DEFAULT_ROLE,
-      }, request.ip);
+      });
     }
 
     // 4d. No user found and no auto-create
     if (!userId) {
       request.log.warn({ sub, email }, "OIDC user not authorized");
-      await auditLog(request.log, "OIDC_LOGIN_FAILED", {
+      await audit("OIDC_LOGIN_FAILED", {
         reason: "user_not_authorized",
         sub: sanitizeAuditInput(String(sub)),
-      }, request.ip);
+      });
       return redirectToLogin(reply, "oidc_user_not_authorized");
     }
 
@@ -388,10 +390,10 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
     // Fetch the user for audit logging
     const [user] = await db.select().from(schema.users).where(eq(schema.users.id, userId));
 
-    await auditLog(request.log, "OIDC_LOGIN_SUCCESS", {
+    await audit("OIDC_LOGIN_SUCCESS", {
       userId,
       username: user?.username ?? username,
-    }, request.ip);
+    });
 
     // 6. Set session cookie
     reply.setCookie("snapotter-session", token, {

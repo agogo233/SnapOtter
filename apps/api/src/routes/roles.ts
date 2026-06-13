@@ -4,7 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
-import { auditLog } from "../lib/audit.js";
+import { auditFromRequest } from "../lib/audit.js";
 import { requirePermission } from "../permissions.js";
 
 const ALL_PERMISSIONS: Permission[] = [
@@ -116,7 +116,7 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
       createdBy: user.id,
     });
 
-    await auditLog(request.log, "ROLE_CREATED", { adminId: user.id, roleId: id, roleName: name }, request.ip);
+    await auditFromRequest(request)("ROLE_CREATED", { adminId: user.id, roleId: id, roleName: name });
 
     return reply.status(201).send({
       id,
@@ -185,7 +185,7 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
         }
         await tx.update(schema.roles).set(updates).where(eq(schema.roles.id, id));
       });
-      await auditLog(request.log, "ROLE_UPDATED", { adminId: user.id, roleId: id }, request.ip);
+      await auditFromRequest(request)("ROLE_UPDATED", { adminId: user.id, roleId: id });
 
       return reply.send({ ok: true });
     },
@@ -216,11 +216,11 @@ export async function rolesRoutes(app: FastifyInstance): Promise<void> {
           .where(eq(schema.users.role, role.name));
         await tx.delete(schema.roles).where(eq(schema.roles.id, id));
       });
-      await auditLog(request.log, "ROLE_DELETED", {
+      await auditFromRequest(request)("ROLE_DELETED", {
         adminId: user.id,
         roleId: id,
         roleName: role.name,
-      }, request.ip);
+      });
 
       return reply.send({ ok: true });
     },

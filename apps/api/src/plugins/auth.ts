@@ -5,7 +5,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
-import { auditLog, sanitizeAuditInput } from "../lib/audit.js";
+import { auditFromRequest, sanitizeAuditInput } from "../lib/audit.js";
 import { getPermissions, requirePermission } from "../permissions.js";
 
 const scryptAsync = promisify(scrypt);
@@ -290,20 +290,22 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         .from(schema.users)
         .where(eq(schema.users.username, body.username));
 
+      const audit = auditFromRequest(request);
+
       if (!user || !user.passwordHash) {
-        await auditLog(request.log, "LOGIN_FAILED", {
+        await audit("LOGIN_FAILED", {
           username: sanitizeAuditInput(body.username),
           reason: "unknown_user",
-        }, request.ip);
+        });
         return reply.status(401).send({ error: "Invalid credentials" });
       }
 
       const valid = await verifyPassword(body.password, user.passwordHash);
       if (!valid) {
-        await auditLog(request.log, "LOGIN_FAILED", {
+        await audit("LOGIN_FAILED", {
           username: sanitizeAuditInput(body.username),
           reason: "bad_password",
-        }, request.ip);
+        });
         return reply.status(401).send({ error: "Invalid credentials" });
       }
 
@@ -317,7 +319,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         expiresAt,
       });
 
-      await auditLog(request.log, "LOGIN_SUCCESS", { userId: user.id, username: user.username }, request.ip);
+      await audit("LOGIN_SUCCESS", { userId: user.id, username: user.username });
 
       const [teamRow] = await db.select().from(schema.teams).where(eq(schema.teams.id, user.team));
 
@@ -378,7 +380,7 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       cookieReply.clearCookie("snapotter-session", { path: "/" });
     }
 
-    await auditLog(request.log, "LOGOUT", { userId: user?.id }, request.ip);
+    await auditFromRequest(request)("LOGOUT", { userId: user?.id });
     return reply.send({ ok: true, ...(logoutUrl && { logoutUrl }) });
   });
 
@@ -500,10 +502,10 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     // Revoke all API keys - if credentials were compromised, keys must be rotated too
     await db.delete(schema.apiKeys).where(eq(schema.apiKeys.userId, authUser.id));
 
-    await auditLog(request.log, "PASSWORD_CHANGED", {
+    await auditFromRequest(request)("PASSWORD_CHANGED", {
       userId: authUser.id,
       username: authUser.username,
-    }, request.ip);
+    });
 
     return reply.send({ ok: true });
   });
@@ -669,12 +671,12 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       mustChangePassword: true,
     });
 
-    await auditLog(request.log, "USER_CREATED", {
+    await auditFromRequest(request)("USER_CREATED", {
       adminId: admin.id,
       newUserId: id,
       newUsername: body.username,
       role,
-    }, request.ip);
+    });
 
     return reply.status(201).send({
       id,
@@ -784,11 +786,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         );
       }
 
-      await auditLog(request.log, "USER_UPDATED", {
+      await auditFromRequest(request)("USER_UPDATED", {
         adminId: admin.id,
         targetUserId: id,
         changes: { role: updates.role, team: updates.team },
-      }, request.ip);
+      });
 
       return reply.send({ ok: true });
     },
@@ -845,11 +847,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       // Revoke all API keys
       await db.delete(schema.apiKeys).where(eq(schema.apiKeys.userId, id));
 
-      await auditLog(request.log, "PASSWORD_RESET", {
+      await auditFromRequest(request)("PASSWORD_RESET", {
         adminId: admin.id,
         targetUserId: id,
         targetUsername: user.username,
-      }, request.ip);
+      });
 
       return reply.send({ ok: true });
     },
@@ -883,11 +885,11 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
       // Delete the user (cascades to api_keys via FK)
       await db.delete(schema.users).where(eq(schema.users.id, id));
 
-      await auditLog(request.log, "USER_DELETED", {
+      await auditFromRequest(request)("USER_DELETED", {
         adminId: admin.id,
         deletedUserId: id,
         deletedUsername: user.username,
-      }, request.ip);
+      });
 
       return reply.send({ ok: true });
     },

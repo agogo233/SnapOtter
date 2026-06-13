@@ -10,7 +10,7 @@ import { eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db, schema } from "../db/index.js";
-import { auditLog } from "../lib/audit.js";
+import { auditFromRequest } from "../lib/audit.js";
 import { env } from "../config.js";
 import { encrypt, decrypt, isEncrypted } from "../lib/encryption.js";
 import { requirePermission } from "../permissions.js";
@@ -115,11 +115,11 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     }
 
     if (entries.length > 0) {
-      await auditLog(request.log, "SETTINGS_UPDATED", {
+      await auditFromRequest(request)("SETTINGS_UPDATED", {
         adminId: admin.id,
         username: admin.username,
         keys: entries.map((e) => e.key),
-      }, request.ip);
+      });
     }
 
     return reply.send({ ok: true, updatedCount: entries.length });
