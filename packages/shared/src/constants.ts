@@ -1,4 +1,4 @@
-import { AUDIO_INPUTS, IMAGE_INPUTS, SUBTITLE_INPUTS, VIDEO_INPUTS } from "./modality.js";
+import { AUDIO_INPUTS, IMAGE_INPUTS, MODALITY_URL_SLUG, SUBTITLE_INPUTS, VIDEO_INPUTS } from "./modality.js";
 import type { CategoryInfo, SocialMediaPreset, Tool } from "./types.js";
 
 export const CATEGORIES: CategoryInfo[] = [
@@ -1782,6 +1782,10 @@ export const TOOLS: Tool[] = [
     executionHint: "fast",
   },
 ];
+
+for (const tool of TOOLS) {
+  tool.route = `/${MODALITY_URL_SLUG[tool.modality]}${tool.route}`;
+}
 
 export const SOCIAL_MEDIA_PRESETS: SocialMediaPreset[] = [
   { platform: "Instagram", name: "Post (Square)", width: 1080, height: 1080 },
