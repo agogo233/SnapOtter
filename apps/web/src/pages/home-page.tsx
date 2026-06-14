@@ -15,15 +15,10 @@ import { getCategoryName, getToolName } from "@/lib/tool-i18n.js";
 import { cn } from "@/lib/utils.js";
 import { useSettingsStore } from "@/stores/settings-store";
 
-// ── Constants ────────────────────────────────────────────────────
-
 interface TabDef {
   key: string;
   label: string;
-  modalityKey?: string; // maps to Tool.modality; undefined = "all"
 }
-
-// ── Home Page ────────────────────────────────────────────────────
 
 export function HomePage() {
   const { t } = useTranslation();
@@ -39,8 +34,6 @@ export function HomePage() {
     fetchSettings();
   }, [fetchSettings]);
 
-  // ── Tab definitions ──────────────────────────────────────────
-
   const tabs: TabDef[] = useMemo(
     () => [
       { key: "all", label: t.homePage.all },
@@ -53,8 +46,6 @@ export function HomePage() {
     [t],
   );
 
-  // ── Visible tools (exclude disabled + experimental unless enabled) ──
-
   const visibleTools = useMemo(() => {
     if (!loaded) return [];
     return TOOLS.filter((tool) => {
@@ -65,19 +56,13 @@ export function HomePage() {
     });
   }, [disabledTools, experimentalEnabled, loaded]);
 
-  // ── Search (global, searches all tools regardless of active tab) ──
-
   const searchResults = useFuseSearch(visibleTools, search);
-
-  // ── Tab-filtered tools ──────────────────────────────────────
 
   const tabTools = useMemo(() => {
     if (activeTab === "all") return visibleTools;
     const modalityKey = activeTab === "data" ? "file" : activeTab;
     return visibleTools.filter((tool) => tool.modality === modalityKey);
   }, [visibleTools, activeTab]);
-
-  // ── Group by category for modality tabs ─────────────────────
 
   const groupedTools = useMemo(() => {
     const map = new Map<string, Tool[]>();
@@ -92,8 +77,6 @@ export function HomePage() {
     return map;
   }, [tabTools]);
 
-  // ── Tab counts ──────────────────────────────────────────────
-
   const tabCounts = useMemo(() => {
     const counts: Record<string, number> = { all: visibleTools.length };
     for (const tool of visibleTools) {
@@ -103,8 +86,6 @@ export function HomePage() {
     return counts;
   }, [visibleTools]);
 
-  // ── Recent tools (resolve IDs to Tool objects) ──────────────
-
   const recentTools = useMemo(
     () =>
       recentToolIds
@@ -113,13 +94,10 @@ export function HomePage() {
     [recentToolIds, visibleTools],
   );
 
-  // ── Render ──────────────────────────────────────────────────
-
   return (
     <AppLayout>
       <div>
-        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
-          {/* Search bar */}
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
           <HomeSearchBar
             value={search}
             onChange={setSearch}
@@ -128,7 +106,6 @@ export function HomePage() {
             })}
           />
 
-          {/* Modality tabs */}
           <ModalityTabs
             tabs={tabs}
             activeTab={activeTab}
@@ -136,20 +113,13 @@ export function HomePage() {
             counts={tabCounts}
           />
 
-          {/* Content */}
           {search ? (
             <SearchResults results={searchResults} query={search} onClear={() => setSearch("")} />
-          ) : activeTab === "all" ? (
-            <AllTabContent
-              recentTools={recentTools}
-              groupedTools={groupedTools}
-            />
           ) : (
-            <ModalityTabContent groupedTools={groupedTools} />
+            <ToolGrid recentTools={recentTools} groupedTools={groupedTools} />
           )}
         </div>
 
-        {/* Footer */}
         <Footer />
       </div>
     </AppLayout>
@@ -171,7 +141,6 @@ function HomeSearchBar({
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Auto-focus when navigated here with ?focus=search (e.g. from Cmd+K on a tool page)
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     if (params.get("focus") === "search") {
@@ -181,8 +150,8 @@ function HomeSearchBar({
   }, [location.search, navigate]);
 
   return (
-    <div className="relative max-w-xl mx-auto mb-6">
-      <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+    <div className="relative max-w-2xl mx-auto mb-8">
+      <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       <input
         ref={inputRef}
         data-search-input
@@ -191,20 +160,24 @@ function HomeSearchBar({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         aria-label={placeholder}
-        className="w-full ps-12 pe-10 py-3 rounded-xl border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+        className="w-full ps-11 pe-20 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-shadow"
       />
-      {value && (
+      {value ? (
         <button
           type="button"
           onClick={() => {
             onChange("");
             inputRef.current?.focus();
           }}
-          className="absolute end-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-muted transition-colors"
+          className="absolute end-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted transition-colors"
           aria-label="Clear search"
         >
           <X className="h-4 w-4 text-muted-foreground" />
         </button>
+      ) : (
+        <kbd className="absolute end-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded border border-border bg-muted/50 text-[11px] text-muted-foreground font-mono">
+          <span className="text-xs">&#8984;</span>K
+        </kbd>
       )}
     </div>
   );
@@ -224,21 +197,24 @@ function ModalityTabs({
   counts: Record<string, number>;
 }) {
   return (
-    <div className="mb-6 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
-      <div className="flex gap-2 min-w-max">
+    <div className="mb-8 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-1.5 min-w-max">
         {tabs.map((tab) => (
           <button
             key={tab.key}
             type="button"
             onClick={() => onTabChange(tab.key)}
             className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+              "px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
               activeTab === tab.key
-                ? "bg-primary text-primary-foreground"
-                : "bg-muted/50 text-muted-foreground hover:bg-muted",
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
             )}
           >
-            {tab.label} ({counts[tab.key] ?? 0})
+            {tab.label}
+            <span className={cn("ms-1", activeTab === tab.key ? "opacity-80" : "opacity-50")}>
+              {counts[tab.key] ?? 0}
+            </span>
           </button>
         ))}
       </div>
@@ -275,17 +251,17 @@ function SearchResults({
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-1">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
       {results.map((tool) => (
-        <ToolCard key={tool.id} tool={tool} showModalityBadge />
+        <ToolCard key={tool.id} tool={tool} variant="descriptive" showModalityBadge />
       ))}
     </div>
   );
 }
 
-// ── All Tab Content ──────────────────────────────────────────────
+// ── Tool Grid (used by both All tab and modality tabs) ───────────
 
-function AllTabContent({
+function ToolGrid({
   recentTools,
   groupedTools,
 }: {
@@ -295,19 +271,18 @@ function AllTabContent({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-8">
-      {/* Recent tools (only shown if user has history) */}
+    <div className="space-y-6">
       {recentTools.length > 0 && (
         <section>
-          <h2 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+          <h2 className="text-[11px] font-semibold uppercase text-muted-foreground/70 tracking-widest mb-2">
             {t.homePage.recent}
           </h2>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {recentTools.map((tool) => (
               <Link
                 key={tool.id}
                 to={tool.route}
-                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-medium bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-muted-foreground border border-border/60 hover:border-border hover:text-foreground hover:bg-muted/50 transition-colors"
               >
                 {getToolName(t, tool.id, tool.name)}
               </Link>
@@ -316,47 +291,14 @@ function AllTabContent({
         </section>
       )}
 
-      {/* All tools grouped by category */}
       {CATEGORIES.filter((cat) => groupedTools.has(cat.id)).map((category) => {
         const tools = groupedTools.get(category.id) ?? [];
         return (
           <section key={category.id}>
-            <h2 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+            <h2 className="text-[11px] font-semibold uppercase text-muted-foreground/70 tracking-widest mb-2 pb-1.5 border-b border-border/40">
               {getCategoryName(t, category.id, category.name)}
             </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-              {tools.map((tool) => (
-                <ToolCard key={tool.id} tool={tool} variant="descriptive" />
-              ))}
-            </div>
-          </section>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── Modality Tab Content (grouped by category) ───────────────────
-
-function ModalityTabContent({ groupedTools }: { groupedTools: Map<string, Tool[]> }) {
-  const { t } = useTranslation();
-
-  if (groupedTools.size === 0) {
-    return (
-      <p className="text-center text-muted-foreground py-16">{t.fullscreenGrid.noToolsFound}</p>
-    );
-  }
-
-  return (
-    <div className="space-y-8">
-      {CATEGORIES.filter((cat) => groupedTools.has(cat.id)).map((category) => {
-        const tools = groupedTools.get(category.id) ?? [];
-        return (
-          <section key={category.id}>
-            <h2 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
-              {getCategoryName(t, category.id, category.name)}
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
               {tools.map((tool) => (
                 <ToolCard key={tool.id} tool={tool} variant="descriptive" />
               ))}
