@@ -525,6 +525,7 @@ export function ToolPage() {
 
   const hasFile = files.length > 0;
   const hasProcessed = !!processedUrl;
+  const isProcessing = currentEntry?.status === "processing";
   const displayMode = registryEntry.displayMode;
   const isNoDropzone = displayMode === "no-dropzone";
   const isLivePreview = registryEntry.livePreview ?? false;
@@ -1037,7 +1038,9 @@ export function ToolPage() {
             <div aria-live="polite" aria-atomic="true" className="sr-only">
               {liveMessage}
             </div>
-            <div className="flex-1 relative flex items-center justify-center p-4 min-h-0 min-w-0">
+            <div
+              className={`flex-1 relative flex items-center justify-center p-4 min-h-0 min-w-0${isProcessing ? " animate-pulse" : ""}`}
+            >
               {renderNavArrows()}
               {renderImageArea()}
             </div>
@@ -1136,7 +1139,7 @@ export function ToolPage() {
           </div>
           <div
             key={hasProcessed ? `processed-${selectedIndex}` : `pending-${selectedIndex}`}
-            className={`flex-1 relative flex items-center justify-center p-6 min-h-0 min-w-0 ${hasProcessed ? "animate-fade-in" : ""}`}
+            className={`flex-1 relative flex items-center justify-center p-6 min-h-0 min-w-0 ${hasProcessed ? "animate-fade-in" : ""}${isProcessing ? " animate-pulse" : ""}`}
           >
             {renderNavArrows()}
             {renderImageArea()}
