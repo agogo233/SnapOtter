@@ -1,12 +1,21 @@
+import { sql } from "drizzle-orm";
 import type { FastifyInstance } from "fastify";
 import { db } from "../../db/index.js";
 import { jobs } from "../../db/schema.js";
-import { sql } from "drizzle-orm";
 
 const DEFAULT_POPULAR = [
-  "resize", "crop", "compress", "convert", "remove-background",
-  "upscale", "merge-pdf", "watermark-text", "compress-video",
-  "trim-video", "convert-audio", "compress-pdf",
+  "resize",
+  "crop",
+  "compress",
+  "convert",
+  "remove-background",
+  "upscale",
+  "merge-pdf",
+  "watermark-text",
+  "compress-video",
+  "trim-video",
+  "convert-audio",
+  "compress-pdf",
 ];
 
 export async function registerPopularTools(app: FastifyInstance) {
