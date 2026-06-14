@@ -1,8 +1,35 @@
-import { ArrowLeft, CheckCircle2, Download } from "lucide-react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Download, FileText } from "lucide-react";
 import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "@/contexts/i18n-context";
 import { formatFileSize, triggerDownload } from "@/lib/download";
+import { format } from "@/lib/format";
+
+/** Tools whose primary output is text/data, not a downloadable file. */
+const DATA_OUTPUT_TOOLS = new Set([
+  "ocr",
+  "barcode-read",
+  "info",
+  "histogram",
+  "color-palette",
+  "transcribe-audio",
+  "extract-subtitles",
+  "image-to-base64",
+  "pdf-to-text",
+  "pdf-metadata",
+  "audio-metadata",
+  "video-metadata",
+]);
+
+/** Tools that produce multiple output files bundled as a ZIP. */
+const MULTI_OUTPUT_TOOLS = new Set([
+  "split",
+  "favicon",
+  "pdf-to-image",
+  "video-to-frames",
+  "split-audio",
+  "split-csv",
+]);
 
 interface ReviewPanelProps {
   filename: string;
@@ -13,6 +40,9 @@ interface ReviewPanelProps {
   onUndo: () => void;
   onStartOver: () => void;
   currentToolId: string;
+  totalCount?: number;
+  successCount?: number;
+  failedCount?: number;
 }
 
 export function ReviewPanel({
@@ -23,9 +53,15 @@ export function ReviewPanel({
   downloadUrl,
   onUndo,
   onStartOver,
-  currentToolId: _currentToolId,
+  currentToolId,
+  totalCount,
+  successCount,
+  failedCount,
 }: ReviewPanelProps) {
   const { t } = useTranslation();
+
+  const isDataOutput = DATA_OUTPUT_TOOLS.has(currentToolId);
+  const isMultiOutput = MULTI_OUTPUT_TOOLS.has(currentToolId);
 
   const sizeDelta = useMemo(() => {
     if (!originalSize || originalSize === 0) return 0;
@@ -35,6 +71,9 @@ export function ReviewPanel({
   const handleDownload = () => {
     triggerDownload(downloadUrl, filename);
   };
+
+  const hasBatchStats =
+    totalCount != null && totalCount > 1 && successCount != null && failedCount != null;
 
   return (
     <div className="space-y-3">
@@ -46,8 +85,22 @@ export function ReviewPanel({
         <span className="text-sm font-medium text-foreground">{t.toolPage.conversionComplete}</span>
       </div>
 
-      {/* Size delta */}
-      {originalSize > 0 && (
+      {/* Batch partial failure summary */}
+      {hasBatchStats && failedCount > 0 && (
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-2.5 text-xs">
+          <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <span className="text-amber-800 dark:text-amber-300">
+            {format(t.toolPage.batchPartialSuccess, {
+              success: successCount,
+              total: totalCount,
+              failed: failedCount,
+            })}
+          </span>
+        </div>
+      )}
+
+      {/* Size delta -- hidden for data-output tools */}
+      {!isDataOutput && originalSize > 0 && (
         <div className="space-y-1 text-xs">
           <div className="flex justify-between">
             <span className="text-muted-foreground">{t.toolPage.original}</span>
@@ -78,16 +131,39 @@ export function ReviewPanel({
         </div>
       )}
 
-      {/* Download button with format + size */}
-      <button
-        type="button"
-        data-download-button
-        onClick={handleDownload}
-        className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-primary/90"
-      >
-        <Download className="h-4 w-4" />
-        {t.toolPage.download} {fileType} ({formatFileSize(fileSize)})
-      </button>
+      {/* Data-output tools: results hint + secondary download */}
+      {isDataOutput && (
+        <>
+          <div className="flex items-start gap-2 rounded-lg bg-muted/50 p-2.5 text-xs">
+            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+            <span className="text-muted-foreground">{t.toolPage.dataResultsHint}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="w-full text-center text-xs text-primary hover:text-primary/80 underline underline-offset-2"
+          >
+            {t.toolPage.downloadAsFile}
+          </button>
+        </>
+      )}
+
+      {/* Download button -- primary for non-data tools */}
+      {!isDataOutput && (
+        <button
+          type="button"
+          data-download-button
+          onClick={handleDownload}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-primary/90"
+        >
+          <Download className="h-4 w-4" />
+          {isMultiOutput
+            ? `${t.toolPage.downloadAll} (ZIP, ${formatFileSize(fileSize)})`
+            : hasBatchStats && successCount != null && successCount > 1
+              ? `${format(t.toolPage.downloadFiles, { count: successCount })} (ZIP, ${formatFileSize(fileSize)})`
+              : `${t.toolPage.download} ${fileType} (${formatFileSize(fileSize)})`}
+        </button>
+      )}
 
       {/* Adjust settings */}
       <button

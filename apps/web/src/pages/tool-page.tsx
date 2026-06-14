@@ -5,10 +5,12 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Circle,
   Download,
   FileImage,
   Loader2,
   Upload,
+  XCircle,
 } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Crop } from "react-image-crop";
@@ -42,7 +44,7 @@ import { useBase64Store } from "@/stores/base64-store";
 import { useCollageStore } from "@/stores/collage-store";
 import { useDuplicateStore } from "@/stores/duplicate-store";
 import { useFeaturesStore } from "@/stores/features-store";
-import { useFileStore } from "@/stores/file-store";
+import { type FileEntry, useFileStore } from "@/stores/file-store";
 import { useHtmlToImageStore } from "@/stores/html-to-image-store";
 import { usePdfToImageStore } from "@/stores/pdf-to-image-store";
 import { useQrStore } from "@/stores/qr-store";
@@ -84,15 +86,31 @@ function getFileFormat(name: string): string {
 
 const COLLAPSED_LIMIT = 5;
 
+/** Status icon for a file entry in the batch list. */
+function FileStatusIcon({ status }: { status: FileEntry["status"] }) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />;
+    case "failed":
+      return <XCircle className="h-3 w-3 text-destructive shrink-0" />;
+    case "processing":
+      return <Loader2 className="h-3 w-3 text-primary shrink-0 animate-spin" />;
+    default:
+      return <Circle className="h-3 w-3 text-muted-foreground/40 shrink-0" />;
+  }
+}
+
 /** File selection indicator shown in left panel */
 function FileSelectionInfo({
   files,
+  fileEntries,
   selectedIndex,
   onSelect,
   onClear,
   onAddMore,
 }: {
   files: File[];
+  fileEntries: FileEntry[];
   selectedIndex: number;
   onSelect: (index: number) => void;
   onClear: () => void;
@@ -107,6 +125,9 @@ function FileSelectionInfo({
 
   const showToggle = files.length > COLLAPSED_LIMIT;
   const visible = expanded ? files : files.slice(0, COLLAPSED_LIMIT);
+  const hasAnyProcessed = fileEntries.some(
+    (e) => e.status === "completed" || e.status === "failed",
+  );
 
   return (
     <div className="space-y-1.5">
@@ -124,6 +145,7 @@ function FileSelectionInfo({
       <div className="space-y-0.5">
         {visible.map((file, i) => {
           const isSelected = i === selectedIndex;
+          const entry = fileEntries[i];
           return (
             <button
               key={`${file.name}-${i}`}
@@ -131,7 +153,11 @@ function FileSelectionInfo({
               onClick={() => onSelect(i)}
               className={`w-full flex items-center gap-1.5 text-xs rounded px-2 py-1.5 text-start transition-colors ${isSelected ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
-              {isSelected && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
+              {hasAnyProcessed && entry ? (
+                <FileStatusIcon status={entry.status} />
+              ) : (
+                isSelected && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+              )}
               <span className="truncate flex-1 min-w-0">{file.name}</span>
               <span className="shrink-0 text-[10px] text-muted-foreground">
                 {getFileFormat(file.name)}
@@ -914,6 +940,11 @@ export function ToolPage() {
     );
   }
 
+  // Batch stats for partial failure display
+  const batchTotal = entries.length;
+  const batchSuccess = entries.filter((e) => e.status === "completed").length;
+  const batchFailed = entries.filter((e) => e.status === "failed").length;
+
   // Render the settings panel content (shared between mobile/desktop)
   function renderSettingsContent() {
     return (
@@ -922,6 +953,7 @@ export function ToolPage() {
           <div className="space-y-2">
             <FileSelectionInfo
               files={files}
+              fileEntries={entries}
               selectedIndex={selectedIndex}
               onSelect={setSelectedIndex}
               onClear={reset}
@@ -962,6 +994,9 @@ export function ToolPage() {
               onUndo={handleUndo}
               onStartOver={startOver}
               currentToolId={tool?.id ?? ""}
+              totalCount={batchTotal}
+              successCount={batchSuccess}
+              failedCount={batchFailed}
             />
           </div>
         )}
