@@ -7,10 +7,12 @@ import { FilesNav } from "@/components/files/files-nav";
 import { AppLayout } from "@/components/layout/app-layout";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useFilesPageStore } from "@/stores/files-page-store";
 
 export function FilesPage() {
   const { t } = useTranslation();
+  usePageTitle(t.sidebar.files);
   const { activeTab, setActiveTab, selectedFileId } = useFilesPageStore();
   const isMobile = useMobile();
   const [showDetails, setShowDetails] = useState(false);

@@ -26,6 +26,7 @@ import type { PreviewTransform } from "@/components/tools/rotate-settings";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { formatFileSize } from "@/lib/download";
 import { format } from "@/lib/format";
 import { ICON_MAP } from "@/lib/icon-map";
@@ -178,6 +179,7 @@ export function ToolPage() {
   }, [toolId, featureBundles]);
   const toolInstalled = featureBundle ? featureBundle.status === "installed" : !isAiTool;
   const showSizeComparison = toolId === "compress" || toolId === "optimize-for-web";
+  usePageTitle(tool ? getToolName(t, tool.id, tool.name) : undefined);
   const { hasPermission } = useAuth();
   const isAdmin = hasPermission("settings:write");
 

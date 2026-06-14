@@ -28,6 +28,7 @@ import { PipelineBuilder } from "@/components/tools/pipeline-builder";
 import { ToolPalette } from "@/components/tools/tool-palette";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { usePipelineProcessor } from "@/hooks/use-pipeline-processor";
 import { formatHeaders, getFileDownloadUrl } from "@/lib/api";
 import { formatFileSize } from "@/lib/download";
@@ -38,6 +39,7 @@ import { type SavedPipeline, usePipelineStore } from "@/stores/pipeline-store";
 
 export function AutomatePage() {
   const { t } = useTranslation();
+  usePageTitle(t.sidebar.automate);
   const {
     files,
     entries,

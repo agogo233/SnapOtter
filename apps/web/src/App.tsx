@@ -20,9 +20,6 @@ const ChangePasswordPage = lazy(() =>
   import("./pages/change-password-page").then((m) => ({ default: m.ChangePasswordPage })),
 );
 const FilesPage = lazy(() => import("./pages/files-page").then((m) => ({ default: m.FilesPage })));
-const FullscreenGridPage = lazy(() =>
-  import("./pages/fullscreen-grid-page").then((m) => ({ default: m.FullscreenGridPage })),
-);
 const HomePage = lazy(() => import("./pages/home-page").then((m) => ({ default: m.HomePage })));
 const LoginPage = lazy(() => import("./pages/login-page").then((m) => ({ default: m.LoginPage })));
 const PrivacyPolicyPage = lazy(() =>
@@ -237,7 +234,7 @@ export function App() {
                   <Route path="/change-password" element={<ChangePasswordPage />} />
                   <Route path="/automate" element={<AutomatePage />} />
                   <Route path="/files" element={<FilesPage />} />
-                  <Route path="/fullscreen" element={<FullscreenGridPage />} />
+                  <Route path="/fullscreen" element={<Navigate to="/" replace />} />
                   <Route path="/privacy" element={<PrivacyPolicyPage />} />
                   {/* Redirects: old color tools consolidated into adjust-colors */}
                   <Route
