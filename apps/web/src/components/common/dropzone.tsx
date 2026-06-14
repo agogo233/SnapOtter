@@ -1,4 +1,4 @@
-import { FileImage, FileUp, Upload } from "lucide-react";
+import { AlertCircle, FileImage, FileUp, Upload } from "lucide-react";
 import { type DragEvent, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useUrlImport } from "@/hooks/use-url-import";
@@ -116,10 +116,18 @@ export function Dropzone({
   const checkFile = fileFilter ?? isImageFile;
   const resolvedAccept = expandAccept(accept);
   const [isDragging, setIsDragging] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [urlInput, setUrlInput] = useState("");
   const [urlLoading, setUrlLoading] = useState(false);
   const [urlError, setUrlError] = useState<string | null>(null);
   const [showBulkModal, setShowBulkModal] = useState(false);
+
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setError(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const { importSingleUrl } = useUrlImport();
 
@@ -154,20 +162,32 @@ export function Dropzone({
       e.preventDefault();
       e.stopPropagation();
       setIsDragging(false);
-      const files = Array.from(e.dataTransfer.files).filter(checkFile);
-      if (files.length > 0) onFiles?.(files);
+      setError(null);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      const validFiles = droppedFiles.filter(checkFile);
+      if (validFiles.length > 0) {
+        onFiles?.(validFiles);
+      } else if (droppedFiles.length > 0) {
+        setError(acceptDescription || `This tool accepts ${accept || "image files"}`);
+      }
     },
-    [onFiles, checkFile],
+    [onFiles, checkFile, acceptDescription, accept],
   );
 
   const handleClick = () => {
+    setError(null);
     const input = document.createElement("input");
     input.type = "file";
     input.multiple = multiple;
     if (resolvedAccept) input.accept = resolvedAccept;
     input.onchange = (e) => {
-      const files = Array.from((e.target as HTMLInputElement).files || []).filter(checkFile);
-      if (files.length > 0) onFiles?.(files);
+      const picked = Array.from((e.target as HTMLInputElement).files || []);
+      const validFiles = picked.filter(checkFile);
+      if (validFiles.length > 0) {
+        onFiles?.(validFiles);
+      } else if (picked.length > 0) {
+        setError(acceptDescription || `This tool accepts ${accept || "image files"}`);
+      }
     };
     input.click();
   };
@@ -259,6 +279,13 @@ export function Dropzone({
         <p className="text-xs text-muted-foreground">
           {acceptDescription ?? t.dropzone.defaultFormats}
         </p>
+
+        {error && (
+          <p className="mt-3 text-sm text-destructive flex items-center gap-1.5">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            {error}
+          </p>
+        )}
 
         {!compact && onUrlImport && (
           <>

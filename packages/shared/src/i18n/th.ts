@@ -2442,6 +2442,9 @@ export const th: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "บันทึกการตั้งค่าของคุณแล้ว",
+    tryAgain: "ลองอีกครั้ง",
+    tryDifferentFile: "ลองไฟล์อื่น",
   },
   homePage: {
     generatingPreview: "กำลังสร้างตัวอย่าง...",

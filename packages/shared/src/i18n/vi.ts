@@ -2462,6 +2462,9 @@ export const vi: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Cai dat cua ban da duoc luu.",
+    tryAgain: "Thu lai",
+    tryDifferentFile: "Thu tep khac",
   },
   homePage: {
     generatingPreview: "Đang tạo bản xem trước...",

@@ -2450,6 +2450,9 @@ export const hi: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "आपकी सेटिंग्स सहेज ली गई हैं।",
+    tryAgain: "पुनः प्रयास करें",
+    tryDifferentFile: "एक अलग फ़ाइल आज़माएं",
   },
   homePage: {
     generatingPreview: "प्रीव्यू जनरेट हो रहा है...",

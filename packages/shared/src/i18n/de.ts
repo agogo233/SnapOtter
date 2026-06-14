@@ -2467,6 +2467,9 @@ export const de: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Ihre Einstellungen wurden gespeichert.",
+    tryAgain: "Erneut versuchen",
+    tryDifferentFile: "Andere Datei versuchen",
   },
   homePage: {
     generatingPreview: "Vorschau wird generiert...",

@@ -2393,6 +2393,9 @@ export const zhTW: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "您的設定已儲存。",
+    tryAgain: "重試",
+    tryDifferentFile: "嘗試其他檔案",
   },
   homePage: {
     generatingPreview: "正在產生預覽...",

@@ -2461,6 +2461,9 @@ export const ptBR: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Suas configuracoes foram salvas.",
+    tryAgain: "Tentar novamente",
+    tryDifferentFile: "Tentar outro arquivo",
   },
   homePage: {
     generatingPreview: "Gerando visualizacao...",

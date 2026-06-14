@@ -1,5 +1,6 @@
 import { MODALITIES, PYTHON_SIDECAR_TOOLS, TOOL_BUNDLE_MAP, TOOLS } from "@snapotter/shared";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
@@ -617,10 +618,30 @@ export function ToolPage() {
     // which also match !hasProcessed and would show the canvas instead of the error)
     if (hasFile && !hasProcessed && currentEntry?.status === "failed") {
       return (
-        <div className="flex flex-col items-center justify-center gap-3 h-full text-center px-4">
-          <p className="text-sm text-red-500">
-            {currentEntry.error ?? t.toolPage.processingFailed}
-          </p>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center max-w-sm">
+            <AlertCircle className="mx-auto h-10 w-10 text-destructive mb-3" />
+            <p className="font-medium text-foreground mb-1">
+              {currentEntry.error || t.toolPage.processingFailed}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">{t.toolPage.settingsSaved}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleUndo}
+                className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+              >
+                {t.toolPage.tryAgain}
+              </button>
+              <button
+                type="button"
+                onClick={startOver}
+                className="px-4 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground"
+              >
+                {t.toolPage.tryDifferentFile}
+              </button>
+            </div>
+          </div>
         </div>
       );
     }

@@ -2405,6 +2405,9 @@ export const ko: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "설정이 저장되었습니다.",
+    tryAgain: "다시 시도",
+    tryDifferentFile: "다른 파일 시도",
   },
   homePage: {
     generatingPreview: "미리보기 생성 중...",

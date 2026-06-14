@@ -2465,6 +2465,9 @@ export const tr: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Ayarlariniz kaydedildi.",
+    tryAgain: "Tekrar dene",
+    tryDifferentFile: "Farkli bir dosya dene",
   },
   homePage: {
     generatingPreview: "Önizleme oluşturuluyor...",

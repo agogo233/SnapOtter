@@ -2453,6 +2453,9 @@ export const ar: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "تم حفظ إعداداتك.",
+    tryAgain: "حاول مرة أخرى",
+    tryDifferentFile: "جرب ملفًا مختلفًا",
   },
   homePage: {
     generatingPreview: "جاري إنشاء المعاينة...",

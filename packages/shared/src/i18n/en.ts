@@ -2417,6 +2417,9 @@ export const en = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Your settings are saved.",
+    tryAgain: "Try again",
+    tryDifferentFile: "Try a different file",
   },
   homePage: {
     generatingPreview: "Generating preview...",

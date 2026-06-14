@@ -2395,6 +2395,9 @@ export const zhCN: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "您的设置已保存。",
+    tryAgain: "重试",
+    tryDifferentFile: "尝试其他文件",
   },
   homePage: {
     generatingPreview: "正在生成预览...",

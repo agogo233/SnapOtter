@@ -2463,6 +2463,9 @@ export const ru: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Ваши настройки сохранены.",
+    tryAgain: "Попробовать снова",
+    tryDifferentFile: "Попробовать другой файл",
   },
   homePage: {
     generatingPreview: "Генерация предпросмотра...",

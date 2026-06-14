@@ -2463,6 +2463,9 @@ export const uk: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Ваші налаштування збережено.",
+    tryAgain: "Спробувати знову",
+    tryDifferentFile: "Спробувати інший файл",
   },
   homePage: {
     generatingPreview: "Генерація попереднього перегляду...",

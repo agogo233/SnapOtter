@@ -2462,6 +2462,9 @@ export const id: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Pengaturan Anda tersimpan.",
+    tryAgain: "Coba lagi",
+    tryDifferentFile: "Coba file lain",
   },
   homePage: {
     generatingPreview: "Membuat pratinjau...",

@@ -2468,6 +2468,9 @@ export const fr: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Vos parametres sont enregistres.",
+    tryAgain: "Reessayer",
+    tryDifferentFile: "Essayer un autre fichier",
   },
   homePage: {
     generatingPreview: "Generation de l'apercu...",

@@ -2460,6 +2460,9 @@ export const sv: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "Dina installningar ar sparade.",
+    tryAgain: "Forsok igen",
+    tryDifferentFile: "Prova en annan fil",
   },
   homePage: {
     generatingPreview: "Genererar forhandsvisning...",

@@ -2420,6 +2420,9 @@ export const ja: TranslationKeys = {
     saved: "Saved",
     noChange: "no change",
     download: "Download",
+    settingsSaved: "設定は保存されています。",
+    tryAgain: "再試行",
+    tryDifferentFile: "別のファイルを試す",
   },
   homePage: {
     generatingPreview: "プレビューを生成中...",
