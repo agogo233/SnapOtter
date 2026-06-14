@@ -19,6 +19,7 @@ const REDACTED_KEYS = new Set([
   "siem_consecutive_failures",
   "audit_archival_state",
   "backup_last_completed",
+  "webhook_destinations",
 ]);
 
 const importSchema = z.object({

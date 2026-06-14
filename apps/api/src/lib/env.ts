@@ -197,6 +197,24 @@ const envSchema = z
         });
       }
     }
+    if (data.DATA_ENCRYPTION_KEY) {
+      if (!/^[0-9a-fA-F]{64}$/.test(data.DATA_ENCRYPTION_KEY)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["DATA_ENCRYPTION_KEY"],
+          message: "DATA_ENCRYPTION_KEY must be a 64-character hex string (32 bytes)",
+        });
+      }
+    }
+    if (data.DATA_ENCRYPTION_KEY_PREVIOUS) {
+      if (!/^[0-9a-fA-F]{64}$/.test(data.DATA_ENCRYPTION_KEY_PREVIOUS)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ["DATA_ENCRYPTION_KEY_PREVIOUS"],
+          message: "DATA_ENCRYPTION_KEY_PREVIOUS must be a 64-character hex string (32 bytes)",
+        });
+      }
+    }
   });
 
 export type Env = z.infer<typeof envSchema>;

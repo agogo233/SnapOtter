@@ -142,6 +142,15 @@ export async function registerMfa(app: FastifyInstance): Promise<void> {
       });
     }
 
+    // Check if there's already a pending (unverified) enrollment
+    if (dbUser.totpSecret && !dbUser.totpEnabled) {
+      return reply.status(409).send({
+        error:
+          "MFA enrollment already pending. Complete verification first or contact an admin to reset.",
+        code: "MFA_ENROLLMENT_PENDING",
+      });
+    }
+
     // Generate TOTP secret
     const totp = createTotp(user.username);
     const uri = totp.toString();

@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db, schema } from "../../db/index.js";
+import { requestCancel } from "../../jobs/cancel.js";
 import { getQueue } from "../../jobs/queues.js";
 import { SYSTEM_JOBS } from "../../jobs/system-jobs.js";
 import { auditFromRequest } from "../../lib/audit.js";
@@ -52,25 +53,45 @@ async function purgeUserData(userId: string): Promise<void> {
     }
   }
 
-  // d. Delete jobs rows
+  // d. Cancel any active BullMQ jobs before deleting DB rows
+  const activeJobs = await db
+    .select({ id: schema.jobs.id })
+    .from(schema.jobs)
+    .where(
+      and(eq(schema.jobs.userId, userId), inArray(schema.jobs.status, ["queued", "processing"])),
+    );
+
+  if (activeJobs.length > 0) {
+    for (const job of activeJobs) {
+      try {
+        await requestCancel(job.id);
+      } catch {
+        // Best-effort cancellation
+      }
+    }
+    // Wait briefly for cancellation to propagate
+    await new Promise((r) => setTimeout(r, 500));
+  }
+
+  // e. Delete jobs rows
   await db.delete(schema.jobs).where(eq(schema.jobs.userId, userId));
 
-  // e. Redact audit log entries (preserve structure, remove PII)
+  // f. Redact audit log entries (preserve structure, remove PII)
   await db
     .update(schema.auditLog)
     .set({ actorUsername: "[redacted]", ipAddress: null, details: {} })
     .where(eq(schema.auditLog.actorId, userId));
 
-  // f. Delete sessions
+  // g. Delete sessions
   await db.delete(schema.sessions).where(eq(schema.sessions.userId, userId));
 
-  // g. Delete apiKeys
+  // h. Delete apiKeys
   await db.delete(schema.apiKeys).where(eq(schema.apiKeys.userId, userId));
 
-  // h. Delete userPreferences
+  // i. Delete userPreferences
   await db.delete(schema.userPreferences).where(eq(schema.userPreferences.userId, userId));
 
-  // i. Delete user row (also cascades pipelines)
+  // j. Delete user row (also cascades pipelines)
   await db.delete(schema.users).where(eq(schema.users.id, userId));
 }
 

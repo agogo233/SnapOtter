@@ -1,5 +1,9 @@
 /**
- * SIEM forwarding job.
+ * SIEM forwarding via the legacy siem_config settings key.
+ * Phase 4 introduced a unified webhook system (webhook_destinations),
+ * which also supports type: "siem" destinations. Currently these coexist --
+ * a future release will migrate siem_config to the unified system.
+ * For now, admins configure SIEM in either system (not both).
  *
  * Reads unforwarded audit log entries and delivers them to the configured
  * SIEM endpoint via the webhook delivery module. Implements a circuit

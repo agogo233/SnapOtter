@@ -1,10 +1,12 @@
-import { randomUUID } from "node:crypto";
+import { randomBytes, randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { db, schema } from "../../db/index.js";
+import { sharedRedis } from "../../jobs/connection.js";
 import { auditLog } from "../../lib/audit.js";
 import { getSettingString } from "../../lib/settings-helpers.js";
-import { verifyPassword } from "../../plugins/auth.js";
+import { requirePermission } from "../../permissions.js";
+import { hashPassword, verifyPassword } from "../../plugins/auth.js";
 
 // ── SCIM Error Format ────────────────────────────────────────────
 
@@ -35,6 +37,16 @@ async function scimAuth(request: FastifyRequest, reply: FastifyReply): Promise<b
   const valid = await verifyPassword(token, tokenHash);
   if (!valid) {
     reply.status(401).send(scimError(401, "Invalid token"));
+    return false;
+  }
+
+  // Rate limit: 1000 req/min per SCIM token
+  const redis = sharedRedis();
+  const rateLimitKey = `ratelimit:scim:${tokenHash.slice(0, 16)}`;
+  const count = await redis.incr(rateLimitKey);
+  if (count === 1) await redis.expire(rateLimitKey, 60);
+  if (count > 1000) {
+    reply.status(429).send(scimError(429, "SCIM rate limit exceeded (1000 req/min)"));
     return false;
   }
 
@@ -167,7 +179,70 @@ function scimListResponse(
 
 // ── Route Registration ───────────────────────────────────────────
 
+async function upsertSetting(key: string, value: string): Promise<void> {
+  const [existing] = await db.select().from(schema.settings).where(eq(schema.settings.key, key));
+  if (existing) {
+    await db
+      .update(schema.settings)
+      .set({ value, updatedAt: new Date() })
+      .where(eq(schema.settings.key, key));
+  } else {
+    await db.insert(schema.settings).values({ key, value });
+  }
+}
+
 export async function registerScimRoutes(app: FastifyInstance): Promise<void> {
+  // ── Token Management Endpoints ────────────────────────────────
+
+  // POST /api/v1/enterprise/scim/token -- generate a SCIM bearer token
+  app.post(
+    "/api/v1/enterprise/scim/token",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await requirePermission("users:manage")(request, reply);
+      if (!user) return;
+      if (!(await requireScimFeature(reply))) return;
+
+      const token = randomBytes(32).toString("hex");
+      const hash = await hashPassword(token);
+      await upsertSetting("scim_token_hash", hash);
+
+      await auditLog(
+        request.log,
+        "SETTINGS_UPDATED",
+        { setting: "scim_token" },
+        request.ip,
+        request.id,
+      );
+
+      return reply.status(201).send({
+        token,
+        message: "Save this token -- it cannot be retrieved again",
+      });
+    },
+  );
+
+  // DELETE /api/v1/enterprise/scim/token -- revoke the SCIM bearer token
+  app.delete(
+    "/api/v1/enterprise/scim/token",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = await requirePermission("users:manage")(request, reply);
+      if (!user) return;
+      if (!(await requireScimFeature(reply))) return;
+
+      await db.delete(schema.settings).where(eq(schema.settings.key, "scim_token_hash"));
+
+      await auditLog(
+        request.log,
+        "SETTINGS_UPDATED",
+        { setting: "scim_token", action: "revoked" },
+        request.ip,
+        request.id,
+      );
+
+      return reply.status(204).send();
+    },
+  );
+
   // ── Discovery Endpoints (no auth required) ─────────────────────
 
   app.get(
