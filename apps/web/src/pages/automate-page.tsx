@@ -364,7 +364,7 @@ export function AutomatePage() {
   /* ------------------------------------------------------------------ */
   if (isMobile) {
     return (
-      <AppLayout showToolPanel={false}>
+      <AppLayout>
         <div className="flex flex-col h-full w-full overflow-hidden">
           {/* Mobile header */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
@@ -575,7 +575,7 @@ export function AutomatePage() {
   /*  Desktop Layout                                                     */
   /* ------------------------------------------------------------------ */
   return (
-    <AppLayout showToolPanel={false}>
+    <AppLayout>
       <div className="flex h-full w-full overflow-hidden">
         {/* LEFT PANE — Tool Palette */}
         <div className="w-72 border-r border-border flex flex-col shrink-0">

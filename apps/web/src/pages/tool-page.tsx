@@ -1,4 +1,4 @@
-import { PYTHON_SIDECAR_TOOLS, TOOL_BUNDLE_MAP, TOOLS } from "@snapotter/shared";
+import { MODALITIES, PYTHON_SIDECAR_TOOLS, TOOL_BUNDLE_MAP, TOOLS } from "@snapotter/shared";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -180,6 +180,17 @@ export function ToolPage() {
   const showSizeComparison = toolId === "compress" || toolId === "optimize-for-web";
   const { hasPermission } = useAuth();
   const isAdmin = hasPermission("settings:write");
+
+  const breadcrumb = useMemo(() => {
+    if (!tool) return undefined;
+    const modalityInfo = MODALITIES.find((m) => m.id === tool.modality);
+    const modalityDisplay =
+      tool.modality === "file" ? "Data" : (modalityInfo?.name ?? tool.modality);
+    return {
+      modality: modalityDisplay,
+      toolName: getToolName(t, tool.id, tool.name),
+    };
+  }, [tool, t]);
 
   useEffect(() => {
     if (isAiTool) fetchFeatures();
@@ -829,7 +840,7 @@ export function ToolPage() {
   // Mobile layout: full-height image area with BottomSheet for settings
   if (isMobile) {
     return (
-      <AppLayout showToolPanel={false}>
+      <AppLayout breadcrumb={breadcrumb}>
         <div className="flex flex-col w-full h-full">
           {/* Tool header */}
           <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
@@ -886,7 +897,7 @@ export function ToolPage() {
 
   // Desktop layout: side-by-side
   return (
-    <AppLayout showToolPanel={false}>
+    <AppLayout breadcrumb={breadcrumb}>
       <div className="flex h-full w-full">
         {/* Tool Settings Panel */}
         <div className="settings-container w-72 border-r border-border p-4 space-y-4 overflow-y-auto shrink-0">

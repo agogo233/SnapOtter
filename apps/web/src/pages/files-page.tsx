@@ -17,7 +17,7 @@ export function FilesPage() {
 
   if (isMobile) {
     return (
-      <AppLayout showToolPanel={false}>
+      <AppLayout>
         <h1 className="sr-only">{t.files.myFiles}</h1>
         <div className="flex flex-col h-full w-full overflow-hidden">
           {/* Mobile tabs */}
@@ -95,7 +95,7 @@ export function FilesPage() {
   }
 
   return (
-    <AppLayout showToolPanel={false}>
+    <AppLayout>
       <h1 className="sr-only">{t.files.myFiles}</h1>
       <div className="flex h-full w-full overflow-hidden">
         <FilesNav />
