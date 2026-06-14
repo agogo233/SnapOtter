@@ -145,7 +145,7 @@ async function storageTtlSweep(): Promise<{ removed: number; failed: number }> {
   const heldUserIds = new Set(heldUserRows.map((r) => r.id));
 
   const heldTeamRows = await db
-    .select({ name: schema.teams.name })
+    .select({ id: schema.teams.id })
     .from(schema.teams)
     .where(eq(schema.teams.legalHold, true));
   if (heldTeamRows.length > 0) {
@@ -155,7 +155,7 @@ async function storageTtlSweep(): Promise<{ removed: number; failed: number }> {
       .where(
         inArray(
           schema.users.team,
-          heldTeamRows.map((r) => r.name),
+          heldTeamRows.map((r) => r.id),
         ),
       );
     for (const u of teamUsers) heldUserIds.add(u.id);
@@ -264,7 +264,7 @@ async function retentionSweep(): Promise<void> {
   // Subquery to find users under legal hold (direct or via team)
   const heldUsersSubquery = sql`(
     SELECT u.id FROM users u
-    LEFT JOIN teams t ON u.team = t.name
+    LEFT JOIN teams t ON u.team = t.id
     WHERE u.legal_hold = true OR t.legal_hold = true
   )`;
 

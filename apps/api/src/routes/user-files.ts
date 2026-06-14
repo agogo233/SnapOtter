@@ -261,6 +261,14 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
         // Sanitize SVG uploads to prevent XXE, SSRF, and script injection
         const safeBuffer = isSvgBuffer(buffer) ? sanitizeSvg(buffer) : buffer;
 
+        // Re-check quota with actual file size before persisting
+        try {
+          await checkStorageQuota(userId, safeBuffer.length);
+        } catch (err) {
+          const statusCode = (err as Error & { statusCode?: number }).statusCode ?? 413;
+          return reply.status(statusCode).send({ error: (err as Error).message });
+        }
+
         const safeName = sanitizeFilename(part.filename ?? "upload");
         const mimeType = formatToMime(validation.format);
 
@@ -698,6 +706,14 @@ export async function userFileRoutes(app: FastifyInstance): Promise<void> {
 
     // Sanitize SVG results to prevent XXE, SSRF, and script injection
     const safeResultBuffer = isSvgBuffer(fileBuffer) ? sanitizeSvg(fileBuffer) : fileBuffer;
+
+    // Re-check quota with actual file size before persisting
+    try {
+      await checkStorageQuota(userId, safeResultBuffer.length);
+    } catch (err) {
+      const statusCode = (err as Error & { statusCode?: number }).statusCode ?? 413;
+      return reply.status(statusCode).send({ error: (err as Error).message });
+    }
 
     // Persist to disk
     const storedName = await saveFile(safeResultBuffer, resultName);

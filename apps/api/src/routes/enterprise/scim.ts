@@ -100,7 +100,7 @@ function toScimUser(
     id: user.id,
     userName: user.username,
     ...(user.externalId ? { externalId: user.externalId } : {}),
-    active: user.role !== "disabled",
+    active: user.role !== "disabled" && !user.role.startsWith("disabled:"),
     emails: user.email ? [{ value: user.email, primary: true }] : [],
     name: { formatted: user.username },
     groups: user.team ? [{ value: user.team, display: teamName ?? user.team }] : [],
@@ -454,11 +454,13 @@ export async function registerScimRoutes(app: FastifyInstance): Promise<void> {
         updates.email = email;
       }
 
-      // Handle active/deactivation
-      if (active && existing.role === "disabled") {
-        updates.role = "user";
-      } else if (!active && existing.role !== "disabled") {
-        updates.role = "disabled";
+      // Handle active/deactivation (preserve original role through disable/enable cycle)
+      if (active && existing.role.startsWith("disabled:")) {
+        updates.role = existing.role.slice("disabled:".length);
+      } else if (active && existing.role === "disabled") {
+        updates.role = "user"; // fallback when no previous role stored
+      } else if (!active && !existing.role.startsWith("disabled")) {
+        updates.role = `disabled:${existing.role}`;
         // Revoke all sessions on deactivation
         await db.delete(schema.sessions).where(eq(schema.sessions.userId, id));
       }
@@ -527,10 +529,12 @@ export async function registerScimRoutes(app: FastifyInstance): Promise<void> {
             const activeVal =
               op.path === "active" ? op.value : (op.value as Record<string, unknown>).active;
             const active = activeVal === true || activeVal === "true" || activeVal === "True";
-            if (active && existing.role === "disabled") {
-              updates.role = "user";
-            } else if (!active && existing.role !== "disabled") {
-              updates.role = "disabled";
+            if (active && existing.role.startsWith("disabled:")) {
+              updates.role = existing.role.slice("disabled:".length);
+            } else if (active && existing.role === "disabled") {
+              updates.role = "user"; // fallback when no previous role stored
+            } else if (!active && !existing.role.startsWith("disabled")) {
+              updates.role = `disabled:${existing.role}`;
               await db.delete(schema.sessions).where(eq(schema.sessions.userId, id));
             }
           }
@@ -605,11 +609,11 @@ export async function registerScimRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(404).send(scimError(404, "User not found"));
       }
 
-      // Soft-delete: set role to disabled, revoke sessions, clear password
+      // Soft-delete: preserve original role so reactivation can restore it
       await db
         .update(schema.users)
         .set({
-          role: "disabled",
+          role: `disabled:${user.role}`,
           passwordHash: null,
           updatedAt: new Date(),
         })

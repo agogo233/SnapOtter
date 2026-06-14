@@ -50,14 +50,16 @@ export async function registerAuditExport(app: FastifyInstance): Promise<void> {
         // Enterprise package not available
       }
       if (!featureEnabled) {
-        return reply
-          .status(403)
-          .send({ error: "Audit export requires an enterprise license with the audit_export feature" });
+        return reply.status(403).send({
+          error: "Audit export requires an enterprise license with the audit_export feature",
+        });
       }
 
       const parsed = querySchema.safeParse(request.query);
       if (!parsed.success) {
-        return reply.status(400).send({ error: "Invalid query parameters", details: parsed.error.issues });
+        return reply
+          .status(400)
+          .send({ error: "Invalid query parameters", details: parsed.error.issues });
       }
       const { format, from, to, action, actorId, targetType, targetId } = parsed.data;
 
@@ -84,11 +86,17 @@ export async function registerAuditExport(app: FastifyInstance): Promise<void> {
 
       const where = conditions.length > 0 ? and(...conditions) : undefined;
 
+      const EXPORT_LIMIT = 100_000;
       const entries = await db
         .select()
         .from(schema.auditLog)
         .where(where)
-        .orderBy(desc(schema.auditLog.createdAt));
+        .orderBy(desc(schema.auditLog.createdAt))
+        .limit(EXPORT_LIMIT);
+
+      if (entries.length === EXPORT_LIMIT) {
+        reply.header("X-Truncated", "true");
+      }
 
       const rows = entries.map((e) => ({
         id: e.id,

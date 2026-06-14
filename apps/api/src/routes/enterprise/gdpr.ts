@@ -223,6 +223,11 @@ export async function registerGdprRoutes(app: FastifyInstance): Promise<void> {
 
       const targetUserId = request.params.id;
 
+      // Guard: admin cannot purge themselves
+      if (targetUserId === user.id) {
+        return reply.status(400).send({ error: "Cannot purge your own account" });
+      }
+
       // Check target user exists
       const [targetUser] = await db
         .select({

@@ -7,10 +7,10 @@
  * cursor-based approach to avoid re-sending events.
  *
  * State keys in the settings table:
- *   - siem_last_forwarded_id: cursor (last successfully forwarded audit log ID)
+ *   - siem_last_forwarded_at: cursor (last successfully forwarded createdAt timestamp)
  *   - siem_consecutive_failures: circuit breaker counter
  */
-import { asc, eq, gt } from "drizzle-orm";
+import { asc, eq, gte } from "drizzle-orm";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
 import { decrypt, isEncrypted } from "../lib/encryption.js";
@@ -19,7 +19,7 @@ import { readSiemConfig } from "../routes/enterprise/siem.js";
 
 const BATCH_LIMIT = 500;
 const CIRCUIT_BREAKER_THRESHOLD = 5;
-const CURSOR_KEY = "siem_last_forwarded_id";
+const CURSOR_KEY = "siem_last_forwarded_at";
 const FAILURES_KEY = "siem_consecutive_failures";
 
 async function readSettingValue(key: string): Promise<string | null> {
@@ -31,10 +31,7 @@ async function readSettingValue(key: string): Promise<string | null> {
 }
 
 async function upsertSetting(key: string, value: string): Promise<void> {
-  const [existing] = await db
-    .select()
-    .from(schema.settings)
-    .where(eq(schema.settings.key, key));
+  const [existing] = await db.select().from(schema.settings).where(eq(schema.settings.key, key));
 
   if (existing) {
     await db
@@ -59,7 +56,7 @@ export async function runSiemForward(): Promise<{ forwarded: number } | void> {
   if (failureCount >= CIRCUIT_BREAKER_THRESHOLD) {
     console.warn(
       `SIEM forwarding circuit breaker open: ${failureCount} consecutive failures. ` +
-      "Reset siem_consecutive_failures to 0 in settings to re-enable.",
+        "Reset siem_consecutive_failures to 0 in settings to re-enable.",
     );
     return;
   }
@@ -67,8 +64,10 @@ export async function runSiemForward(): Promise<{ forwarded: number } | void> {
   // 3. Read cursor
   const cursor = await readSettingValue(CURSOR_KEY);
 
-  // 4. Query audit_log for new rows
-  const conditions = cursor ? gt(schema.auditLog.id, cursor) : undefined;
+  // 4. Query audit_log for new rows (createdAt-based cursor; may re-deliver
+  //    boundary events on restart, but SIEMs handle idempotent ingestion)
+  const cursorDate = cursor ? new Date(cursor) : null;
+  const conditions = cursorDate ? gte(schema.auditLog.createdAt, cursorDate) : undefined;
   const rows = await db
     .select()
     .from(schema.auditLog)
@@ -104,8 +103,8 @@ export async function runSiemForward(): Promise<{ forwarded: number } | void> {
 
   // 8. Update state based on result
   if (result.success) {
-    const lastId = rows[rows.length - 1].id;
-    await upsertSetting(CURSOR_KEY, lastId);
+    const lastRow = rows[rows.length - 1];
+    await upsertSetting(CURSOR_KEY, lastRow.createdAt.toISOString());
     if (failureCount > 0) {
       await upsertSetting(FAILURES_KEY, "0");
     }
