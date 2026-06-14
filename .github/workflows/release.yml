@@ -376,6 +376,15 @@ jobs:
             "snapotter-v${VERSION}-sbom.spdx.json" \
             --clobber --repo snapotter-hq/SnapOtter
 
+  ai-bundles:
+    name: AI Bundles
+    needs: [release, docker]
+    if: needs.release.outputs.new_version
+    uses: ./.github/workflows/ai-bundles.yml
+    with:
+      version: ${{ needs.release.outputs.new_version }}
+    secrets: inherit
+
   manifest:
     name: Create Multi-Arch Manifests
     needs: [release, docker, scan]

@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import {
   constants,
@@ -378,6 +379,40 @@ export function recoverInterruptedInstalls(): void {
     }
   }
 
+  // 6. Delete staging-{bundleId}/ directories (incomplete extraction)
+  try {
+    const aiEntries = readdirSync(AI_DIR, { withFileTypes: true });
+    for (const entry of aiEntries) {
+      if (entry.isDirectory() && entry.name.startsWith("staging-")) {
+        const stagingPath = join(AI_DIR, entry.name);
+        rmSync(stagingPath, { recursive: true, force: true });
+        console.info(`[feature-status] Deleted orphaned ${entry.name}/`);
+      }
+    }
+  } catch {
+    // AI_DIR may not exist yet
+  }
+
+  // 7. Clean up staging/ download directory (partial downloads, orphaned tars)
+  const downloadStaging = join(AI_DIR, "staging");
+  if (existsSync(downloadStaging)) {
+    try {
+      const files = readdirSync(downloadStaging);
+      for (const file of files) {
+        const filePath = join(downloadStaging, file);
+        if (file.endsWith(".partial") || file.endsWith(".meta")) {
+          unlinkSync(filePath);
+          console.info(`[feature-status] Deleted stale download file: ${file}`);
+        } else if (file.endsWith(".tar.gz")) {
+          unlinkSync(filePath);
+          console.info(`[feature-status] Deleted orphaned archive: ${file}`);
+        }
+      }
+    } catch {
+      // best-effort
+    }
+  }
+
   invalidateCache();
 }
 
@@ -596,6 +631,50 @@ export async function importBundleArchive(
     if (existsSync(stagingModels)) {
       mkdirSync(MODELS_DIR, { recursive: true });
       moveTreeRecursive(stagingModels, MODELS_DIR);
+    }
+
+    // Move site-packages/* into venv site-packages
+    const stagingSitePackages = join(stagingDir, "site-packages");
+    if (existsSync(stagingSitePackages)) {
+      const venvPath = process.env.PYTHON_VENV_PATH || join(AI_DIR, "venv");
+      let sitePackagesDir = "";
+      const libDir = join(venvPath, "lib");
+      if (existsSync(libDir)) {
+        const pyDirs = readdirSync(libDir).filter((d) => d.startsWith("python"));
+        if (pyDirs.length > 0) {
+          sitePackagesDir = join(libDir, pyDirs[0], "site-packages");
+        }
+      }
+      if (sitePackagesDir && existsSync(sitePackagesDir)) {
+        moveTreeRecursive(stagingSitePackages, sitePackagesDir);
+      }
+    }
+
+    // Apply fixups (NCCL wheel) if present
+    const stagingFixups = join(stagingDir, "fixups");
+    if (existsSync(stagingFixups)) {
+      const wheels = readdirSync(stagingFixups).filter((f) => f.endsWith(".whl"));
+      if (wheels.length > 0) {
+        const venvPython = `${process.env.PYTHON_VENV_PATH || join(AI_DIR, "venv")}/bin/python3`;
+        for (const wheel of wheels) {
+          try {
+            execFileSync(
+              venvPython,
+              [
+                "-m",
+                "pip",
+                "install",
+                "--no-index",
+                `--find-links=${stagingFixups}`,
+                wheel.split("-")[0],
+              ],
+              { stdio: "ignore", timeout: 30_000 },
+            );
+          } catch {
+            // Non-fatal
+          }
+        }
+      }
     }
 
     markInstalled(descriptor.bundleId, descriptor.version, descriptor.models);
