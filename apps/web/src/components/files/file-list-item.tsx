@@ -33,10 +33,11 @@ export function FileListItem({ file, disabled }: FileListItemProps) {
 
   return (
     <div
+      data-file-id={file.id}
       role="option"
       aria-selected={isSelected}
       aria-disabled={disabled}
-      tabIndex={disabled ? -1 : 0}
+      tabIndex={-1}
       onClick={() => {
         if (!disabled) selectFile(file.id);
       }}

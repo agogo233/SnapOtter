@@ -1,5 +1,5 @@
 import { Download, Search, Trash2 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/contexts/i18n-context";
 import { getFileDownloadUrl } from "@/lib/api";
@@ -12,6 +12,8 @@ export function FileList({ filterMimePrefix }: { filterMimePrefix?: string }) {
   const {
     files: allFiles,
     checkedIds,
+    selectedFileId,
+    selectFile,
     loading,
     error,
     fetchFiles,
@@ -23,6 +25,7 @@ export function FileList({ filterMimePrefix }: { filterMimePrefix?: string }) {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   const files = allFiles;
 
@@ -50,6 +53,36 @@ export function FileList({ filterMimePrefix }: { filterMimePrefix?: string }) {
       document.body.removeChild(a);
     }
   }
+
+  const handleListKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (files.length === 0) return;
+      const currentIndex = selectedFileId ? files.findIndex((f) => f.id === selectedFileId) : -1;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = currentIndex < files.length - 1 ? currentIndex + 1 : 0;
+        selectFile(files[next].id);
+        listRef.current
+          ?.querySelector(`[data-file-id="${files[next].id}"]`)
+          ?.scrollIntoView({ block: "nearest" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = currentIndex > 0 ? currentIndex - 1 : files.length - 1;
+        selectFile(files[prev].id);
+        listRef.current
+          ?.querySelector(`[data-file-id="${files[prev].id}"]`)
+          ?.scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        selectFile(files[0].id);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        selectFile(files[files.length - 1].id);
+      }
+    },
+    [files, selectedFileId, selectFile],
+  );
 
   const allChecked = files.length > 0 && checkedIds.size === files.length;
   const someChecked = checkedIds.size > 0;
@@ -106,7 +139,13 @@ export function FileList({ filterMimePrefix }: { filterMimePrefix?: string }) {
       </div>
 
       {/* File list */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+      <div
+        ref={listRef}
+        role="listbox"
+        tabIndex={0}
+        onKeyDown={handleListKeyDown}
+        className="flex-1 overflow-y-auto p-2 space-y-0.5 focus:outline-none"
+      >
         {loading && (
           <div className="flex items-center justify-center h-32">
             <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
