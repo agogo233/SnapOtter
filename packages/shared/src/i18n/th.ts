@@ -2442,6 +2442,7 @@ export const th: TranslationKeys = {
     adjustSettings: "Adjust settings",
     startOver: "Start over with a new file",
     newFile: "New file",
+    previewUnavailable: "Preview will be available after processing",
     backToTools: "Back to Tools",
     original: "Original",
     processed: "Processed",

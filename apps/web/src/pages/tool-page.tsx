@@ -10,6 +10,7 @@ import {
   FileImage,
   Loader2,
   Upload,
+  Video,
   XCircle,
 } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -659,6 +660,31 @@ export function ToolPage() {
           );
         }
       }
+      // Check if the current file is browser-playable
+      const currentFileName = hasProcessed
+        ? (currentEntry?.processedFilename ?? "")
+        : (currentEntry?.file?.name ?? "");
+      const currentExt = currentFileName.split(".").pop()?.toLowerCase() ?? "";
+      const nativeVideoExts = new Set(["mp4", "webm", "ogg", "ogv", "m4v", "mov"]);
+      const isNativeVideo = nativeVideoExts.has(currentExt);
+
+      if (!isNativeVideo && currentExt) {
+        return (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-8 max-w-xs">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <Video className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="font-medium text-foreground mb-1">{currentFileName}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                {currentExt.toUpperCase()} &middot;{" "}
+                {currentEntry?.file ? formatFileSize(currentEntry.file.size) : ""}
+              </p>
+              <p className="text-xs text-muted-foreground/60">{t.toolPage.previewUnavailable}</p>
+            </div>
+          </div>
+        );
+      }
       return (
         <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
           <MediaPlayerView />
@@ -790,23 +816,19 @@ export function ToolPage() {
     // Non-previewable format with no fallback at all - show success card
     if (hasProcessed && !isProcessedPreviewable && !processedPreviewUrl && !originalBlobUrl) {
       return (
-        <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">{t.toolPage.conversionComplete}</p>
-            <p className="text-xs text-muted-foreground mt-1">{processedFileName}</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center p-8 max-w-xs">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-4">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <p className="font-medium text-foreground mb-1">{t.toolPage.conversionComplete}</p>
+            <p className="text-sm text-muted-foreground mb-1">{processedFileName}</p>
             {processedSize != null && (
-              <p className="text-xs text-muted-foreground">
-                {formatFileSize(processedSize)} · {processedFileType}
+              <p className="text-xs text-muted-foreground/60">
+                {processedFileType} &middot; {formatFileSize(processedSize)}
               </p>
             )}
           </div>
-          <p className="text-xs text-muted-foreground max-w-xs">
-            {processedFileType} files cannot be previewed in the browser. Use the download button to
-            save your file.
-          </p>
         </div>
       );
     }
@@ -880,20 +902,17 @@ export function ToolPage() {
       if (!canBrowserPreview(originalBlobUrl, fname)) {
         const ext = fname.split(".").pop()?.toUpperCase() ?? "";
         return (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <FileImage className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-medium truncate max-w-xs">{fname}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {ext} · {formatFileSize(fsize)}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-8 max-w-xs">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <FileImage className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="font-medium text-foreground mb-1">{fname}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                {ext} &middot; {formatFileSize(fsize)}
               </p>
+              <p className="text-xs text-muted-foreground/60">{t.toolPage.previewUnavailable}</p>
             </div>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              {ext} files cannot be previewed in the browser. The tool will still process this file
-              normally.
-            </p>
           </div>
         );
       }
