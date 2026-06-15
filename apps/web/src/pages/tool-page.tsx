@@ -10,7 +10,6 @@ import {
   FileImage,
   Loader2,
   Upload,
-  Video,
   XCircle,
 } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -60,6 +59,11 @@ const WaveformPlayer = lazy(() =>
 );
 const DocumentView = lazy(() =>
   import("@/components/tools/document-view").then((m) => ({ default: m.DocumentView })),
+);
+const NonNativePreview = lazy(() =>
+  import("@/components/common/non-native-preview").then((m) => ({
+    default: m.NonNativePreview,
+  })),
 );
 
 /** Formats that browsers can render in <img> tags. */
@@ -668,21 +672,16 @@ export function ToolPage() {
       const nativeVideoExts = new Set(["mp4", "webm", "ogg", "ogv", "m4v", "mov"]);
       const isNativeVideo = nativeVideoExts.has(currentExt);
 
-      if (!isNativeVideo && currentExt) {
+      if (!isNativeVideo && currentExt && currentEntry?.file) {
         return (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center p-8 max-w-xs">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-                <Video className="h-8 w-8 text-muted-foreground" />
-              </div>
-              <p className="font-medium text-foreground mb-1">{currentFileName}</p>
-              <p className="text-sm text-muted-foreground mb-1">
-                {currentExt.toUpperCase()} &middot;{" "}
-                {currentEntry?.file ? formatFileSize(currentEntry.file.size) : ""}
-              </p>
-              <p className="text-xs text-muted-foreground/60">{t.toolPage.previewUnavailable}</p>
-            </div>
-          </div>
+          <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+            <NonNativePreview
+              file={currentEntry.file}
+              filename={currentFileName}
+              fileSize={currentEntry.file.size}
+              modality="video"
+            />
+          </Suspense>
         );
       }
       return (
@@ -901,6 +900,20 @@ export function ToolPage() {
       const fsize = selectedFileSize ?? files[0].size;
       if (!canBrowserPreview(originalBlobUrl, fname)) {
         const ext = fname.split(".").pop()?.toUpperCase() ?? "";
+        const previewModality =
+          tool?.modality === "video" ? "video" : tool?.modality === "audio" ? "audio" : null;
+        if (previewModality && currentEntry?.file) {
+          return (
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+              <NonNativePreview
+                file={currentEntry.file}
+                filename={fname}
+                fileSize={fsize}
+                modality={previewModality}
+              />
+            </Suspense>
+          );
+        }
         return (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center p-8 max-w-xs">

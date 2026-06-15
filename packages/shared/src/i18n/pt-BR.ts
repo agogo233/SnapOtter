@@ -2462,6 +2462,8 @@ export const ptBR: TranslationKeys = {
     startOver: "Start over with a new file",
     newFile: "New file",
     previewUnavailable: "Preview will be available after processing",
+    generatePreview: "Generate Preview",
+    previewFailed: "Preview generation failed",
     backToTools: "Back to Tools",
     original: "Original",
     processed: "Processed",
