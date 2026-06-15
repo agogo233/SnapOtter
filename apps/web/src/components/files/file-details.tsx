@@ -1,6 +1,6 @@
 import { TOOLS } from "@snapotter/shared";
-import { FileImage, ImageIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { FileImage, FileText, ImageIcon, Music, Video } from "lucide-react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "@/contexts/i18n-context";
 import {
@@ -13,6 +13,10 @@ import {
 import { cn } from "@/lib/utils";
 import { useFileStore } from "@/stores/file-store";
 import { useFilesPageStore } from "@/stores/files-page-store";
+
+const WaveformPlayer = lazy(() =>
+  import("@/components/common/waveform-player").then((m) => ({ default: m.WaveformPlayer })),
+);
 
 function AuthImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -58,6 +62,78 @@ function AuthImage({ src, alt, className }: { src: string; alt: string; classNam
   }
 
   return <img src={blobUrl} alt={alt} className={className} />;
+}
+
+function FilePreview({
+  fileId,
+  mimeType,
+  name,
+}: {
+  fileId: string;
+  mimeType: string;
+  name: string;
+}) {
+  const downloadUrl = getFileDownloadUrl(fileId);
+  const headers = formatHeaders();
+  const [mediaSrc, setMediaSrc] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!mimeType.startsWith("video/") && !mimeType.startsWith("audio/")) return;
+    let revoked = false;
+    fetch(downloadUrl, { headers })
+      .then((res) => res.blob())
+      .then((blob) => {
+        if (!revoked) setMediaSrc(URL.createObjectURL(blob));
+      })
+      .catch(() => {});
+    return () => {
+      revoked = true;
+      if (mediaSrc) URL.revokeObjectURL(mediaSrc);
+    };
+  }, [fileId]);
+
+  if (mimeType.startsWith("video/")) {
+    return mediaSrc ? (
+      <video src={mediaSrc} controls className="w-full rounded-lg max-h-48 bg-black">
+        <track kind="captions" />
+      </video>
+    ) : (
+      <div className="w-full h-32 rounded-lg bg-muted flex items-center justify-center">
+        <Video className="h-8 w-8 text-muted-foreground animate-pulse" />
+      </div>
+    );
+  }
+
+  if (mimeType.startsWith("audio/")) {
+    return mediaSrc ? (
+      <Suspense fallback={<div className="w-full h-24 rounded-lg bg-muted animate-pulse" />}>
+        <WaveformPlayer src={mediaSrc} className="w-full" />
+      </Suspense>
+    ) : (
+      <div className="w-full h-24 rounded-lg bg-muted flex items-center justify-center">
+        <Music className="h-8 w-8 text-muted-foreground animate-pulse" />
+      </div>
+    );
+  }
+
+  if (mimeType.startsWith("image/")) {
+    return (
+      <AuthImage
+        src={getFileThumbnailUrl(fileId)}
+        alt={name}
+        className="w-full rounded-lg object-contain max-h-48 bg-muted"
+      />
+    );
+  }
+
+  return (
+    <div className="w-full h-32 rounded-lg bg-muted flex flex-col items-center justify-center gap-2">
+      <FileText className="h-8 w-8 text-muted-foreground" />
+      <span className="text-xs text-muted-foreground">
+        {mimeType.split("/").pop()?.toUpperCase()}
+      </span>
+    </div>
+  );
 }
 
 function toolName(toolId: string): string {
@@ -184,13 +260,9 @@ export function FileDetails({ mobile = false }: FileDetailsProps) {
           : "w-60 border-s border-border p-4 shrink-0 hidden lg:flex flex-col",
       )}
     >
-      {/* Thumbnail */}
+      {/* Preview */}
       <div className={cn("border-b border-border", mobile ? "" : "pb-4")}>
-        <AuthImage
-          src={getFileThumbnailUrl(details.id)}
-          alt={details.originalName}
-          className="w-full rounded-lg object-contain max-h-48 bg-muted"
-        />
+        <FilePreview fileId={details.id} mimeType={details.mimeType} name={details.originalName} />
       </div>
 
       {/* Details card */}
