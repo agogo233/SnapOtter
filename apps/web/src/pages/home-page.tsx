@@ -1,383 +1,440 @@
-import {
-  CATEGORIES,
-  MODALITIES,
-  PYTHON_SIDECAR_TOOLS,
-  TOOL_BUNDLE_MAP,
-  TOOLS,
-} from "@snapotter/shared";
-import { Clock, Download, FileArchive, LayoutGrid, Loader2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { ImageViewer } from "@/components/common/image-viewer";
-import { MultiImageViewer } from "@/components/common/multi-image-viewer";
-import { AppLayout } from "@/components/layout/app-layout";
-import { DocumentView } from "@/components/tools/document-view";
-import { MediaPlayerView } from "@/components/tools/media-player-view";
+import type { Tool } from "@snapotter/shared";
+import { CATEGORIES, MODALITIES, TOOLS } from "@snapotter/shared";
+import { ChevronDown, Search, X } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ToolCard } from "@/components/common/tool-card.js";
+import { AppLayout } from "@/components/layout/app-layout.js";
 import { useTranslation } from "@/contexts/i18n-context";
-import { useMobile } from "@/hooks/use-mobile";
-import { ICON_MAP } from "@/lib/icon-map";
-import { getCategoryName, getModalityName, getToolName } from "@/lib/tool-i18n";
-import { cn } from "@/lib/utils";
-import { useFeaturesStore } from "@/stores/features-store";
-import { useFileStore } from "@/stores/file-store";
+import { useFuseSearch } from "@/hooks/use-fuse-search.js";
+import { usePageTitle } from "@/hooks/use-page-title.js";
+import { useRecentTools } from "@/hooks/use-recent-tools.js";
+import { format } from "@/lib/format.js";
+import { ICON_MAP } from "@/lib/icon-map.js";
+import { getCategoryName, getToolName } from "@/lib/tool-i18n.js";
+import { cn } from "@/lib/utils.js";
 import { useSettingsStore } from "@/stores/settings-store";
 
-// Tools shown prominently as "quick actions" at the top
+interface TabDef {
+  key: string;
+  label: string;
+}
 
-let hasAppliedDefaultRedirect = false;
+const COLLAPSE_STORAGE_KEY = "snapotter-collapsed-modalities";
+
+function getCollapsedModalities(): Set<string> {
+  try {
+    const raw = localStorage.getItem(COLLAPSE_STORAGE_KEY);
+    return raw ? new Set(JSON.parse(raw)) : new Set();
+  } catch {
+    return new Set();
+  }
+}
+
+function saveCollapsedModalities(collapsed: Set<string>) {
+  localStorage.setItem(COLLAPSE_STORAGE_KEY, JSON.stringify([...collapsed]));
+}
+
+const MODALITY_TAB_ORDER = [
+  { modalityId: "image", tabKey: "image", label: "Image" },
+  { modalityId: "video", tabKey: "video", label: "Video" },
+  { modalityId: "audio", tabKey: "audio", label: "Audio" },
+  { modalityId: "document", tabKey: "document", label: "Documents" },
+  { modalityId: "file", tabKey: "data", label: "Data" },
+];
 
 export function HomePage() {
   const { t } = useTranslation();
-  const {
-    setFiles,
-    files,
-    reset,
-    originalBlobUrl,
-    selectedFileName,
-    selectedFileSize,
-    currentEntry,
-  } = useFileStore();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { fetch: fetchSettings, defaultToolView, loaded: settingsLoaded } = useSettingsStore();
-  const { fetch: fetchFeatures, bundles, installing, queued } = useFeaturesStore();
-  const isMobile = useMobile();
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [search, setSearch] = useState("");
+  const { fetch: fetchSettings, disabledTools, experimentalEnabled, loaded } = useSettingsStore();
+  const recentToolIds = useRecentTools();
 
-  useEffect(() => {
-    if (location.state?.fromLibrary) {
-      navigate(".", { replace: true, state: {} });
-    } else {
-      reset();
-    }
-  }, [reset, location.state, navigate]);
+  usePageTitle();
 
   useEffect(() => {
     fetchSettings();
-    fetchFeatures();
-  }, [fetchSettings, fetchFeatures]);
+  }, [fetchSettings]);
 
-  useEffect(() => {
-    if (
-      !hasAppliedDefaultRedirect &&
-      settingsLoaded &&
-      defaultToolView === "fullscreen" &&
-      files.length === 0
-    ) {
-      hasAppliedDefaultRedirect = true;
-      navigate("/fullscreen", { replace: true });
+  const tabs: TabDef[] = useMemo(
+    () => [
+      { key: "all", label: t.homePage.all },
+      { key: "image", label: "Image" },
+      { key: "video", label: "Video" },
+      { key: "audio", label: "Audio" },
+      { key: "document", label: t.homePage.documents },
+      { key: "data", label: t.homePage.data },
+    ],
+    [t],
+  );
+
+  const visibleTools = useMemo(() => {
+    if (!loaded) return [];
+    return TOOLS.filter((tool) => {
+      if (tool.disabled) return false;
+      if (disabledTools.includes(tool.id)) return false;
+      if (tool.experimental && !experimentalEnabled) return false;
+      return true;
+    });
+  }, [disabledTools, experimentalEnabled, loaded]);
+
+  const searchResults = useFuseSearch(visibleTools, search);
+
+  const tabTools = useMemo(() => {
+    if (activeTab === "all") return visibleTools;
+    const modalityKey = activeTab === "data" ? "file" : activeTab;
+    return visibleTools.filter((tool) => tool.modality === modalityKey);
+  }, [visibleTools, activeTab]);
+
+  const groupedTools = useMemo(() => {
+    const map = new Map<string, Tool[]>();
+    for (const tool of tabTools) {
+      const existing = map.get(tool.category);
+      if (existing) {
+        existing.push(tool);
+      } else {
+        map.set(tool.category, [tool]);
+      }
     }
-  }, [settingsLoaded, defaultToolView, files.length, navigate]);
+    return map;
+  }, [tabTools]);
 
-  const getToolStatus = useMemo(() => {
-    return (toolId: string) => {
-      const isAi = (PYTHON_SIDECAR_TOOLS as readonly string[]).includes(toolId);
-      if (!isAi) return "installed";
-      const bundleId = TOOL_BUNDLE_MAP[toolId];
-      if (!bundleId) return "installed";
-      if (queued.includes(bundleId)) return "queued";
-      if (installing[bundleId]) return "installing";
-      const bundle = bundles.find((b) => b.id === bundleId);
-      return bundle?.status === "installed" ? "installed" : "not_installed";
-    };
-  }, [bundles, installing, queued]);
+  const tabCounts = useMemo(() => {
+    const counts: Record<string, number> = { all: visibleTools.length };
+    for (const tool of visibleTools) {
+      const tabKey = tool.modality === "file" ? "data" : tool.modality;
+      counts[tabKey] = (counts[tabKey] ?? 0) + 1;
+    }
+    return counts;
+  }, [visibleTools]);
 
-  const handleFiles = useCallback(
-    (newFiles: File[]) => {
-      reset();
-      setFiles(newFiles);
-    },
-    [setFiles, reset],
+  const recentTools = useMemo(
+    () =>
+      recentToolIds
+        .map((id) => visibleTools.find((tool) => tool.id === id))
+        .filter((tool): tool is Tool => tool != null),
+    [recentToolIds, visibleTools],
   );
 
-  const handleUrlImport = useCallback(
-    (file: File) => {
-      setFiles([file]);
-    },
-    [setFiles],
-  );
-
-  const [modalityFilter, setModalityFilter] = useState<string>("all");
-  const TAB_MODALITIES = useMemo(() => MODALITIES.filter((m) => m.id !== "file"), []);
-
-  const hasFile = files.length > 0;
-
-  // If no file uploaded, show default layout (tool panel + dropzone)
-  if (!hasFile) {
-    return <AppLayout onFiles={handleFiles} onUrlImport={handleUrlImport} />;
-  }
-
-  // File uploaded — mobile: stacked layout
-  if (isMobile && hasFile) {
-    return (
-      <AppLayout showToolPanel={false} onFiles={handleFiles}>
-        <h1 className="sr-only">{t.nav.tools}</h1>
-        <div className="flex flex-col h-full w-full">
-          {/* File info bar */}
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-border">
-            <ICON_MAP.CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-            <span className="truncate text-sm font-medium text-foreground">
-              {selectedFileName ?? files[0].name}
-            </span>
-            <span className="text-xs text-muted-foreground shrink-0">
-              {selectedFileSize ? `${(selectedFileSize / 1024).toFixed(1)} KB` : ""}
-            </span>
-            <button
-              type="button"
-              onClick={reset}
-              className="text-xs text-muted-foreground hover:text-foreground ms-auto shrink-0"
-            >
-              {t.homePage.changeFile}
-            </button>
-          </div>
-
-          {/* Full-width file preview */}
-          <div className="flex-1 flex items-center justify-center p-4 min-h-0">
-            {files.length > 1 ? (
-              <MultiImageViewer />
-            ) : currentEntry?.previewLoading ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-                <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-                <p className="text-sm text-muted-foreground">{t.homePage.generatingPreview}</p>
-                <p className="text-xs text-muted-foreground">{selectedFileName}</p>
-              </div>
-            ) : currentEntry?.previewKind === "video" || currentEntry?.previewKind === "audio" ? (
-              <MediaPlayerView />
-            ) : currentEntry?.previewKind === "document" ? (
-              <DocumentView />
-            ) : currentEntry?.previewKind === "none" ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-                <FileArchive className="h-12 w-12 text-muted-foreground" />
-                <p className="text-sm font-medium text-foreground">
-                  {selectedFileName ?? files[0].name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {selectedFileSize ? `${(selectedFileSize / 1024).toFixed(1)} KB` : ""}
-                </p>
-              </div>
-            ) : originalBlobUrl ? (
-              <ImageViewer
-                src={originalBlobUrl}
-                filename={selectedFileName ?? files[0].name}
-                fileSize={selectedFileSize ?? files[0].size}
-              />
-            ) : (
-              <div className="text-center text-muted-foreground">
-                <p>{t.homePage.loadingPreview}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
-
-  // File uploaded — desktop: tool selector on left, image preview on right
   return (
-    <AppLayout showToolPanel={false} onFiles={handleFiles}>
-      <h1 className="sr-only">{t.nav.tools}</h1>
-      <div className="flex h-full w-full">
-        {/* Left panel: Tool selector */}
-        <div className="w-64 lg:w-80 border-r border-border overflow-y-auto shrink-0">
-          {/* File info */}
-          <div className="p-4 border-b border-border">
-            <div className="flex items-center gap-2 text-sm">
-              <ICON_MAP.CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
-              <span className="truncate font-medium text-foreground">
-                {selectedFileName ?? files[0].name}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {selectedFileSize ? `${(selectedFileSize / 1024).toFixed(1)} KB` : ""}
-              {files.length > 1 && ` — ${files.length} files`}
-            </p>
-            <button
-              type="button"
-              onClick={reset}
-              className="text-xs text-muted-foreground hover:text-foreground mt-2"
-            >
-              {t.homePage.changeFile}
-            </button>
-          </div>
-
-          {/* Modality filter tabs */}
-          <div className="flex flex-wrap gap-1 px-4 pt-3 pb-2 border-b border-border sticky top-0 bg-background z-10">
-            <button
-              type="button"
-              onClick={() => setModalityFilter("all")}
-              className={cn(
-                "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
-                modalityFilter === "all"
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
-              )}
-            >
-              <LayoutGrid className="h-3.5 w-3.5" />
-              <span>All</span>
-            </button>
-            {TAB_MODALITIES.map((m) => {
-              const Icon = ICON_MAP[m.icon] as React.ComponentType<{ className?: string }>;
-              const isActive = modalityFilter === m.id;
-              const label = m.id === "document" ? "Docs" : m.name;
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => setModalityFilter(m.id)}
-                  className={cn(
-                    "flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-colors",
-                    isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted",
-                  )}
-                >
-                  {Icon && <Icon className="h-3.5 w-3.5" />}
-                  <span>{label}</span>
-                </button>
-              );
+    <AppLayout>
+      <div>
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+          <HomeSearchBar
+            value={search}
+            onChange={setSearch}
+            placeholder={format(t.homePage.searchPlaceholder, {
+              count: visibleTools.length,
             })}
-          </div>
+          />
 
-          {/* Tools by modality and category */}
-          <div className="p-4">
-            {MODALITIES.filter((m) => {
-              if (m.id === "file") return false;
-              if (modalityFilter !== "all") {
-                if (modalityFilter === "document") return m.id === "document";
-                return m.id === modalityFilter;
-              }
-              const key = m.id;
-              return TOOLS.some(
-                (tool) => tool.modality === key || (key === "document" && tool.modality === "file"),
-              );
-            }).map((modality) => {
-              const ModalityIcon = ICON_MAP[modality.icon] as React.ComponentType<{
-                className?: string;
-              }>;
-              const modalityTools = TOOLS.filter(
-                (tool) =>
-                  tool.modality === modality.id ||
-                  (modality.id === "document" && tool.modality === "file"),
-              );
-              const categoryMap = new Map<string, typeof TOOLS>();
-              for (const tool of modalityTools) {
-                const list = categoryMap.get(tool.category) ?? [];
-                list.push(tool);
-                categoryMap.set(tool.category, list);
-              }
-              return (
-                <div key={modality.id} className="mb-5">
-                  <div className="flex items-center gap-1.5 mb-2">
-                    {ModalityIcon && (
-                      <ModalityIcon className="h-4 w-4 text-foreground/70 shrink-0" />
-                    )}
-                    <p className="text-xs font-bold uppercase text-foreground/70 tracking-wider">
-                      {getModalityName(
-                        t,
-                        modality.id,
-                        modality.id === "document" ? "Documents & Files" : modality.name,
-                      )}
-                    </p>
-                  </div>
-                  {CATEGORIES.filter((cat) => categoryMap.has(cat.id)).map((category) => (
-                    <div key={category.id} className="mb-4">
-                      <p
-                        className="text-xs font-medium text-muted-foreground mb-1.5"
-                        style={{ color: category.color }}
-                      >
-                        {getCategoryName(t, category.id, category.name)}
-                      </p>
-                      <div className="space-y-0.5">
-                        {categoryMap.get(category.id)?.map((tool) => {
-                          const Icon =
-                            (ICON_MAP[tool.icon] as React.ComponentType<{
-                              className?: string;
-                            }>) ?? ICON_MAP.FileImage;
-                          const status = getToolStatus(tool.id);
-                          return (
-                            <button
-                              key={tool.id}
-                              type="button"
-                              onClick={() => navigate(tool.route)}
-                              className="flex items-center gap-2.5 w-full py-1.5 px-2 rounded-lg text-start transition-colors hover:bg-muted text-foreground"
-                            >
-                              <Icon className="h-4 w-4 text-muted-foreground shrink-0" />
-                              <span className="text-sm">{getToolName(t, tool.id, tool.name)}</span>
-                              {status === "not_installed" && (
-                                <>
-                                  <Download
-                                    className="h-3.5 w-3.5 text-muted-foreground ms-auto"
-                                    aria-hidden="true"
-                                  />
-                                  <span className="sr-only">{t.a11y.notInstalled}</span>
-                                </>
-                              )}
-                              {status === "queued" && (
-                                <>
-                                  <Clock
-                                    className="h-3.5 w-3.5 text-muted-foreground ms-auto"
-                                    aria-hidden="true"
-                                  />
-                                  <span className="sr-only">{t.a11y.queued}</span>
-                                </>
-                              )}
-                              {status === "installing" && (
-                                <>
-                                  <Loader2
-                                    className="h-3.5 w-3.5 text-muted-foreground ms-auto animate-spin"
-                                    aria-hidden="true"
-                                  />
-                                  <span className="sr-only">{t.a11y.installing}</span>
-                                </>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              );
-            })}
-          </div>
-        </div>
+          <ModalityTabs
+            tabs={tabs}
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            counts={tabCounts}
+          />
 
-        {/* Right panel: File preview (modality-aware) */}
-        <div className="flex-1 flex items-center justify-center p-6 min-h-0">
-          {files.length > 1 ? (
-            <MultiImageViewer />
-          ) : currentEntry?.previewLoading ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-              <Loader2 className="h-8 w-8 text-muted-foreground animate-spin" />
-              <p className="text-sm text-muted-foreground">{t.homePage.generatingPreview}</p>
-              <p className="text-xs text-muted-foreground">{selectedFileName}</p>
-            </div>
-          ) : currentEntry?.previewKind === "video" || currentEntry?.previewKind === "audio" ? (
-            <MediaPlayerView />
-          ) : currentEntry?.previewKind === "document" ? (
-            <DocumentView />
-          ) : currentEntry?.previewKind === "none" ? (
-            <div className="flex flex-col items-center justify-center h-full gap-3 text-center">
-              <FileArchive className="h-12 w-12 text-muted-foreground" />
-              <p className="text-sm font-medium text-foreground">
-                {selectedFileName ?? files[0].name}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {selectedFileSize ? `${(selectedFileSize / 1024).toFixed(1)} KB` : ""}
-              </p>
-            </div>
-          ) : originalBlobUrl ? (
-            <ImageViewer
-              src={originalBlobUrl}
-              filename={selectedFileName ?? files[0].name}
-              fileSize={selectedFileSize ?? files[0].size}
-            />
+          {search ? (
+            <SearchResults results={searchResults} query={search} onClear={() => setSearch("")} />
+          ) : activeTab === "all" ? (
+            <AllTabContent recentTools={recentTools} visibleTools={visibleTools} />
           ) : (
-            <div className="text-center text-muted-foreground">
-              <p>{t.homePage.loadingPreview}</p>
-            </div>
+            <CategoryGrid groupedTools={groupedTools} />
           )}
         </div>
       </div>
     </AppLayout>
+  );
+}
+
+// ── Search Bar ───────────────────────────────────────────────────
+
+function HomeSearchBar({
+  value,
+  onChange,
+  placeholder,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  placeholder: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (params.get("focus") === "search") {
+      inputRef.current?.focus();
+      navigate("/", { replace: true });
+    }
+  }, [location.search, navigate]);
+
+  return (
+    <div className="relative mb-8">
+      <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+      <input
+        ref={inputRef}
+        data-search-input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        aria-label={placeholder}
+        className="w-full ps-11 pe-20 py-2.5 rounded-lg border border-border bg-card text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/40 transition-shadow"
+      />
+      {value ? (
+        <button
+          type="button"
+          onClick={() => {
+            onChange("");
+            inputRef.current?.focus();
+          }}
+          className="absolute end-3 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-muted transition-colors"
+          aria-label="Clear search"
+        >
+          <X className="h-4 w-4 text-muted-foreground" />
+        </button>
+      ) : (
+        <kbd className="absolute end-3 top-1/2 -translate-y-1/2 hidden sm:inline-flex items-center gap-0.5 px-2 py-0.5 rounded border border-border bg-muted/50 text-[11px] text-muted-foreground font-mono">
+          <span className="text-xs">&#8984;</span>K
+        </kbd>
+      )}
+    </div>
+  );
+}
+
+// ── Modality Tabs ────────────────────────────────────────────────
+
+function ModalityTabs({
+  tabs,
+  activeTab,
+  onTabChange,
+  counts,
+}: {
+  tabs: TabDef[];
+  activeTab: string;
+  onTabChange: (key: string) => void;
+  counts: Record<string, number>;
+}) {
+  return (
+    <div className="mb-8 overflow-x-auto scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+      <div className="flex gap-1.5 min-w-max">
+        {tabs.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            onClick={() => onTabChange(tab.key)}
+            className={cn(
+              "px-3.5 py-1.5 rounded-full text-sm font-medium transition-colors whitespace-nowrap",
+              activeTab === tab.key
+                ? "bg-primary text-primary-foreground shadow-sm"
+                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+            )}
+          >
+            {tab.label}
+            <span className={cn("ms-1", activeTab === tab.key ? "opacity-80" : "opacity-50")}>
+              {counts[tab.key] ?? 0}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Search Results ───────────────────────────────────────────────
+
+function SearchResults({
+  results,
+  query,
+  onClear,
+}: {
+  results: Tool[];
+  query: string;
+  onClear: () => void;
+}) {
+  const { t } = useTranslation();
+
+  if (results.length === 0) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-muted-foreground">{format(t.homePage.noToolsMatch, { query })}</p>
+        <button
+          type="button"
+          onClick={onClear}
+          className="mt-3 text-sm text-primary hover:underline"
+        >
+          {t.homePage.clearSearch}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+      {results.map((tool) => (
+        <ToolCard key={tool.id} tool={tool} variant="descriptive" showModalityBadge />
+      ))}
+    </div>
+  );
+}
+
+// ── All Tab: Grouped by modality, then by category ───────────────
+
+function AllTabContent({
+  recentTools,
+  visibleTools,
+}: {
+  recentTools: Tool[];
+  visibleTools: Tool[];
+}) {
+  const { t } = useTranslation();
+  const [collapsed, setCollapsed] = useState<Set<string>>(getCollapsedModalities);
+
+  const toggleModality = useCallback((modalityId: string) => {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(modalityId)) next.delete(modalityId);
+      else next.add(modalityId);
+      saveCollapsedModalities(next);
+      return next;
+    });
+  }, []);
+
+  const toolsByModality = useMemo(() => {
+    const map = new Map<string, Map<string, Tool[]>>();
+    for (const tool of visibleTools) {
+      let modMap = map.get(tool.modality);
+      if (!modMap) {
+        modMap = new Map();
+        map.set(tool.modality, modMap);
+      }
+      const existing = modMap.get(tool.category);
+      if (existing) existing.push(tool);
+      else modMap.set(tool.category, [tool]);
+    }
+    return map;
+  }, [visibleTools]);
+
+  return (
+    <div className="space-y-6">
+      {/* Recent */}
+      {recentTools.length > 0 && (
+        <section>
+          <h2 className="text-[11px] font-semibold uppercase text-muted-foreground/70 tracking-widest mb-2">
+            {t.homePage.recent}
+          </h2>
+          <div className="flex flex-wrap gap-1.5">
+            {recentTools.map((tool) => (
+              <Link
+                key={tool.id}
+                to={tool.route}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-sm text-muted-foreground border border-border/60 hover:border-border hover:text-foreground hover:bg-muted/50 transition-colors"
+              >
+                {getToolName(t, tool.id, tool.name)}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Modality sections */}
+      {MODALITY_TAB_ORDER.map(({ modalityId, label }) => {
+        const categoryMap = toolsByModality.get(modalityId);
+        if (!categoryMap || categoryMap.size === 0) return null;
+
+        const totalCount = [...categoryMap.values()].reduce((sum, arr) => sum + arr.length, 0);
+        const isCollapsed = collapsed.has(modalityId);
+        const modality = MODALITIES.find((m) => m.id === modalityId);
+        const ModalityIcon = modality
+          ? (ICON_MAP[modality.icon] as React.ComponentType<{ className?: string }>)
+          : null;
+
+        return (
+          <section key={modalityId}>
+            <button
+              type="button"
+              onClick={() => toggleModality(modalityId)}
+              className="w-full flex items-center gap-2 py-2 mb-2 border-b border-border/40 group cursor-pointer"
+            >
+              {ModalityIcon && (
+                <div
+                  className="p-1 rounded"
+                  style={{
+                    backgroundColor: `${modality?.color ?? "#6B7280"}15`,
+                    color: modality?.color ?? "#6B7280",
+                  }}
+                >
+                  <ModalityIcon className="h-4 w-4" />
+                </div>
+              )}
+              <span className="text-sm font-semibold text-foreground">{label}</span>
+              <span className="text-xs text-muted-foreground">{totalCount}</span>
+              <div className="flex-1" />
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 text-muted-foreground transition-transform",
+                  isCollapsed && "-rotate-90",
+                )}
+              />
+            </button>
+
+            {!isCollapsed && (
+              <div className="space-y-5 ps-1">
+                {CATEGORIES.filter((cat) => categoryMap.has(cat.id)).map((category) => {
+                  const tools = categoryMap.get(category.id) ?? [];
+                  return (
+                    <div key={category.id}>
+                      <h3 className="text-[11px] font-semibold uppercase text-muted-foreground/50 tracking-widest mb-1.5">
+                        {getCategoryName(t, category.id, category.name)}
+                      </h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                        {tools.map((tool) => (
+                          <ToolCard key={tool.id} tool={tool} variant="descriptive" />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Category Grid (used by modality tabs) ────────────────────────
+
+function CategoryGrid({ groupedTools }: { groupedTools: Map<string, Tool[]> }) {
+  const { t } = useTranslation();
+
+  if (groupedTools.size === 0) {
+    return (
+      <p className="text-center text-muted-foreground py-16">{t.fullscreenGrid.noToolsFound}</p>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {CATEGORIES.filter((cat) => groupedTools.has(cat.id)).map((category) => {
+        const tools = groupedTools.get(category.id) ?? [];
+        return (
+          <section key={category.id}>
+            <h2 className="text-[11px] font-semibold uppercase text-muted-foreground/70 tracking-widest mb-2 pb-1.5 border-b border-border/40">
+              {getCategoryName(t, category.id, category.name)}
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+              {tools.map((tool) => (
+                <ToolCard key={tool.id} tool={tool} variant="descriptive" />
+              ))}
+            </div>
+          </section>
+        );
+      })}
+    </div>
   );
 }

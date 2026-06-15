@@ -22,12 +22,14 @@ import { EditorToolbar } from "@/components/editor/editor-toolbar";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useEditorShortcuts } from "@/hooks/use-editor-shortcuts";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { useEditorStore } from "@/stores/editor-store";
 
 const SERVER_DECODED_EXTS = new Set(["psd", "tga", "exr", "hdr"]);
 
 export function EditorPage() {
   const { t } = useTranslation();
+  usePageTitle(t.sidebar.editor);
   const isMobile = useMobile();
   const sourceImageUrl = useEditorStore((s) => s.sourceImageUrl);
   const isDirty = useEditorStore((s) => s.isDirty);

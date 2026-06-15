@@ -28,6 +28,7 @@ import { PipelineBuilder } from "@/components/tools/pipeline-builder";
 import { ToolPalette } from "@/components/tools/tool-palette";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
 import { usePipelineProcessor } from "@/hooks/use-pipeline-processor";
 import { formatHeaders, getFileDownloadUrl } from "@/lib/api";
 import { formatFileSize } from "@/lib/download";
@@ -38,6 +39,7 @@ import { type SavedPipeline, usePipelineStore } from "@/stores/pipeline-store";
 
 export function AutomatePage() {
   const { t } = useTranslation();
+  usePageTitle(t.sidebar.automate);
   const {
     files,
     entries,
@@ -364,7 +366,7 @@ export function AutomatePage() {
   /* ------------------------------------------------------------------ */
   if (isMobile) {
     return (
-      <AppLayout showToolPanel={false}>
+      <AppLayout>
         <div className="flex flex-col h-full w-full overflow-hidden">
           {/* Mobile header */}
           <div className="flex items-center gap-2 px-4 py-3 border-b border-border shrink-0">
@@ -575,7 +577,7 @@ export function AutomatePage() {
   /*  Desktop Layout                                                     */
   /* ------------------------------------------------------------------ */
   return (
-    <AppLayout showToolPanel={false}>
+    <AppLayout>
       <div className="flex h-full w-full overflow-hidden">
         {/* LEFT PANE — Tool Palette */}
         <div className="w-72 border-r border-border flex flex-col shrink-0">

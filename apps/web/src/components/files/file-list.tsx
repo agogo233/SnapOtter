@@ -1,5 +1,5 @@
-import { Download, Search, Trash2, Workflow } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { Download, Search, Trash2 } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "@/contexts/i18n-context";
 import { getFileDownloadUrl } from "@/lib/api";
@@ -7,11 +7,13 @@ import { format } from "@/lib/format";
 import { useFilesPageStore } from "@/stores/files-page-store";
 import { FileListItem } from "./file-list-item";
 
-export function FileList() {
+export function FileList({ filterMimePrefix }: { filterMimePrefix?: string }) {
   const { t } = useTranslation();
   const {
-    files,
+    files: allFiles,
     checkedIds,
+    selectedFileId,
+    selectFile,
     loading,
     error,
     fetchFiles,
@@ -23,6 +25,9 @@ export function FileList() {
   const navigate = useNavigate();
   const [inputValue, setInputValue] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  const files = allFiles;
 
   useEffect(() => {
     fetchFiles();
@@ -49,9 +54,35 @@ export function FileList() {
     }
   }
 
-  function handleSendToPipeline() {
-    navigate("/automate", { state: { libraryFileIds: Array.from(checkedIds) } });
-  }
+  const handleListKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (files.length === 0) return;
+      const currentIndex = selectedFileId ? files.findIndex((f) => f.id === selectedFileId) : -1;
+
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const next = currentIndex < files.length - 1 ? currentIndex + 1 : 0;
+        selectFile(files[next].id);
+        listRef.current
+          ?.querySelector(`[data-file-id="${files[next].id}"]`)
+          ?.scrollIntoView({ block: "nearest" });
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prev = currentIndex > 0 ? currentIndex - 1 : files.length - 1;
+        selectFile(files[prev].id);
+        listRef.current
+          ?.querySelector(`[data-file-id="${files[prev].id}"]`)
+          ?.scrollIntoView({ block: "nearest" });
+      } else if (e.key === "Home") {
+        e.preventDefault();
+        selectFile(files[0].id);
+      } else if (e.key === "End") {
+        e.preventDefault();
+        selectFile(files[files.length - 1].id);
+      }
+    },
+    [files, selectedFileId, selectFile],
+  );
 
   const allChecked = files.length > 0 && checkedIds.size === files.length;
   const someChecked = checkedIds.size > 0;
@@ -97,14 +128,6 @@ export function FileList() {
             </button>
             <button
               type="button"
-              onClick={handleSendToPipeline}
-              className="flex items-center gap-1 px-2 py-1 text-xs text-primary hover:bg-primary/10 rounded-lg transition-colors"
-            >
-              <Workflow className="h-3.5 w-3.5" />
-              {t.files.pipeline}
-            </button>
-            <button
-              type="button"
               onClick={handleBulkDownload}
               className="flex items-center gap-1 px-2 py-1 text-xs text-foreground hover:bg-muted rounded-lg transition-colors"
             >
@@ -116,7 +139,13 @@ export function FileList() {
       </div>
 
       {/* File list */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
+      <div
+        ref={listRef}
+        role="listbox"
+        tabIndex={0}
+        onKeyDown={handleListKeyDown}
+        className="flex-1 overflow-y-auto p-2 space-y-0.5 focus:outline-none"
+      >
         {loading && (
           <div className="flex items-center justify-center h-32">
             <div className="h-6 w-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -132,7 +161,15 @@ export function FileList() {
             <p className="text-sm text-muted-foreground">{t.files.noFilesFound}</p>
           </div>
         )}
-        {!loading && !error && files.map((file) => <FileListItem key={file.id} file={file} />)}
+        {!loading &&
+          !error &&
+          files.map((file) => (
+            <FileListItem
+              key={file.id}
+              file={file}
+              disabled={!!filterMimePrefix && !file.mimeType.startsWith(filterMimePrefix)}
+            />
+          ))}
       </div>
     </div>
   );

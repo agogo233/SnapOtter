@@ -1,169 +1,252 @@
-import { TOOLS } from "@snapotter/shared";
-import {
-  ArrowRight,
-  ChevronDown,
-  ChevronRight,
-  Download,
-  FileImage,
-  PenTool,
-  Undo2,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { AlertCircle, ArrowLeft, CheckCircle2, Download, FileText, FolderPlus } from "lucide-react";
+import { useCallback, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { useTranslation } from "@/contexts/i18n-context";
+import { formatHeaders } from "@/lib/api";
 import { formatFileSize, triggerDownload } from "@/lib/download";
-import { ICON_MAP } from "@/lib/icon-map";
-import { getSuggestedTools } from "@/lib/suggested-tools";
+import { format } from "@/lib/format";
+import { cn } from "@/lib/utils";
+
+/** Tools whose primary output is text/data, not a downloadable file. */
+const DATA_OUTPUT_TOOLS = new Set([
+  "ocr",
+  "barcode-read",
+  "info",
+  "histogram",
+  "color-palette",
+  "transcribe-audio",
+  "extract-subtitles",
+  "image-to-base64",
+  "pdf-to-text",
+  "pdf-metadata",
+  "audio-metadata",
+  "video-metadata",
+]);
+
+/** Tools that produce multiple output files bundled as a ZIP. */
+const MULTI_OUTPUT_TOOLS = new Set([
+  "split",
+  "favicon",
+  "pdf-to-image",
+  "video-to-frames",
+  "split-audio",
+  "split-csv",
+]);
 
 interface ReviewPanelProps {
   filename: string;
   fileSize: number;
   fileType: string;
+  originalSize: number;
   downloadUrl: string;
-  previewUrl?: string;
   onUndo: () => void;
+  onStartOver: () => void;
   currentToolId: string;
+  totalCount?: number;
+  successCount?: number;
+  failedCount?: number;
 }
 
 export function ReviewPanel({
   filename,
   fileSize,
   fileType,
+  originalSize,
   downloadUrl,
-  previewUrl,
   onUndo,
+  onStartOver,
   currentToolId,
+  totalCount,
+  successCount,
+  failedCount,
 }: ReviewPanelProps) {
   const { t } = useTranslation();
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [isSuggestionsExpanded, setIsSuggestionsExpanded] = useState(true);
-  const navigate = useNavigate();
 
-  const suggestedToolIds = useMemo(() => getSuggestedTools(currentToolId), [currentToolId]);
+  const isDataOutput = DATA_OUTPUT_TOOLS.has(currentToolId);
+  const isMultiOutput = MULTI_OUTPUT_TOOLS.has(currentToolId);
 
-  const suggestedTools = useMemo(
-    () =>
-      suggestedToolIds
-        .map((id) => TOOLS.find((t) => t.id === id))
-        .filter((t): t is (typeof TOOLS)[number] => t !== undefined),
-    [suggestedToolIds],
-  );
-
-  const timestamp = useMemo(() => {
-    const now = new Date();
-    return now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-  }, []);
+  const sizeDelta = useMemo(() => {
+    if (!originalSize || originalSize === 0) return 0;
+    return Math.round((1 - fileSize / originalSize) * 100);
+  }, [originalSize, fileSize]);
 
   const handleDownload = () => {
     triggerDownload(downloadUrl, filename);
   };
 
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+
+  const handleSaveToFiles = useCallback(async () => {
+    setSaveStatus("saving");
+    try {
+      const res = await fetch(downloadUrl);
+      const blob = await res.blob();
+      const formData = new FormData();
+      formData.append("file", new File([blob], filename, { type: fileType }));
+      const uploadRes = await fetch("/api/v1/files/upload", {
+        method: "POST",
+        headers: formatHeaders(),
+        body: formData,
+      });
+      if (!uploadRes.ok) throw new Error("Upload failed");
+      setSaveStatus("saved");
+    } catch {
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  }, [downloadUrl, filename, fileType]);
+
+  const hasBatchStats =
+    totalCount != null && totalCount > 1 && successCount != null && failedCount != null;
+
   return (
     <div className="space-y-3">
       <div className="border-t border-border" />
 
-      {/* Review header */}
-      <button
-        type="button"
-        onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center justify-between w-full text-sm font-medium text-muted-foreground hover:text-foreground"
-      >
-        <span>{t.reviewPanel.reviewHeading}</span>
-        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-      </button>
+      {/* Success indicator */}
+      <div className="flex items-center gap-2">
+        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+        <span className="text-sm font-medium text-foreground">{t.toolPage.conversionComplete}</span>
+      </div>
 
-      {isExpanded && (
-        <div className="space-y-3">
-          {/* Preview thumbnail */}
-          {previewUrl && (
-            <div className="rounded-lg border border-border overflow-hidden bg-muted/30">
-              <img
-                src={previewUrl}
-                alt="Processed result"
-                className="w-full h-auto max-h-32 object-contain"
-              />
-            </div>
-          )}
-
-          {/* File metadata */}
-          <div className="space-y-1 text-xs text-muted-foreground">
-            <p className="truncate text-foreground font-medium">{filename}</p>
-            <p>Size: {formatFileSize(fileSize)}</p>
-            <p>Type: {fileType}</p>
-            <p>Processed: {timestamp}</p>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={onUndo}
-              className="flex-1 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center gap-1.5 text-xs font-medium"
-            >
-              <Undo2 className="h-3.5 w-3.5" />
-              {t.reviewPanel.undoButton}
-            </button>
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="flex-1 py-2 rounded-lg bg-primary text-primary-foreground flex items-center justify-center gap-1.5 text-xs font-medium hover:bg-primary/90"
-            >
-              <Download className="h-3.5 w-3.5" />
-              {t.common.download}
-            </button>
-          </div>
-
-          {/* Open in Editor */}
-          <Link
-            to={`/editor?url=${encodeURIComponent(downloadUrl)}`}
-            className="flex items-center justify-center gap-1.5 w-full py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs font-medium"
-          >
-            <PenTool className="h-3.5 w-3.5" />
-            {t.reviewPanel.openInEditor}
-          </Link>
-
-          {/* Suggested tools */}
-          {suggestedTools.length > 0 && (
-            <div className="space-y-2">
-              <div className="border-t border-border pt-2" />
-              <button
-                type="button"
-                onClick={() => setIsSuggestionsExpanded(!isSuggestionsExpanded)}
-                className="flex items-center justify-between w-full text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                <span>{t.reviewPanel.continueEditing}</span>
-                {isSuggestionsExpanded ? (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronRight className="h-3.5 w-3.5" />
-                )}
-              </button>
-
-              {isSuggestionsExpanded && (
-                <div className="space-y-1">
-                  {suggestedTools.map((tool) => {
-                    const ToolIcon =
-                      (ICON_MAP[tool.icon] as React.ComponentType<{ className?: string }>) ??
-                      FileImage;
-                    return (
-                      <button
-                        key={tool.id}
-                        type="button"
-                        onClick={() => navigate(tool.route)}
-                        className="flex items-center gap-2 w-full px-2 py-1.5 rounded text-xs text-muted-foreground hover:text-foreground hover:bg-muted group"
-                      >
-                        <ToolIcon className="h-3.5 w-3.5 shrink-0" />
-                        <span className="flex-1 text-start">{tool.name}</span>
-                        <ArrowRight className="h-3 w-3 opacity-0 group-hover:opacity-100 shrink-0" />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+      {/* Batch partial failure summary */}
+      {hasBatchStats && failedCount > 0 && (
+        <div className="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-2.5 text-xs">
+          <AlertCircle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <span className="text-amber-800 dark:text-amber-300">
+            {format(t.toolPage.batchPartialSuccess, {
+              success: successCount,
+              total: totalCount,
+              failed: failedCount,
+            })}
+          </span>
         </div>
       )}
+
+      {/* Size delta -- hidden for data-output tools */}
+      {!isDataOutput && originalSize > 0 && (
+        <div className="space-y-1 text-xs">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{t.toolPage.original}</span>
+            <span className="tabular-nums text-foreground">{formatFileSize(originalSize)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{t.toolPage.processed}</span>
+            <span className="tabular-nums text-foreground">{formatFileSize(fileSize)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">{t.toolPage.saved}</span>
+            <span
+              className={`tabular-nums font-medium ${
+                sizeDelta > 0
+                  ? "text-emerald-600"
+                  : sizeDelta === 0
+                    ? "text-muted-foreground"
+                    : "text-foreground"
+              }`}
+            >
+              {sizeDelta === 0
+                ? t.toolPage.noChange
+                : sizeDelta > 0
+                  ? `-${sizeDelta}%`
+                  : `+${Math.abs(sizeDelta)}%`}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Data-output tools: results hint + secondary download */}
+      {isDataOutput && (
+        <>
+          <div className="flex items-start gap-2 rounded-lg bg-muted/50 p-2.5 text-xs">
+            <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
+            <span className="text-muted-foreground">{t.toolPage.dataResultsHint}</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="w-full text-center text-xs text-primary hover:text-primary/80 underline underline-offset-2"
+          >
+            {t.toolPage.downloadAsFile}
+          </button>
+        </>
+      )}
+
+      {/* Download button -- primary for non-data tools */}
+      {!isDataOutput && (
+        <button
+          type="button"
+          data-download-button
+          onClick={handleDownload}
+          className="w-full py-2.5 rounded-lg bg-primary text-primary-foreground font-medium text-sm flex items-center justify-center gap-2 hover:bg-primary/90"
+        >
+          <Download className="h-4 w-4" />
+          {isMultiOutput
+            ? `${t.toolPage.downloadAll} (ZIP, ${formatFileSize(fileSize)})`
+            : hasBatchStats && successCount != null && successCount > 1
+              ? `${format(t.toolPage.downloadFiles, { count: successCount })} (ZIP, ${formatFileSize(fileSize)})`
+              : `${t.toolPage.download} ${fileType} (${formatFileSize(fileSize)})`}
+        </button>
+      )}
+
+      {/* Save to Files -- subtle text link */}
+      {!isDataOutput && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={handleSaveToFiles}
+            disabled={saveStatus === "saving" || saveStatus === "saved"}
+            className={cn(
+              "text-xs flex items-center gap-1.5 transition-colors",
+              saveStatus === "saved"
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-muted-foreground hover:text-foreground disabled:opacity-50",
+            )}
+          >
+            {saveStatus === "saved" ? (
+              <CheckCircle2 className="h-3 w-3" />
+            ) : saveStatus === "saving" ? (
+              <div className="h-3 w-3 border-1.5 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <FolderPlus className="h-3 w-3" />
+            )}
+            {saveStatus === "saving"
+              ? t.common.saving
+              : saveStatus === "saved"
+                ? t.toolPage.savedToFiles
+                : t.toolPage.saveToFiles}
+          </button>
+        </div>
+      )}
+
+      {/* Edit settings / New file -- side by side */}
+      <div className="grid grid-cols-2 gap-2">
+        <button
+          type="button"
+          onClick={onUndo}
+          className="py-2 rounded-lg border border-border text-foreground hover:bg-muted text-xs font-medium"
+        >
+          {t.toolPage.adjustSettings}
+        </button>
+        <button
+          type="button"
+          onClick={onStartOver}
+          className="py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:bg-muted text-xs font-medium"
+        >
+          {t.toolPage.newFile}
+        </button>
+      </div>
+
+      {/* Back to Tools -- subtle link, hidden since breadcrumb handles this */}
+      <div className="flex justify-center">
+        <Link
+          to="/"
+          className="text-xs text-muted-foreground/60 hover:text-muted-foreground flex items-center gap-1"
+        >
+          <ArrowLeft className="h-3 w-3" />
+          {t.toolPage.backToTools}
+        </Link>
+      </div>
     </div>
   );
 }

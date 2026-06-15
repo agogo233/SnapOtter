@@ -145,13 +145,15 @@ describe("Dropzone", () => {
     it("renders upload button and helper text", () => {
       render(<Dropzone />);
       expect(screen.getByText("Upload from computer")).toBeDefined();
-      expect(screen.getByText("Drop your images here")).toBeDefined();
+      expect(screen.getByText("Drop your files here")).toBeDefined();
       expect(screen.getByText("click anywhere to browse, or paste from clipboard")).toBeDefined();
     });
 
     it("shows supported formats hint", () => {
       render(<Dropzone />);
-      expect(screen.getByText("PNG, JPG, WebP, HEIC, RAW, PSD, and 65+ formats")).toBeDefined();
+      expect(
+        screen.getByText("Images, Videos, Audio, PDFs, Documents, and 150+ formats"),
+      ).toBeDefined();
     });
 
     it("renders the drop zone section with aria label", () => {

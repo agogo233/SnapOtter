@@ -74,9 +74,9 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "gif-tools": "before-after",
 
   // Optimization extras
-  "bulk-rename": "before-after",
+  "bulk-rename": "no-comparison",
   favicon: "before-after",
-  "image-to-pdf": "before-after",
+  "image-to-pdf": "no-comparison",
   "optimize-for-web": "before-after",
   "pdf-to-image": "custom-results",
 
@@ -103,7 +103,7 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "ai-canvas-expand": "before-after",
   "ocr-pdf": "no-comparison",
   "transcribe-audio": "no-comparison",
-  "auto-subtitles": "no-comparison",
+  "auto-subtitles": "media-player",
   "background-replace": "no-comparison",
   "blur-background": "no-comparison",
 
@@ -112,7 +112,7 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "compress-video": "media-player",
   "trim-video": "media-player",
   "mute-video": "media-player",
-  "video-to-gif": "side-by-side",
+  "video-to-gif": "media-player",
   "resize-video": "media-player",
   "crop-video": "media-player",
   "rotate-video": "media-player",
@@ -126,19 +126,19 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "watermark-video": "media-player",
   "stabilize-video": "media-player",
   "gif-to-video": "media-player",
-  "video-to-webp": "side-by-side",
-  "video-to-frames": "no-comparison",
+  "video-to-webp": "media-player",
+  "video-to-frames": "media-player",
   "merge-videos": "media-player",
   "replace-audio": "media-player",
   "burn-subtitles": "media-player",
   "embed-subtitles": "media-player",
-  "extract-subtitles": "no-comparison",
+  "extract-subtitles": "media-player",
   "images-to-video": "media-player",
-  "video-metadata": "no-comparison",
+  "video-metadata": "media-player",
 
   // Audio tools
   "audio-channels": "media-player",
-  "audio-metadata": "no-comparison",
+  "audio-metadata": "media-player",
   "audio-speed": "media-player",
   "convert-audio": "media-player",
   "extract-audio": "media-player",
@@ -193,7 +193,7 @@ export const TOOL_DISPLAY_MODES: Record<string, DisplayMode> = {
   "to-epub": "no-comparison",
 
   // Data tools
-  "chart-maker": "no-comparison",
+  "chart-maker": "no-dropzone",
   "csv-excel": "no-comparison",
   "csv-json": "no-comparison",
   "json-xml": "no-comparison",

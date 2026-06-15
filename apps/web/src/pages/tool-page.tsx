@@ -1,15 +1,20 @@
-import { PYTHON_SIDECAR_TOOLS, TOOL_BUNDLE_MAP, TOOLS } from "@snapotter/shared";
+import { MODALITIES, PYTHON_SIDECAR_TOOLS, TOOL_BUNDLE_MAP, TOOLS } from "@snapotter/shared";
 import {
+  AlertCircle,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  Circle,
   Download,
   FileImage,
   Loader2,
+  Upload,
+  XCircle,
 } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Crop } from "react-image-crop";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { BeforeAfterSlider } from "@/components/common/before-after-slider";
 import { BottomSheet } from "@/components/common/bottom-sheet";
 import { Dropzone } from "@/components/common/dropzone";
@@ -17,6 +22,7 @@ import { type BgPreviewState, ImageViewer } from "@/components/common/image-view
 import { ReviewPanel } from "@/components/common/review-panel";
 import { SideBySideComparison } from "@/components/common/side-by-side-comparison";
 import { ThumbnailStrip } from "@/components/common/thumbnail-strip";
+import { ToolDropzone } from "@/components/common/tool-dropzone";
 import { FeatureInstallPrompt } from "@/components/features/feature-install-prompt";
 import { AppLayout } from "@/components/layout/app-layout";
 import { CropCanvas } from "@/components/tools/crop-canvas";
@@ -26,26 +32,38 @@ import type { PreviewTransform } from "@/components/tools/rotate-settings";
 import { useTranslation } from "@/contexts/i18n-context";
 import { useAuth } from "@/hooks/use-auth";
 import { useMobile } from "@/hooks/use-mobile";
+import { usePageTitle } from "@/hooks/use-page-title";
+import { recordRecentTool } from "@/hooks/use-recent-tools";
 import { formatFileSize } from "@/lib/download";
 import { format } from "@/lib/format";
 import { ICON_MAP } from "@/lib/icon-map";
+import { MULTI_FILE_TOOLS } from "@/lib/tool-display-modes";
 import { getToolName } from "@/lib/tool-i18n";
 import { getToolRegistryEntry } from "@/lib/tool-registry";
 import { useBase64Store } from "@/stores/base64-store";
 import { useCollageStore } from "@/stores/collage-store";
 import { useDuplicateStore } from "@/stores/duplicate-store";
 import { useFeaturesStore } from "@/stores/features-store";
-import { useFileStore } from "@/stores/file-store";
+import { type FileEntry, useFileStore } from "@/stores/file-store";
 import { useHtmlToImageStore } from "@/stores/html-to-image-store";
 import { usePdfToImageStore } from "@/stores/pdf-to-image-store";
 import { useQrStore } from "@/stores/qr-store";
+import { useSettingsStore } from "@/stores/settings-store";
 import { useSplitStore } from "@/stores/split-store";
 
 const MediaPlayerView = lazy(() =>
   import("@/components/tools/media-player-view").then((m) => ({ default: m.MediaPlayerView })),
 );
+const WaveformPlayer = lazy(() =>
+  import("@/components/common/waveform-player").then((m) => ({ default: m.WaveformPlayer })),
+);
 const DocumentView = lazy(() =>
   import("@/components/tools/document-view").then((m) => ({ default: m.DocumentView })),
+);
+const NonNativePreview = lazy(() =>
+  import("@/components/common/non-native-preview").then((m) => ({
+    default: m.NonNativePreview,
+  })),
 );
 
 /** Formats that browsers can render in <img> tags. */
@@ -76,15 +94,31 @@ function getFileFormat(name: string): string {
 
 const COLLAPSED_LIMIT = 5;
 
+/** Status icon for a file entry in the batch list. */
+function FileStatusIcon({ status }: { status: FileEntry["status"] }) {
+  switch (status) {
+    case "completed":
+      return <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />;
+    case "failed":
+      return <XCircle className="h-3 w-3 text-destructive shrink-0" />;
+    case "processing":
+      return <Loader2 className="h-3 w-3 text-primary shrink-0 animate-spin" />;
+    default:
+      return <Circle className="h-3 w-3 text-muted-foreground/40 shrink-0" />;
+  }
+}
+
 /** File selection indicator shown in left panel */
 function FileSelectionInfo({
   files,
+  fileEntries,
   selectedIndex,
   onSelect,
   onClear,
   onAddMore,
 }: {
   files: File[];
+  fileEntries: FileEntry[];
   selectedIndex: number;
   onSelect: (index: number) => void;
   onClear: () => void;
@@ -99,6 +133,9 @@ function FileSelectionInfo({
 
   const showToggle = files.length > COLLAPSED_LIMIT;
   const visible = expanded ? files : files.slice(0, COLLAPSED_LIMIT);
+  const hasAnyProcessed = fileEntries.some(
+    (e) => e.status === "completed" || e.status === "failed",
+  );
 
   return (
     <div className="space-y-1.5">
@@ -116,6 +153,7 @@ function FileSelectionInfo({
       <div className="space-y-0.5">
         {visible.map((file, i) => {
           const isSelected = i === selectedIndex;
+          const entry = fileEntries[i];
           return (
             <button
               key={`${file.name}-${i}`}
@@ -123,7 +161,11 @@ function FileSelectionInfo({
               onClick={() => onSelect(i)}
               className={`w-full flex items-center gap-1.5 text-xs rounded px-2 py-1.5 text-start transition-colors ${isSelected ? "bg-primary/10 text-foreground" : "text-muted-foreground hover:bg-muted"}`}
             >
-              {isSelected && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />}
+              {hasAnyProcessed && entry ? (
+                <FileStatusIcon status={entry.status} />
+              ) : (
+                isSelected && <CheckCircle2 className="h-3 w-3 text-primary shrink-0" />
+              )}
               <span className="truncate flex-1 min-w-0">{file.name}</span>
               <span className="shrink-0 text-[10px] text-muted-foreground">
                 {getFileFormat(file.name)}
@@ -161,6 +203,7 @@ function FileSelectionInfo({
 export function ToolPage() {
   const { t } = useTranslation();
   const { toolId } = useParams<{ toolId: string }>();
+  const location = useLocation();
   const tool = useMemo(() => TOOLS.find((t) => t.id === toolId), [toolId]);
   const registryEntry = useMemo(
     () => (toolId ? getToolRegistryEntry(toolId) : undefined),
@@ -178,12 +221,32 @@ export function ToolPage() {
   }, [toolId, featureBundles]);
   const toolInstalled = featureBundle ? featureBundle.status === "installed" : !isAiTool;
   const showSizeComparison = toolId === "compress" || toolId === "optimize-for-web";
+  usePageTitle(tool ? getToolName(t, tool.id, tool.name) : undefined);
   const { hasPermission } = useAuth();
   const isAdmin = hasPermission("settings:write");
+  const disabledTools = useSettingsStore((s) => s.disabledTools);
+
+  const breadcrumb = useMemo(() => {
+    if (!tool) return undefined;
+    const modalityInfo = MODALITIES.find((m) => m.id === tool.modality);
+    const modalityDisplay =
+      tool.modality === "file" ? "Data" : (modalityInfo?.name ?? tool.modality);
+    return {
+      modality: modalityDisplay,
+      toolName: getToolName(t, tool.id, tool.name),
+    };
+  }, [tool, t]);
 
   useEffect(() => {
     if (isAiTool) fetchFeatures();
   }, [isAiTool, fetchFeatures]);
+
+  useEffect(() => {
+    if (tool) {
+      recordRecentTool(tool.id);
+    }
+  }, [tool]);
+
   const {
     files,
     entries,
@@ -269,9 +332,17 @@ export function ToolPage() {
   // Center of the painted mask as a 0-100 percentage — used to init the slider at the right spot
   const [eraserSliderInitPos, setEraserSliderInitPos] = useState<number | null>(null);
 
+  // Page-level drag overlay state
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const dragCounter = useRef(0);
+  const isMultiFileTool = toolId ? MULTI_FILE_TOOLS.has(toolId) : false;
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: toolId triggers intentional reset on tool navigation
   useEffect(() => {
-    useFileStore.getState().undoProcessing();
+    const fromLibrary = (location.state as { fromLibrary?: boolean } | null)?.fromLibrary;
+    if (!fromLibrary) {
+      useFileStore.getState().reset();
+    }
 
     useBase64Store.getState().reset();
     useCollageStore.getState().reset();
@@ -295,13 +366,13 @@ export function ToolPage() {
     setMobileSettingsOpen(false);
   }, [toolId]);
 
-  const toolAccept = registryEntry?.accept;
+  const toolAccept = registryEntry?.accept ?? tool?.acceptedInputs?.join(",");
   const toolAcceptExts = useMemo(
     () => toolAccept?.split(",").map((e) => e.trim().replace(/^\./, "").toLowerCase()),
     [toolAccept],
   );
   const toolFileFilter = useMemo(() => {
-    if (!toolAcceptExts) return undefined;
+    if (!toolAcceptExts || toolAcceptExts.length === 0) return undefined;
     return (file: File) => {
       const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
       return toolAcceptExts.includes(ext);
@@ -336,6 +407,10 @@ export function ToolPage() {
     setEraserSliderInitPos(null);
   }, [undoProcessing]);
 
+  const startOver = useCallback(() => {
+    reset();
+  }, [reset]);
+
   const handleAddMore = useCallback(() => {
     const input = document.createElement("input");
     input.type = "file";
@@ -351,6 +426,72 @@ export function ToolPage() {
     input.click();
   }, [addFiles, toolAccept, toolFileFilter]);
 
+  // Page-level drag handlers (active when a file is already loaded)
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    dragCounter.current++;
+    if (e.dataTransfer.types.includes("Files")) {
+      setIsDraggingOver(true);
+    }
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+  }, []);
+
+  const handleDragLeave = useCallback(() => {
+    dragCounter.current--;
+    if (dragCounter.current === 0) setIsDraggingOver(false);
+  }, []);
+
+  const handlePageDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      dragCounter.current = 0;
+      setIsDraggingOver(false);
+      const droppedFiles = Array.from(e.dataTransfer.files);
+      if (droppedFiles.length === 0) return;
+      const validFiles = toolFileFilter ? droppedFiles.filter(toolFileFilter) : droppedFiles;
+      if (validFiles.length === 0) return;
+      if (isMultiFileTool) {
+        addFiles(validFiles);
+      } else {
+        setFiles(validFiles);
+      }
+    },
+    [toolFileFilter, addFiles, setFiles, isMultiFileTool],
+  );
+
+  // Document-level paste handler (skip for generator tools that don't accept file input)
+  useEffect(() => {
+    if (registryEntry?.displayMode === "no-dropzone") return;
+
+    const handlePaste = (e: ClipboardEvent) => {
+      const pastedFiles: File[] = [];
+      if (e.clipboardData?.files.length) {
+        pastedFiles.push(...Array.from(e.clipboardData.files));
+      } else if (e.clipboardData?.items) {
+        for (const item of Array.from(e.clipboardData.items)) {
+          if (item.kind === "file") {
+            const file = item.getAsFile();
+            if (file) pastedFiles.push(file);
+          }
+        }
+      }
+      if (pastedFiles.length > 0) {
+        e.preventDefault();
+        const filtered = toolFileFilter ? pastedFiles.filter(toolFileFilter) : pastedFiles;
+        if (filtered.length > 0) {
+          if (isMultiFileTool) addFiles(filtered);
+          else setFiles(filtered);
+        }
+      }
+    };
+
+    document.addEventListener("paste", handlePaste);
+    return () => document.removeEventListener("paste", handlePaste);
+  }, [toolFileFilter, isMultiFileTool, addFiles, setFiles, registryEntry?.displayMode]);
+
   const handleDownloadAll = useCallback(() => {
     if (!batchZipBlob) return;
     const url = URL.createObjectURL(batchZipBlob);
@@ -360,6 +501,22 @@ export function ToolPage() {
     a.click();
     URL.revokeObjectURL(url);
   }, [batchZipBlob, batchZipFilename]);
+
+  if (toolId && TOOLS.some((tt) => tt.id === toolId) && disabledTools.includes(toolId)) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center h-full gap-4 text-muted-foreground">
+          <p className="text-lg font-medium">{t.toolPage.disabledByAdmin}</p>
+          <Link
+            to="/"
+            className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium"
+          >
+            {t.toolPage.browseOtherTools}
+          </Link>
+        </div>
+      </AppLayout>
+    );
+  }
 
   if (!tool || !registryEntry) {
     return (
@@ -389,13 +546,17 @@ export function ToolPage() {
 
   if (isAiTool && !toolInstalled && featureBundle) {
     return (
-      <AppLayout>
-        <FeatureInstallPrompt
-          bundle={featureBundle}
-          isAdmin={isAdmin}
-          toolName={tool?.name}
-          toolDescription={tool?.description}
-        />
+      <AppLayout breadcrumb={breadcrumb}>
+        <div className="flex-1 overflow-y-auto bg-muted/20">
+          <div className="flex items-center justify-center min-h-full">
+            <FeatureInstallPrompt
+              bundle={featureBundle}
+              isAdmin={isAdmin}
+              toolName={tool?.name}
+              toolDescription={tool?.description}
+            />
+          </div>
+        </div>
       </AppLayout>
     );
   }
@@ -405,6 +566,7 @@ export function ToolPage() {
 
   const hasFile = files.length > 0;
   const hasProcessed = !!processedUrl;
+  const isProcessing = currentEntry?.status === "processing";
   const displayMode = registryEntry.displayMode;
   const isNoDropzone = displayMode === "no-dropzone";
   const isLivePreview = registryEntry.livePreview ?? false;
@@ -418,7 +580,7 @@ export function ToolPage() {
       : "processed-image");
   const processedFileType = processedFileName.split(".").pop()?.toUpperCase() || "IMAGE";
   const isProcessedPreviewable = processedUrl
-    ? canBrowserPreview(processedUrl, currentEntry?.processedFilename)
+    ? canBrowserPreview(processedUrl, currentEntry?.processedFilename ?? processedFileName)
     : false;
   // Use server-generated preview for non-previewable formats (HEIC, TIFF).
   // Falls back to the upload-decoded blobUrl so TIFF/DNG always have a renderable src.
@@ -476,8 +638,59 @@ export function ToolPage() {
       );
     }
 
-    // Media player: native <video>/<audio> element
+    // Media player: waveform for audio, native <video> for video
     if (displayMode === "media-player" && hasFile) {
+      if (tool?.modality === "audio") {
+        const audioSrc = processedUrl ?? originalBlobUrl;
+        if (audioSrc) {
+          return (
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+              <WaveformPlayer src={audioSrc} />
+            </Suspense>
+          );
+        }
+      }
+      // Tools that convert video to a non-video format (gif, webp, frames):
+      // after processing, show the result as an image instead of a video player
+      if (hasProcessed && processedUrl) {
+        const outName = currentEntry?.processedFilename ?? processedFileName;
+        const ext = outName.split(".").pop()?.toLowerCase();
+        if (ext && ["gif", "webp", "png", "jpg", "jpeg", "apng"].includes(ext)) {
+          return (
+            <ImageViewer
+              src={processedUrl}
+              filename={outName}
+              fileSize={currentEntry?.processedSize ?? 0}
+            />
+          );
+        }
+      }
+      // Check if the current file is browser-playable
+      const currentFileName = hasProcessed
+        ? (currentEntry?.processedFilename ?? processedFileName ?? "")
+        : (currentEntry?.file?.name ?? "");
+      const currentExt = currentFileName.split(".").pop()?.toLowerCase() ?? "";
+      const nativeVideoExts = new Set(["mp4", "webm", "ogg", "ogv", "m4v", "mov"]);
+      const isNativeVideo = nativeVideoExts.has(currentExt);
+
+      if (!isNativeVideo && currentExt) {
+        const previewFile = hasProcessed ? undefined : currentEntry?.file;
+        const previewSrc = hasProcessed ? (processedUrl ?? originalBlobUrl) : undefined;
+        const previewSize = hasProcessed
+          ? (currentEntry?.processedSize ?? 0)
+          : (currentEntry?.file?.size ?? 0);
+        return (
+          <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+            <NonNativePreview
+              file={previewFile}
+              src={previewSrc}
+              filename={currentFileName}
+              fileSize={previewSize}
+              modality="video"
+            />
+          </Suspense>
+        );
+      }
       return (
         <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
           <MediaPlayerView />
@@ -498,10 +711,30 @@ export function ToolPage() {
     // which also match !hasProcessed and would show the canvas instead of the error)
     if (hasFile && !hasProcessed && currentEntry?.status === "failed") {
       return (
-        <div className="flex flex-col items-center justify-center gap-3 h-full text-center px-4">
-          <p className="text-sm text-red-500">
-            {currentEntry.error ?? t.toolPage.processingFailed}
-          </p>
+        <div className="flex-1 flex items-center justify-center p-6">
+          <div className="text-center max-w-sm">
+            <AlertCircle className="mx-auto h-10 w-10 text-destructive mb-3" />
+            <p className="font-medium text-foreground mb-1">
+              {currentEntry.error || t.toolPage.processingFailed}
+            </p>
+            <p className="text-sm text-muted-foreground mb-4">{t.toolPage.settingsSaved}</p>
+            <div className="flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={handleUndo}
+                className="px-4 py-2 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:opacity-90"
+              >
+                {t.toolPage.tryAgain}
+              </button>
+              <button
+                type="button"
+                onClick={startOver}
+                className="px-4 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground"
+              >
+                {t.toolPage.tryDifferentFile}
+              </button>
+            </div>
+          </div>
         </div>
       );
     }
@@ -589,23 +822,19 @@ export function ToolPage() {
     // Non-previewable format with no fallback at all - show success card
     if (hasProcessed && !isProcessedPreviewable && !processedPreviewUrl && !originalBlobUrl) {
       return (
-        <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
-          <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-            <CheckCircle2 className="h-8 w-8 text-green-600 dark:text-green-400" />
-          </div>
-          <div>
-            <p className="text-sm font-medium">{t.toolPage.conversionComplete}</p>
-            <p className="text-xs text-muted-foreground mt-1">{processedFileName}</p>
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center p-8 max-w-xs">
+            <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-4">
+              <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <p className="font-medium text-foreground mb-1">{t.toolPage.conversionComplete}</p>
+            <p className="text-sm text-muted-foreground mb-1">{processedFileName}</p>
             {processedSize != null && (
-              <p className="text-xs text-muted-foreground">
-                {formatFileSize(processedSize)} · {processedFileType}
+              <p className="text-xs text-muted-foreground/60">
+                {processedFileType} &middot; {formatFileSize(processedSize)}
               </p>
             )}
           </div>
-          <p className="text-xs text-muted-foreground max-w-xs">
-            {processedFileType} files cannot be previewed in the browser. Use the download button to
-            save your file.
-          </p>
         </div>
       );
     }
@@ -678,21 +907,32 @@ export function ToolPage() {
       const fsize = selectedFileSize ?? files[0].size;
       if (!canBrowserPreview(originalBlobUrl, fname)) {
         const ext = fname.split(".").pop()?.toUpperCase() ?? "";
+        const previewModality =
+          tool?.modality === "video" ? "video" : tool?.modality === "audio" ? "audio" : null;
+        if (previewModality && currentEntry?.file) {
+          return (
+            <Suspense fallback={<div className="text-sm text-muted-foreground">Loading...</div>}>
+              <NonNativePreview
+                file={currentEntry.file}
+                filename={fname}
+                fileSize={fsize}
+                modality={previewModality}
+              />
+            </Suspense>
+          );
+        }
         return (
-          <div className="flex flex-col items-center justify-center h-full gap-4 text-center p-8">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center">
-              <FileImage className="h-8 w-8 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="text-sm font-medium truncate max-w-xs">{fname}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {ext} · {formatFileSize(fsize)}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center p-8 max-w-xs">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
+                <FileImage className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <p className="font-medium text-foreground mb-1">{fname}</p>
+              <p className="text-sm text-muted-foreground mb-1">
+                {ext} &middot; {formatFileSize(fsize)}
               </p>
+              <p className="text-xs text-muted-foreground/60">{t.toolPage.previewUnavailable}</p>
             </div>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              {ext} files cannot be previewed in the browser. The tool will still process this file
-              normally.
-            </p>
           </div>
         );
       }
@@ -770,6 +1010,11 @@ export function ToolPage() {
     );
   }
 
+  // Batch stats for partial failure display
+  const batchTotal = entries.length;
+  const batchSuccess = entries.filter((e) => e.status === "completed").length;
+  const batchFailed = entries.filter((e) => e.status === "failed").length;
+
   // Render the settings panel content (shared between mobile/desktop)
   function renderSettingsContent() {
     return (
@@ -778,6 +1023,7 @@ export function ToolPage() {
           <div className="space-y-2">
             <FileSelectionInfo
               files={files}
+              fileEntries={entries}
               selectedIndex={selectedIndex}
               onSelect={setSelectedIndex}
               onClear={reset}
@@ -808,19 +1054,21 @@ export function ToolPage() {
         )}
 
         {hasProcessed && processedSize != null && (
-          <ReviewPanel
-            filename={processedFileName}
-            fileSize={processedSize}
-            fileType={processedFileType}
-            downloadUrl={processedUrl}
-            previewUrl={
-              isProcessedPreviewable
-                ? processedUrl
-                : (processedPreviewUrl ?? originalBlobUrl ?? undefined)
-            }
-            onUndo={handleUndo}
-            currentToolId={tool?.id ?? ""}
-          />
+          <div className="animate-fade-in">
+            <ReviewPanel
+              filename={processedFileName}
+              fileSize={processedSize}
+              fileType={processedFileType}
+              originalSize={originalSize ?? 0}
+              downloadUrl={processedUrl}
+              onUndo={handleUndo}
+              onStartOver={startOver}
+              currentToolId={tool?.id ?? ""}
+              totalCount={batchTotal}
+              successCount={batchSuccess}
+              failedCount={batchFailed}
+            />
+          </div>
         )}
       </>
     );
@@ -828,9 +1076,51 @@ export function ToolPage() {
 
   // Mobile layout: full-height image area with BottomSheet for settings
   if (isMobile) {
+    // Full-width dropzone when no file is loaded (non-generator tools)
+    if (!hasFile && !isNoDropzone) {
+      return (
+        <AppLayout breadcrumb={breadcrumb}>
+          <div className="flex-1 overflow-y-auto bg-muted/20">
+            <div className="flex items-center justify-center min-h-full">
+              <ToolDropzone
+                tool={tool}
+                accept={toolAccept}
+                fileFilter={toolFileFilter}
+                multiple
+                onFiles={handleFiles}
+                onUrlImport={handleUrlImport}
+              />
+            </div>
+          </div>
+        </AppLayout>
+      );
+    }
+
     return (
-      <AppLayout showToolPanel={false}>
-        <div className="flex flex-col w-full h-full">
+      <AppLayout breadcrumb={breadcrumb}>
+        <div
+          className="flex flex-col w-full h-full"
+          {...(!isNoDropzone
+            ? {
+                onDragEnter: handleDragEnter,
+                onDragOver: handleDragOver,
+                onDragLeave: handleDragLeave,
+                onDrop: handlePageDrop,
+              }
+            : {})}
+        >
+          {/* Page-level drop overlay */}
+          {isDraggingOver && !isNoDropzone && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+              <div className="text-center">
+                <Upload className="mx-auto h-12 w-12 text-primary animate-bounce" />
+                <p className="mt-3 text-lg font-medium">
+                  {isMultiFileTool ? t.dropzone.dropToAdd : t.dropzone.dropToReplace}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Tool header */}
           <div className="flex items-center gap-3 p-4 border-b border-border shrink-0">
             <div className="p-2 rounded-lg bg-primary text-primary-foreground">
@@ -858,7 +1148,9 @@ export function ToolPage() {
             <div aria-live="polite" aria-atomic="true" className="sr-only">
               {liveMessage}
             </div>
-            <div className="flex-1 relative flex items-center justify-center p-4 min-h-0 min-w-0">
+            <div
+              className={`flex-1 relative flex items-center justify-center p-4 min-h-0 min-w-0${isProcessing ? " animate-pulse" : ""}`}
+            >
               {renderNavArrows()}
               {renderImageArea()}
             </div>
@@ -870,6 +1162,21 @@ export function ToolPage() {
               />
             )}
           </section>
+
+          {/* Peek bar -- visible when bottom sheet is collapsed */}
+          {!mobileSettingsOpen && (
+            <button
+              type="button"
+              onClick={() => setMobileSettingsOpen(true)}
+              className="shrink-0 border-t border-border bg-background px-4 py-3 flex items-center justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-1 rounded-full bg-muted-foreground/30" />
+                <span className="text-sm font-medium text-foreground">{t.common.process}</span>
+              </div>
+              <ChevronUp className="h-4 w-4 text-muted-foreground" />
+            </button>
+          )}
 
           {/* Settings BottomSheet */}
           <BottomSheet
@@ -884,22 +1191,67 @@ export function ToolPage() {
     );
   }
 
+  // Desktop: full-width dropzone when no file is loaded (non-generator tools)
+  if (!hasFile && !isNoDropzone) {
+    return (
+      <AppLayout breadcrumb={breadcrumb}>
+        <div className="flex-1 overflow-y-auto bg-muted/20">
+          <div className="flex items-center justify-center min-h-full">
+            <ToolDropzone
+              tool={tool}
+              accept={toolAccept}
+              fileFilter={toolFileFilter}
+              multiple
+              onFiles={handleFiles}
+              onUrlImport={handleUrlImport}
+            />
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
+
   // Desktop layout: side-by-side
   return (
-    <AppLayout showToolPanel={false}>
-      <div className="flex h-full w-full">
-        {/* Tool Settings Panel */}
-        <div className="settings-container w-72 border-r border-border p-4 space-y-4 overflow-y-auto shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-primary text-primary-foreground">
-              <IconComponent className="h-5 w-5" />
+    <AppLayout breadcrumb={breadcrumb}>
+      <div
+        className="flex h-full w-full"
+        {...(!isNoDropzone
+          ? {
+              onDragEnter: handleDragEnter,
+              onDragOver: handleDragOver,
+              onDragLeave: handleDragLeave,
+              onDrop: handlePageDrop,
+            }
+          : {})}
+      >
+        {/* Page-level drop overlay */}
+        {isDraggingOver && !isNoDropzone && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+            <div className="text-center">
+              <Upload className="mx-auto h-12 w-12 text-primary animate-bounce" />
+              <p className="mt-3 text-lg font-medium">
+                {isMultiFileTool ? t.dropzone.dropToAdd : t.dropzone.dropToReplace}
+              </p>
             </div>
-            <h1 className="font-semibold text-lg text-foreground">
-              {getToolName(t, tool.id, tool.name)}
-            </h1>
           </div>
+        )}
 
-          {renderSettingsContent()}
+        {/* Tool Settings Panel */}
+        <div className="settings-container settings-slide-in w-72 border-e border-border shrink-0 flex flex-col">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-primary text-primary-foreground">
+                <IconComponent className="h-5 w-5" />
+              </div>
+              <h1 className="font-semibold text-lg text-foreground">
+                {getToolName(t, tool.id, tool.name)}
+              </h1>
+            </div>
+
+            {renderSettingsContent()}
+          </div>
+          <div className="pointer-events-none sticky bottom-0 h-6 bg-gradient-to-t from-background to-transparent" />
         </div>
 
         {/* Main area: image viewer */}
@@ -912,7 +1264,10 @@ export function ToolPage() {
           <div aria-live="polite" aria-atomic="true" className="sr-only">
             {liveMessage}
           </div>
-          <div className="flex-1 relative flex items-center justify-center p-6 min-h-0 min-w-0">
+          <div
+            key={hasProcessed ? `processed-${selectedIndex}` : `pending-${selectedIndex}`}
+            className={`flex-1 relative flex items-center justify-center p-6 min-h-0 min-w-0 ${hasProcessed ? "animate-fade-in" : ""}${isProcessing ? " animate-pulse" : ""}`}
+          >
             {renderNavArrows()}
             {renderImageArea()}
           </div>
