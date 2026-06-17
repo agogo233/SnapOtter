@@ -8,24 +8,24 @@ Extract the dominant colors from an image and return them as hex color values. U
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/color-palette`
+`POST /api/v1/tools/color-palette`
 
-Accepts multipart form data with an image file. No settings field is needed.
+Accepts multipart form data with an image file and an optional JSON `settings` field.
 
 ## Parameters
 
-This tool has no configurable parameters. Simply upload the image file.
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| file | file | Yes | The image to extract colors from |
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| count | integer | No | `8` | Number of colors to extract (2-16) |
+| format | string | No | `"hex"` | Color format: `hex`, `rgb`, `hsl` |
 
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/color-palette \
+curl -X POST http://localhost:1349/api/v1/tools/color-palette \
   -H "Authorization: Bearer si_your-api-key" \
-  -F "file=@photo.jpg"
+  -F "file=@photo.jpg" \
+  -F 'settings={"count": 6, "format": "hex"}'
 ```
 
 ## Example Response
@@ -34,6 +34,14 @@ curl -X POST http://localhost:1349/api/v1/tools/image/color-palette \
 {
   "filename": "photo.jpg",
   "colors": [
+    "#304080",
+    "#e0a060",
+    "#f0f0f0",
+    "#203020",
+    "#a0c0e0",
+    "#806040"
+  ],
+  "hex": [
     "#304080",
     "#e0a060",
     "#f0f0f0",
@@ -50,14 +58,15 @@ curl -X POST http://localhost:1349/api/v1/tools/image/color-palette \
 | Field | Type | Description |
 |-------|------|-------------|
 | filename | string | Sanitized filename |
-| colors | array | Array of hex color strings, ordered by dominance (most frequent first) |
+| colors | array | Array of color strings in the requested format, ordered by dominance (most frequent first) |
+| hex | array | Array of hex color strings (always hex, regardless of the `format` setting) |
 | count | number | Number of colors extracted |
 
 ## Notes
 
-- Returns up to 8 dominant colors, sorted by frequency (most common first).
-- The image is internally resized to 50x50 pixels for analysis, so the palette represents overall color distribution rather than small details.
-- Colors are quantized to the nearest multiple of 16 to reduce noise, then similar colors (within RGB Manhattan distance of 48) are merged to avoid near-duplicate entries.
+- Returns up to `count` dominant colors (default 8, range 2-16), sorted by frequency (most common first).
+- The image is internally resized to 100x100 pixels for analysis, so the palette represents overall color distribution rather than small details.
+- Colors are extracted using median-cut quantization, which recursively splits pixel populations along the channel with the widest range.
 - The alpha channel is removed before analysis, so transparent areas are not considered.
 - This is a read-only endpoint. It does not produce a downloadable output file or a `jobId`.
 - HEIC, RAW, PSD, and SVG inputs are automatically decoded before analysis.

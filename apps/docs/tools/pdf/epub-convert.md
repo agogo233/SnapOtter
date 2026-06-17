@@ -8,7 +8,7 @@ Convert an EPUB e-book to PDF, Word (DOCX), HTML, or Markdown. Remote resources 
 
 ## API Endpoint
 
-`POST /api/v1/tools/pdf/epub-convert`
+`POST /api/v1/tools/epub-convert`
 
 Accepts multipart form data with an EPUB file and a JSON `settings` field.
 
@@ -21,7 +21,7 @@ Accepts multipart form data with an EPUB file and a JSON `settings` field.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/pdf/epub-convert \
+curl -X POST http://localhost:1349/api/v1/tools/epub-convert \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@book.epub" \
   -F 'settings={"format": "pdf"}'

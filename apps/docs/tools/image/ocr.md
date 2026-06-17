@@ -1,10 +1,14 @@
+---
+description: Extract text from images using AI-powered optical character recognition.
+---
+
 # OCR / Text Extraction
 
 Extract text from images using AI-powered optical character recognition. Supports multiple languages and quality tiers.
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/ocr`
+`POST /api/v1/tools/ocr`
 
 **Processing:** Synchronous (returns extracted text directly, though progress is reported via SSE if a `clientJobId` is provided)
 
@@ -23,7 +27,7 @@ Extract text from images using AI-powered optical character recognition. Support
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/ocr \
+curl -X POST http://localhost:1349/api/v1/tools/ocr \
   -F "file=@document.png" \
   -F 'settings={"quality":"best","language":"en","enhance":true}'
 ```

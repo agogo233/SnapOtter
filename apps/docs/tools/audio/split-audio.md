@@ -8,7 +8,7 @@ Split an audio file into segments by fixed time intervals, equal parts, or autom
 
 ## API Endpoint
 
-`POST /api/v1/tools/audio/split-audio`
+`POST /api/v1/tools/split-audio`
 
 Accepts multipart form data with an audio file and a JSON `settings` field.
 
@@ -27,7 +27,7 @@ Accepts multipart form data with an audio file and a JSON `settings` field.
 Split into 30-second segments:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/audio/split-audio \
+curl -X POST http://localhost:1349/api/v1/tools/split-audio \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@audio.mp3" \
   -F 'settings={"mode": "time", "segmentS": 30}'
@@ -36,7 +36,7 @@ curl -X POST http://localhost:1349/api/v1/tools/audio/split-audio \
 Split by silence detection:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/audio/split-audio \
+curl -X POST http://localhost:1349/api/v1/tools/split-audio \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@audio.mp3" \
   -F 'settings={"mode": "silence", "thresholdDb": -35, "minSilenceS": 0.5}'
@@ -47,7 +47,7 @@ curl -X POST http://localhost:1349/api/v1/tools/audio/split-audio \
 ```json
 {
   "jobId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "downloadUrl": "/api/v1/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890/audio-segments.zip",
+  "downloadUrl": "/api/v1/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890/audio_parts.zip",
   "originalSize": 4500000,
   "processedSize": 4600000
 }
@@ -57,5 +57,5 @@ curl -X POST http://localhost:1349/api/v1/tools/audio/split-audio \
 
 - The `downloadUrl` points to a ZIP archive containing all segments.
 - Only the parameters relevant to the chosen `mode` are used; others are ignored.
-- Segment filenames are numbered sequentially (e.g. `001.mp3`, `002.mp3`).
+- Segment filenames are numbered sequentially (e.g. `part-000.mp3`, `part-001.mp3`).
 - Output format matches the input format.

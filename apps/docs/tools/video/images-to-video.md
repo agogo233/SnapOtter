@@ -8,7 +8,7 @@ Turn a set of images into a slideshow video with configurable duration per image
 
 ## API Endpoint
 
-`POST /api/v1/tools/video/images-to-video`
+`POST /api/v1/tools/images-to-video`
 
 Accepts multipart form data with two or more image files and a JSON `settings` field.
 
@@ -23,7 +23,7 @@ Accepts multipart form data with two or more image files and a JSON `settings` f
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/video/images-to-video \
+curl -X POST http://localhost:1349/api/v1/tools/images-to-video \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@slide1.jpg" \
   -F "file=@slide2.jpg" \
@@ -47,5 +47,5 @@ curl -X POST http://localhost:1349/api/v1/tools/video/images-to-video \
 
 - Accepts 2-60 image files per request. Images appear in the video in upload order.
 - Images are resized and padded to fit the target resolution while preserving aspect ratio.
-- The `square` resolution option produces a 720x720 video, useful for social media.
+- The `square` resolution option produces a 1080x1080 video, useful for social media.
 - Output format is always MP4 (H.264).

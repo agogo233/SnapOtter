@@ -8,7 +8,7 @@ Generate QR code images from text or URLs with configurable size, error correcti
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/qr-generate`
+`POST /api/v1/tools/qr-generate`
 
 Accepts a **JSON body** (not multipart). No file upload is needed.
 
@@ -21,6 +21,7 @@ Accepts a **JSON body** (not multipart). No file upload is needed.
 | errorCorrection | string | No | `"M"` | Error correction level: `L` (7%), `M` (15%), `Q` (25%), `H` (30%) |
 | foreground | string | No | `"#000000"` | QR code foreground/module color in hex (`#RRGGBB`) |
 | background | string | No | `"#FFFFFF"` | QR code background color in hex (`#RRGGBB`) |
+| logoDataUri | string | No | - | Logo image as a data URI (`data:image/png;base64,...` or `data:image/jpeg;base64,...`, max 700 KB). Centered on the QR code at 22% of the QR size. Forces error correction to `H` |
 
 ### Error Correction Levels
 
@@ -34,7 +35,7 @@ Accepts a **JSON body** (not multipart). No file upload is needed.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/qr-generate \
+curl -X POST http://localhost:1349/api/v1/tools/qr-generate \
   -H "Authorization: Bearer si_your-api-key" \
   -H "Content-Type: application/json" \
   -d '{"text": "https://snapotter.com", "size": 500, "errorCorrection": "H"}'
@@ -43,7 +44,7 @@ curl -X POST http://localhost:1349/api/v1/tools/image/qr-generate \
 Branded QR code with custom colors:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/qr-generate \
+curl -X POST http://localhost:1349/api/v1/tools/qr-generate \
   -H "Authorization: Bearer si_your-api-key" \
   -H "Content-Type: application/json" \
   -d '{"text": "Hello World", "size": 300, "foreground": "#1a365d", "background": "#f7fafc"}'
@@ -69,3 +70,4 @@ curl -X POST http://localhost:1349/api/v1/tools/image/qr-generate \
 - A 2-module quiet zone (margin) is included around the QR code.
 - Maximum text length is 2000 characters. Actual capacity depends on error correction level and character encoding.
 - Higher error correction levels allow the QR code to remain scannable even if partially obscured but reduce data capacity.
+- When a `logoDataUri` is provided, error correction is automatically forced to `H` (30%) so the QR code remains scannable despite the logo occluding the center.

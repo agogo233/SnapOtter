@@ -4,7 +4,7 @@ Split a single image into grid tiles by column/row count or by specific pixel di
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/split`
+`POST /api/v1/tools/split`
 
 ## Parameters
 
@@ -20,7 +20,7 @@ Split a single image into grid tiles by column/row count or by specific pixel di
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/split \
+curl -X POST http://localhost:1349/api/v1/tools/split \
   -F "file=@large-image.png" \
   -F 'settings={"columns":3,"rows":3,"outputFormat":"png"}' \
   --output split-tiles.zip

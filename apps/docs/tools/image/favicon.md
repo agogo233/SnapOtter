@@ -8,13 +8,19 @@ Generate a complete set of favicon and app icon files from a source image. Produ
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/favicon`
+`POST /api/v1/tools/favicon`
 
-Accepts multipart form data with one or more image files. No settings are required.
+Accepts multipart form data with one or more image files and an optional JSON `settings` field.
 
 ## Parameters
 
-This tool has no configurable parameters. It generates all standard sizes automatically.
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| background | string | No | - | Background hex color (e.g. `"#ffffff"`). When set, the icon is flattened onto this color. |
+| padding | integer | No | `0` | Padding percentage around the icon content (0 to 40) |
+| radius | integer | No | `0` | Corner radius percentage for rounded icons (0 to 50) |
+| sizes | integer[] | No | - | Restrict output to specific pixel sizes (e.g. `[16, 32, 180]`). Omit to generate all standard sizes. |
+| themeColor | string | No | `"#ffffff"` | Theme color hex for the web manifest |
 
 ## Generated Files
 
@@ -34,18 +40,19 @@ For each input image, the following files are produced:
 
 ## Example Request
 
-Single source image:
+Single source image with rounded corners and padding:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/favicon \
+curl -X POST http://localhost:1349/api/v1/tools/favicon \
   -H "Authorization: Bearer si_your-api-key" \
-  -F "file=@logo.png"
+  -F "file=@logo.png" \
+  -F 'settings={"padding": 10, "radius": 20, "themeColor": "#0a0a0a"}'
 ```
 
 Multiple source images (each gets its own set in a subfolder):
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/favicon \
+curl -X POST http://localhost:1349/api/v1/tools/favicon \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@logo-light.png" \
   -F "file=@logo-dark.png"

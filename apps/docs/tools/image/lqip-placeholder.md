@@ -8,7 +8,7 @@ Generate a tiny low-quality image placeholder (LQIP) from a source image. Return
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/lqip-placeholder`
+`POST /api/v1/tools/lqip-placeholder`
 
 Accepts multipart form data with an image file and a JSON `settings` field.
 
@@ -25,7 +25,7 @@ Accepts multipart form data with an image file and a JSON `settings` field.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/lqip-placeholder \
+curl -X POST http://localhost:1349/api/v1/tools/lqip-placeholder \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@photo.jpg" \
   -F 'settings={"width": 20, "strategy": "blur", "format": "webp"}'
@@ -44,8 +44,8 @@ curl -X POST http://localhost:1349/api/v1/tools/image/lqip-placeholder \
   "height": 13,
   "bytes": 280,
   "strategy": "blur",
-  "html": "<img src=\"data:image/webp;base64,UklGR...\" width=\"20\" height=\"13\" alt=\"\" />",
-  "css": "background-image: url(data:image/webp;base64,UklGR...);"
+  "html": "<img src=\"data:image/webp;base64,UklGR...\" />",
+  "css": "background-image:url('data:image/webp;base64,UklGR...');background-size:cover;background-position:center;"
 }
 ```
 

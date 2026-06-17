@@ -8,7 +8,7 @@ Reduce PDF file size by downsampling embedded images. Choose between a quality s
 
 ## API Endpoint
 
-`POST /api/v1/tools/pdf/compress-pdf`
+`POST /api/v1/tools/compress-pdf`
 
 Accepts multipart form data with a PDF file and a JSON `settings` field.
 
@@ -17,7 +17,7 @@ Accepts multipart form data with a PDF file and a JSON `settings` field.
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | mode | string | No | `"quality"` | Compression mode: `quality` or `targetSize` |
-| quality | integer | No | - | Compression quality, 1-100 (higher = less compression). Used in `quality` mode |
+| quality | integer | No | `75` | Compression quality, 1-100 (higher = less compression). Used in `quality` mode |
 | targetSizeKb | number | No | - | Target file size in kilobytes. Used in `targetSize` mode |
 
 ## Example Request
@@ -25,7 +25,7 @@ Accepts multipart form data with a PDF file and a JSON `settings` field.
 Compress by quality:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/pdf/compress-pdf \
+curl -X POST http://localhost:1349/api/v1/tools/compress-pdf \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@document.pdf" \
   -F 'settings={"mode": "quality", "quality": 60}'
@@ -34,7 +34,7 @@ curl -X POST http://localhost:1349/api/v1/tools/pdf/compress-pdf \
 Compress to a target size:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/pdf/compress-pdf \
+curl -X POST http://localhost:1349/api/v1/tools/compress-pdf \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@document.pdf" \
   -F 'settings={"mode": "targetSize", "targetSizeKb": 500}'

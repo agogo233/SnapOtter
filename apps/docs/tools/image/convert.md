@@ -8,7 +8,7 @@ Convert images between formats. Supports common web formats as well as specializ
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/convert`
+`POST /api/v1/tools/convert`
 
 Accepts multipart form data with an image file and a JSON `settings` field.
 
@@ -16,7 +16,7 @@ Accepts multipart form data with an image file and a JSON `settings` field.
 
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
-| format | string | Yes | - | Target format: `jpg`, `png`, `webp`, `avif`, `tiff`, `gif`, `heic`, `heif`, `jxl`, `bmp`, `ico`, `jp2`, `qoi`, `psd` |
+| format | string | Yes | - | Target format: `jpg`, `png`, `webp`, `avif`, `tiff`, `gif`, `heic`, `heif`, `jxl`, `bmp`, `ico`, `jp2`, `qoi`, `psd`, `ppm`, `eps`, `tga` |
 | quality | number | No | - | Output quality (1-100). Applies to lossy formats like jpg, webp, avif, heic. |
 
 ## Supported Output Formats
@@ -36,13 +36,16 @@ Accepts multipart form data with an image file and a JSON `settings` field.
 | jp2 | Lossy | JPEG 2000 |
 | qoi | Lossless | Quite OK Image format |
 | psd | Layered | Adobe Photoshop (requires ImageMagick) |
+| ppm | Lossless | Portable Pixmap (PPM/PGM/PBM) |
+| eps | Vector | Encapsulated PostScript |
+| tga | Lossless | Targa image format |
 
 ## Example Request
 
 Convert to WebP:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/convert \
+curl -X POST http://localhost:1349/api/v1/tools/convert \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@photo.jpg" \
   -F 'settings={"format": "webp", "quality": 85}'
@@ -51,7 +54,7 @@ curl -X POST http://localhost:1349/api/v1/tools/image/convert \
 Convert to PNG (lossless):
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/image/convert \
+curl -X POST http://localhost:1349/api/v1/tools/convert \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@photo.jpg" \
   -F 'settings={"format": "png"}'
@@ -73,6 +76,6 @@ curl -X POST http://localhost:1349/api/v1/tools/image/convert \
 - The output filename extension is automatically updated to match the target format.
 - SVG inputs are rasterized at 300 DPI before conversion.
 - PSD conversion requires ImageMagick to be installed on the server.
-- BMP, ICO, JP2, JXL, and QOI use specialized CLI encoders and bypass Sharp processing.
+- BMP, EPS, ICO, JP2, JXL, PPM, QOI, and TGA use specialized CLI encoders and bypass Sharp processing.
 - HEIC/HEIF encoding uses the system HEIC encoder library.
 - Input formats are broad: JPEG, PNG, WebP, AVIF, TIFF, GIF, HEIC, RAW (CR2, NEF, ARW, etc.), PSD, SVG, BMP, and more.

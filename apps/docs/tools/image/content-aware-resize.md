@@ -4,7 +4,7 @@ Seam carving resize that intelligently removes or adds pixels along paths of lea
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/content-aware-resize`
+`POST /api/v1/tools/content-aware-resize`
 
 **Processing:** Synchronous (returns result directly)
 
@@ -15,8 +15,8 @@ Seam carving resize that intelligently removes or adds pixels along paths of lea
 | Parameter | Type | Required | Default | Description |
 |-----------|------|----------|---------|-------------|
 | file | file | Yes | - | Image file (multipart) |
-| width | integer | No | - | Target width in pixels |
-| height | integer | No | - | Target height in pixels |
+| width | number | No | - | Target width in pixels |
+| height | number | No | - | Target height in pixels |
 | protectFaces | boolean | No | `false` | Detect and protect faces from seam removal |
 | blurRadius | number | No | `4` | Pre-processing blur radius for energy calculation (0-20) |
 | sobelThreshold | number | No | `2` | Sobel edge detection threshold (1-20). Higher values make the algorithm more aggressive |
@@ -27,7 +27,7 @@ At least one of `width`, `height`, or `square` must be specified.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/content-aware-resize \
+curl -X POST http://localhost:1349/api/v1/tools/content-aware-resize \
   -F "file=@landscape.jpg" \
   -F 'settings={"width":800,"protectFaces":true}'
 ```

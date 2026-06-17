@@ -4,9 +4,9 @@ Smart subject-aware, face-aware, or trim-based cropping. Uses Sharp's attention/
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/smart-crop`
+`POST /api/v1/tools/smart-crop`
 
-**Processing:** Synchronous (uses `createToolRoute` factory, returns result directly)
+**Processing:** Asynchronous (returns 202, poll `/api/v1/jobs/{jobId}/progress` for status via SSE)
 
 **Model bundle:** `face-detection` (200-300 MB) -- required only for `face` mode
 
@@ -31,19 +31,41 @@ Smart subject-aware, face-aware, or trim-based cropping. Uses Sharp's attention/
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/smart-crop \
+curl -X POST http://localhost:1349/api/v1/tools/smart-crop \
   -F "file=@portrait.jpg" \
   -F 'settings={"mode":"face","width":1080,"height":1080,"facePreset":"head-shoulders"}'
 ```
 
-## Response (200 OK)
+## Response
+
+### Initial Response (202 Accepted)
 
 ```json
 {
   "jobId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "downloadUrl": "/api/v1/download/{jobId}/portrait_smartcrop.jpg",
-  "originalSize": 500000,
-  "processedSize": 320000
+  "async": true
+}
+```
+
+### Progress (SSE at `/api/v1/jobs/{jobId}/progress`)
+
+```
+event: progress
+data: {"phase":"processing","percent":50}
+```
+
+### Final Result (via SSE)
+
+```json
+{
+  "phase": "complete",
+  "percent": 100,
+  "result": {
+    "jobId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "downloadUrl": "/api/v1/download/{jobId}/portrait_smartcrop.jpg",
+    "originalSize": 500000,
+    "processedSize": 320000
+  }
 }
 ```
 
@@ -60,7 +82,7 @@ Removes uniform borders/background from the image. Optionally pads the result to
 
 ## Notes
 
-- This tool uses the synchronous `createToolRoute` factory, so it returns a standard response (not 202 async).
+- This tool uses the `createToolRoute` factory with `executionHint: "long"`, so it returns 202 with SSE progress.
 - Face mode requires the `face-detection` model bundle (200-300 MB).
 - Subject and trim modes work without any AI model bundle.
 - The `facePreset` determines how tightly the crop frames detected faces: `closeup` is the tightest, `half-body` is the widest.

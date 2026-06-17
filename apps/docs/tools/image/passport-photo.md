@@ -1,3 +1,7 @@
+---
+description: AI-powered passport and ID photo generator with face detection, background removal, and print sheet tiling.
+---
+
 # Passport Photo
 
 AI-powered passport and ID photo generator. Two-phase workflow: analyze (face detection + background removal) then generate (crop, resize, and tile for printing).
@@ -12,7 +16,7 @@ This tool uses a two-phase flow with separate endpoints for analysis and generat
 
 ### Phase 1: Analyze
 
-`POST /api/v1/tools/image/passport-photo/analyze`
+`POST /api/v1/tools/passport-photo/analyze`
 
 Detects face landmarks and removes the background. Returns landmark data and a preview for the frontend to display a crop preview.
 
@@ -26,7 +30,7 @@ Detects face landmarks and removes the background. Returns landmark data and a p
 #### Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/passport-photo/analyze \
+curl -X POST http://localhost:1349/api/v1/tools/passport-photo/analyze \
   -F "file=@headshot.jpg"
 ```
 
@@ -71,7 +75,7 @@ If `clientJobId` is provided, progress is streamed (0-30% for face detection, 30
 
 ### Phase 2: Generate
 
-`POST /api/v1/tools/image/passport-photo/generate`
+`POST /api/v1/tools/passport-photo/generate`
 
 Crops, resizes, and optionally tiles the photo onto a print sheet. Uses cached images from Phase 1 (no AI re-run).
 
@@ -99,7 +103,7 @@ Crops, resizes, and optionally tiles the photo onto a print sheet. Uses cached i
 #### Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/passport-photo/generate \
+curl -X POST http://localhost:1349/api/v1/tools/passport-photo/generate \
   -H "Content-Type: application/json" \
   -d '{
     "jobId": "a1b2c3d4-...",
@@ -145,13 +149,13 @@ curl -X POST http://localhost:13490/api/v1/tools/image/passport-photo/generate \
 
 ### Base Route
 
-`POST /api/v1/tools/image/passport-photo`
+`POST /api/v1/tools/passport-photo`
 
 Returns guidance to use the correct sub-endpoint.
 
 ```json
 {
-  "error": "Use /api/v1/tools/image/passport-photo/analyze or /generate"
+  "error": "Use /api/v1/tools/passport-photo/analyze or /generate"
 }
 ```
 

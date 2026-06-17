@@ -1,10 +1,14 @@
+---
+description: Convert PDF pages to high-quality images.
+---
+
 # PDF to Image
 
 Convert PDF pages to high-quality raster images. Supports page selection, multiple output formats, DPI control, and color modes. Includes info and preview sub-routes for inspecting PDFs before conversion.
 
 ## API Endpoint
 
-`POST /api/v1/tools/pdf/pdf-to-image`
+`POST /api/v1/tools/pdf-to-image`
 
 ## Parameters
 
@@ -19,7 +23,7 @@ Convert PDF pages to high-quality raster images. Supports page selection, multip
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/pdf/pdf-to-image \
+curl -X POST http://localhost:1349/api/v1/tools/pdf-to-image \
   -F "file=@document.pdf" \
   -F 'settings={"format":"png","dpi":300,"pages":"1-3","colorMode":"color"}'
 ```
@@ -56,14 +60,14 @@ curl -X POST http://localhost:13490/api/v1/tools/pdf/pdf-to-image \
 
 ## Info Sub-Route
 
-`POST /api/v1/tools/pdf/pdf-to-image/info`
+`POST /api/v1/tools/pdf-to-image/info`
 
 Returns the page count of a PDF without rendering any pages.
 
 ### Info Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/pdf/pdf-to-image/info \
+curl -X POST http://localhost:1349/api/v1/tools/pdf-to-image/info \
   -F "file=@document.pdf"
 ```
 
@@ -77,14 +81,14 @@ curl -X POST http://localhost:13490/api/v1/tools/pdf/pdf-to-image/info \
 
 ## Preview Sub-Route
 
-`POST /api/v1/tools/pdf/pdf-to-image/preview`
+`POST /api/v1/tools/pdf-to-image/preview`
 
 Returns low-resolution JPEG thumbnails of all pages as base64 data URLs. Useful for building a page selection UI.
 
 ### Preview Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/pdf/pdf-to-image/preview \
+curl -X POST http://localhost:1349/api/v1/tools/pdf-to-image/preview \
   -F "file=@document.pdf"
 ```
 

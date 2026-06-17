@@ -1,10 +1,14 @@
+---
+description: AI-powered detection and correction of red eye caused by camera flash.
+---
+
 # Red Eye Removal
 
 AI-powered detection and correction of red eye caused by camera flash.
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/red-eye-removal`
+`POST /api/v1/tools/red-eye-removal`
 
 **Processing:** Asynchronous (returns 202, poll `/api/v1/jobs/{jobId}/progress` for status via SSE)
 
@@ -23,7 +27,7 @@ AI-powered detection and correction of red eye caused by camera flash.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/red-eye-removal \
+curl -X POST http://localhost:1349/api/v1/tools/red-eye-removal \
   -F "file=@flash-photo.jpg" \
   -F 'settings={"sensitivity":60,"strength":80}'
 ```

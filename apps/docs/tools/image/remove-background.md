@@ -1,10 +1,14 @@
+---
+description: AI-powered background removal with optional effects (blur, shadow, gradient, custom background).
+---
+
 # Remove Background
 
 AI-powered background removal with optional effects (blur, shadow, gradient, custom background).
 
 ## API Endpoint
 
-`POST /api/v1/tools/image/remove-background`
+`POST /api/v1/tools/remove-background`
 
 **Processing:** Asynchronous (returns 202, poll `/api/v1/jobs/{jobId}/progress` for status via SSE)
 
@@ -32,7 +36,7 @@ AI-powered background removal with optional effects (blur, shadow, gradient, cus
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/remove-background \
+curl -X POST http://localhost:1349/api/v1/tools/remove-background \
   -F "file=@photo.jpg" \
   -F 'settings={"backgroundType":"transparent","edgeRefine":2,"outputFormat":"png"}'
 ```
@@ -76,7 +80,7 @@ data: {"phase":"processing","stage":"Removing background...","percent":50}
 
 ## Effects Endpoint (Phase 2)
 
-`POST /api/v1/tools/image/remove-background/effects`
+`POST /api/v1/tools/remove-background/effects`
 
 Re-applies background effects without re-running the AI model. Uses cached mask and original from Phase 1.
 
@@ -107,7 +111,7 @@ Re-applies background effects without re-running the AI model. Uses cached mask 
 ### Example Request
 
 ```bash
-curl -X POST http://localhost:13490/api/v1/tools/image/remove-background/effects \
+curl -X POST http://localhost:1349/api/v1/tools/remove-background/effects \
   -F 'settings={"jobId":"a1b2c3d4-...","filename":"photo.jpg","backgroundType":"color","backgroundColor":"#FF5500","outputFormat":"png"}'
 ```
 

@@ -8,7 +8,7 @@ Safely extract files from a ZIP archive. Single-file archives return the contain
 
 ## API Endpoint
 
-`POST /api/v1/tools/data/extract-zip`
+`POST /api/v1/tools/extract-zip`
 
 Accepts multipart form data with a ZIP file. No settings field is required.
 
@@ -19,7 +19,7 @@ This tool has no configurable parameters. Upload a `.zip` file to extract.
 ## Example Request
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/data/extract-zip \
+curl -X POST http://localhost:1349/api/v1/tools/extract-zip \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@archive.zip"
 ```
@@ -29,7 +29,7 @@ curl -X POST http://localhost:1349/api/v1/tools/data/extract-zip \
 ```json
 {
   "jobId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "downloadUrl": "/api/v1/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890/archive.zip",
+  "downloadUrl": "/api/v1/download/a1b2c3d4-e5f6-7890-abcd-ef1234567890/archive_extracted.zip",
   "originalSize": 2800000,
   "processedSize": 3500000
 }

@@ -8,7 +8,7 @@ Convert between YAML and JSON formats in both directions. Upload a YAML file to 
 
 ## API Endpoint
 
-`POST /api/v1/tools/data/yaml-json`
+`POST /api/v1/tools/yaml-json`
 
 Accepts multipart form data with a YAML or JSON file. No settings field is required.
 
@@ -21,7 +21,7 @@ This tool has no configurable parameters. The conversion direction is determined
 YAML to JSON:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/data/yaml-json \
+curl -X POST http://localhost:1349/api/v1/tools/yaml-json \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@config.yaml"
 ```
@@ -29,7 +29,7 @@ curl -X POST http://localhost:1349/api/v1/tools/data/yaml-json \
 JSON to YAML:
 
 ```bash
-curl -X POST http://localhost:1349/api/v1/tools/data/yaml-json \
+curl -X POST http://localhost:1349/api/v1/tools/yaml-json \
   -H "Authorization: Bearer si_your-api-key" \
   -F "file=@config.json"
 ```
@@ -49,4 +49,4 @@ curl -X POST http://localhost:1349/api/v1/tools/data/yaml-json \
 
 - Conversion direction is auto-detected from the input file extension: `.yaml` or `.yml` produces `.json`, and `.json` produces `.yaml`.
 - Both `.yaml` and `.yml` extensions are accepted.
-- Multi-document YAML files (separated by `---`) are supported.
+- Only the first document in a multi-document YAML file is converted; additional documents separated by `---` are ignored.
