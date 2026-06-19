@@ -1,5 +1,6 @@
 import { defineConfig } from "vitepress";
 import llmstxt from "vitepress-plugin-llms";
+import { pagefindPlugin } from "vitepress-plugin-pagefind";
 import pkg from "../../../package.json";
 
 export default defineConfig({
@@ -15,7 +16,8 @@ export default defineConfig({
   sitemap: { hostname: "https://docs.snapotter.com" },
 
   head: [
-    ["meta", { name: "theme-color", content: "#3b82f6" }],
+    ["meta", { name: "theme-color", content: "#E07832" }],
+    ["link", { rel: "preload", href: "/fonts/bricolage-grotesque-var.woff2", as: "font", type: "font/woff2", crossorigin: "" }],
     ["link", { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" }],
     ["link", { rel: "icon", type: "image/x-icon", href: "/favicon.ico" }],
     ["link", { rel: "apple-touch-icon", sizes: "180x180", href: "/apple-touch-icon.png" }],
@@ -47,6 +49,7 @@ export default defineConfig({
 
   vite: {
     plugins: [
+      pagefindPlugin(),
       llmstxt({
         domain: "https://docs.snapotter.com",
         customLLMsTxtTemplate: `# {title}
@@ -107,6 +110,9 @@ export default defineConfig({
           { text: "Architecture", link: "/guide/architecture" },
           { text: "Configuration", link: "/guide/configuration" },
           { text: "OIDC / SSO", link: "/guide/oidc" },
+          { text: "SAML SSO", link: "/guide/saml" },
+          { text: "SCIM Provisioning", link: "/guide/scim" },
+          { text: "Users, Roles & Permissions", link: "/guide/users-roles" },
           { text: "Database", link: "/guide/database" },
           { text: "Deployment", link: "/guide/deployment" },
           { text: "Security & Hardening", link: "/guide/security" },
@@ -359,10 +365,6 @@ export default defineConfig({
         items: [{ text: "Changelog", link: "/changelog" }],
       },
     ],
-
-    search: {
-      provider: "local",
-    },
 
     footer: {
       message:
