@@ -3470,3 +3470,5 @@ export const ptBR: TranslationKeys = {
     homeLink: "SnapOtter home",
   },
 } as const;
+
+export default ptBR;

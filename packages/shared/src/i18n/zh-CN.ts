@@ -3389,3 +3389,5 @@ export const zhCN: TranslationKeys = {
     homeLink: "SnapOtter home",
   },
 } as const;
+
+export default zhCN;
