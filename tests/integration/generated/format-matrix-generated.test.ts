@@ -25,7 +25,7 @@ import {
  * (501). A 500 or an undecodable "successful" output is a bug.
  *
  * PR runs use the core web formats; FULL_MATRIX=1 (nightly) unlocks all
- * fixtures in tests/fixtures/formats/.
+ * fixtures in tests/fixtures/image/formats/.
  */
 
 const CORE_FORMATS = [

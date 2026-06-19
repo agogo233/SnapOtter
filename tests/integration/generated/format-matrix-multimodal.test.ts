@@ -28,8 +28,9 @@ import {
  */
 
 // ── Fixture directories ──────────────────────────────────────────
-const MEDIA_DIR = fixtureDir.media;
-const DOCUMENTS_DIR = fixtureDir.documents;
+const VIDEO_FORMATS_DIR = fixtureDir.video.formats;
+const AUDIO_FORMATS_DIR = fixtureDir.audio.formats;
+const DOCUMENTS_DIR = fixtureDir.document.formats;
 const DATA_DIR = fixtureDir.data;
 
 // ── Build a global map: extension -> list of { dir, filename } ──
@@ -47,8 +48,11 @@ function scanFixtures(dir: string): FixtureFile[] {
 }
 
 const ALL_FIXTURES: FixtureFile[] = [
-  ...scanFixtures(MEDIA_DIR),
+  ...scanFixtures(VIDEO_FORMATS_DIR),
+  ...scanFixtures(AUDIO_FORMATS_DIR),
   ...scanFixtures(DOCUMENTS_DIR),
+  ...scanFixtures(fixtureDir.document.valid),
+  ...scanFixtures(fixtureDir.document.edge),
   ...scanFixtures(DATA_DIR),
 ];
 

@@ -7,10 +7,10 @@ import { MediaInputHandler } from "../../../apps/api/src/modality/media-input.js
 import { fixtureRoot } from "../../fixtures/index.js";
 
 const FIX = fixtureRoot;
-const MP4 = readFileSync(join(FIX, "media", "tiny.mp4"));
-const MP3 = readFileSync(join(FIX, "media", "tiny.mp3"));
-const SRT = readFileSync(join(FIX, "media", "tiny.srt"));
-const PNG = readFileSync(join(FIX, "test-200x150.png"));
+const MP4 = readFileSync(join(FIX, "video", "formats", "tiny.mp4"));
+const MP3 = readFileSync(join(FIX, "audio", "formats", "tiny.mp3"));
+const SRT = readFileSync(join(FIX, "video", "formats", "tiny.srt"));
+const PNG = readFileSync(join(FIX, "image", "valid", "test-200x150.png"));
 
 function scratch(): { scratchDir: string } {
   return { scratchDir: mkdtempSync(join(tmpdir(), "media-kinds-")) };

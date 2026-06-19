@@ -21,7 +21,10 @@ import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const CONTENT = join(__dirname, "content");
+const IMAGE_VALID = join(__dirname, "image/valid");
+const VIDEO_VALID = join(__dirname, "video/valid");
+const AUDIO_VALID = join(__dirname, "audio/valid");
+const DOC_VALID = join(__dirname, "document/valid");
 const require = createRequire(join(__dirname, "../../apps/api/package.json"));
 const sharp = require("sharp");
 const QRCode = require("qrcode");
@@ -223,15 +226,15 @@ async function main() {
   const qrPng = await QRCode.toBuffer(qrData, {
     width: 400, margin: 2, color: { dark: "#000000", light: "#ffffff" },
   });
-  writeFileSync(join(CONTENT, "qr-code.png"), qrPng);
+  writeFileSync(join(IMAGE_VALID, "qr-code.png"), qrPng);
   console.log("  qr-code.png");
 
   const qrSvg = await QRCode.toString(qrData, { type: "svg", width: 296, margin: 2 });
-  writeFileSync(join(CONTENT, "qr-code.svg"), qrSvg);
+  writeFileSync(join(IMAGE_VALID, "qr-code.svg"), qrSvg);
   console.log("  qr-code.svg");
 
   const qrAvif = await sharp(qrPng).resize(400, 400).avif({ quality: 80 }).toBuffer();
-  writeFileSync(join(CONTENT, "qr-code.avif"), qrAvif);
+  writeFileSync(join(IMAGE_VALID, "qr-code.avif"), qrAvif);
   console.log("  qr-code.avif");
 
   // ── Barcodes (A) ──
@@ -239,11 +242,11 @@ async function main() {
   const bcText = "SNAPOTTER-TEST-123";
   const bcSvgStr = barcodeSvg(bcText, 699, 152);
   const bcPng = await sharp(Buffer.from(bcSvgStr)).png().toBuffer();
-  writeFileSync(join(CONTENT, "barcode.png"), bcPng);
+  writeFileSync(join(IMAGE_VALID, "barcode.png"), bcPng);
   console.log("  barcode.png");
 
   const bcAvif = await sharp(Buffer.from(bcSvgStr)).avif({ quality: 80 }).toBuffer();
-  writeFileSync(join(CONTENT, "barcode.avif"), bcAvif);
+  writeFileSync(join(IMAGE_VALID, "barcode.avif"), bcAvif);
   console.log("  barcode.avif");
 
   // ── OCR text images (A) ──
@@ -253,7 +256,7 @@ async function main() {
     <text x="400" y="115" text-anchor="middle" font-family="Helvetica, Arial, sans-serif" font-size="42" font-weight="bold" fill="black">The quick brown fox 12345</text>
   </svg>`;
   const ocrEngPng = await sharp(Buffer.from(ocrEngSvg)).png().toBuffer();
-  writeFileSync(join(CONTENT, "ocr-clean.png"), ocrEngPng);
+  writeFileSync(join(IMAGE_VALID, "ocr-clean.png"), ocrEngPng);
   console.log("  ocr-clean.png");
 
   const jpText =
@@ -273,31 +276,31 @@ async function main() {
     ${lines.map((line, i) => `<text x="16" y="${30 + i * 28}" font-family="Hiragino Sans, Hiragino Kaku Gothic Pro, sans-serif" font-size="20" fill="black">${line}</text>`).join("\n    ")}
   </svg>`;
   const jpPng = await sharp(Buffer.from(jpSvg)).png().toBuffer();
-  writeFileSync(join(CONTENT, "ocr-japanese.png"), jpPng);
+  writeFileSync(join(IMAGE_VALID, "ocr-japanese.png"), jpPng);
   console.log("  ocr-japanese.png");
 
   // ── PDFs (A) ──
   console.log("PDFs:");
-  writeFileSync(join(CONTENT, "alt-2page.pdf"), generatePdf(2));
+  writeFileSync(join(DOC_VALID, "alt-2page.pdf"), generatePdf(2));
   console.log("  alt-2page.pdf");
-  writeFileSync(join(CONTENT, "multipage-6.pdf"), generatePdf(6));
+  writeFileSync(join(DOC_VALID, "multipage-6.pdf"), generatePdf(6));
   console.log("  multipage-6.pdf");
 
   // ── SVG logo (B: replaces ConvertICO brand) ──
   console.log("SVG logo (replacing ConvertICO brand):");
-  writeFileSync(join(CONTENT, "svg-logo.svg"), projectSvg());
+  writeFileSync(join(IMAGE_VALID, "svg-logo.svg"), projectSvg());
   console.log("  svg-logo.svg");
 
   // ── Multi-face placeholder (B: replaces Shutterstock photo) ──
   console.log("Multi-face placeholder (replacing Shutterstock stock photo):");
   const mfSvg = multiFaceSvg(433, 280);
   const mfWebp = await sharp(Buffer.from(mfSvg)).webp({ quality: 80 }).toBuffer();
-  writeFileSync(join(CONTENT, "multi-face.webp"), mfWebp);
+  writeFileSync(join(IMAGE_VALID, "multi-face.webp"), mfWebp);
   console.log("  multi-face.webp");
 
   // ── Animated GIF (B: replaces copyrighted Simpsons clip) ──
   console.log("Animated GIF (replacing copyrighted Simpsons clip):");
-  const gifOut = join(CONTENT, "animated-simpsons.gif");
+  const gifOut = join(IMAGE_VALID, "animated-simpsons.gif");
   ff(
     `-f lavfi -i "testsrc=duration=3:size=320x320:rate=10" -pix_fmt rgb8 -loop 0 -y "${gifOut}"`,
     "animated-simpsons.gif",
@@ -312,14 +315,14 @@ async function main() {
     `-metadata title="Test Song" -metadata artist="Test Artist" ` +
     `-metadata album="Test Album" -metadata date="2026" ` +
     `-metadata genre="Electronic" -metadata track="1/10" ` +
-    `-y "${join(CONTENT, "audio-with-tags.mp3")}"`,
+    `-y "${join(AUDIO_VALID, "audio-with-tags.mp3")}"`,
     "audio-with-tags.mp3",
   );
 
   ff(
     `-f lavfi -i "color=c=0xE07832:s=64x64:d=1:rate=16" ` +
     `-c:v libx264 -pix_fmt yuv420p -movflags +faststart ` +
-    `-y "${join(CONTENT, "video-with-meta.mp4")}"`,
+    `-y "${join(VIDEO_VALID, "video-with-meta.mp4")}"`,
     "video-with-meta.mp4",
   );
 
@@ -328,14 +331,14 @@ async function main() {
     `-f lavfi -i "sine=frequency=440:duration=30:sample_rate=44100" ` +
     `-c:v libx264 -pix_fmt yuv420p -preset ultrafast ` +
     `-c:a aac -b:a 128k -ac 1 -movflags +faststart ` +
-    `-y "${join(CONTENT, "media-30s.mp4")}"`,
+    `-y "${join(VIDEO_VALID, "media-30s.mp4")}"`,
     "media-30s.mp4",
   );
 
   ff(
     `-f lavfi -i "sine=frequency=440:duration=30:sample_rate=44100" ` +
     `-ac 1 -c:a pcm_s16le ` +
-    `-y "${join(CONTENT, "media-30s.wav")}"`,
+    `-y "${join(AUDIO_VALID, "media-30s.wav")}"`,
     "media-30s.wav",
   );
 

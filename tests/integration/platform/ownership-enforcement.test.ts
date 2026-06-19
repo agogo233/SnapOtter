@@ -36,7 +36,7 @@ let userAPipelineId: string;
 
 // Load test fixture
 const fixtureBuffer = readFileSync(
-  join(import.meta.dirname, "..", "..", "fixtures", "test-1x1.png"),
+  join(import.meta.dirname, "..", "..", "fixtures", "image", "edge", "test-1x1.png"),
 );
 
 /** Register a user, clear mustChangePassword, log in, return token. */

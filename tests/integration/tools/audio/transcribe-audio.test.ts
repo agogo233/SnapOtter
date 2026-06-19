@@ -9,7 +9,7 @@
 
 import { readFileSync } from "node:fs";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { fixtureDir, fixtures } from "../../../fixtures/index.js";
+import { fixtures } from "../../../fixtures/index.js";
 import {
   buildTestApp,
   createMultipartPayload,
@@ -17,7 +17,6 @@ import {
   type TestApp,
 } from "../../test-server.js";
 
-const MEDIA = fixtureDir.media;
 const MP3 = readFileSync(fixtures.audio.tiny("mp3"));
 
 let testApp: TestApp;

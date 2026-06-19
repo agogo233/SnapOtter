@@ -84,7 +84,7 @@ describe("csv-excel (pure JS, no skipIf)", () => {
   }, 30_000);
 
   it("converts XLSX to CSV containing the fixture content", async () => {
-    // Use the committed tiny.xlsx from tests/fixtures/documents/
+    // Use the committed tiny.xlsx from tests/fixtures/document/formats/
     // (Sheet1 with "SnapOtter" in A1)
     const res = await runTool("tiny.xlsx", XLSX_FIXTURE, { sheet: 1 });
     expect(res.statusCode).toBe(200);

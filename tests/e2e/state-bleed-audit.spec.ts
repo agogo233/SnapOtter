@@ -133,7 +133,14 @@ test.describe("State bleed between tools", () => {
       await addMoreBtn.click();
       const fileChooser = await fileChooserPromise;
       await fileChooser.setFiles(
-        require("node:path").join(process.cwd(), "tests", "fixtures", "test-50x50.webp"),
+        require("node:path").join(
+          process.cwd(),
+          "tests",
+          "fixtures",
+          "image",
+          "valid",
+          "test-50x50.webp",
+        ),
       );
       await page.waitForTimeout(500);
     }

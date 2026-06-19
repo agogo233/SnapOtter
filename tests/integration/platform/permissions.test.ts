@@ -254,7 +254,15 @@ describe("permission enforcement on routes", () => {
 });
 
 describe("tool and pipeline permission enforcement", () => {
-  const fixturePath = join(import.meta.dirname, "..", "..", "fixtures", "test-200x150.png");
+  const fixturePath = join(
+    import.meta.dirname,
+    "..",
+    "..",
+    "fixtures",
+    "image",
+    "valid",
+    "test-200x150.png",
+  );
   const fixtureBuffer = readFileSync(fixturePath);
 
   it("unauthenticated user cannot use tools", async () => {
@@ -449,7 +457,7 @@ describe("file ownership scoping", () => {
   it("user A cannot access user B's file by ID", async () => {
     // Upload as user A
     const testImage = readFileSync(
-      join(import.meta.dirname, "..", "..", "fixtures", "test-200x150.png"),
+      join(import.meta.dirname, "..", "..", "fixtures", "image", "valid", "test-200x150.png"),
     );
     const { body: uploadBody, contentType } = createMultipartPayload([
       { name: "file", filename: "test.png", contentType: "image/png", content: testImage },
