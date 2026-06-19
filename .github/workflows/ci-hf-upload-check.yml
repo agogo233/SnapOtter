@@ -1,0 +1,43 @@
+name: HF Upload Check
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Install hf CLI
+        run: pip install -q -U "huggingface_hub[hf_xet]"
+
+      - name: Test upload to deepsafe/feature-bundles
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          echo "ci-token-check-$(date -u +%Y%m%dT%H%M%S)" > /tmp/check.txt
+          hf upload deepsafe/feature-bundles /tmp/check.txt .ci-checks/upload-check.txt \
+            --repo-type model
+          echo "UPLOAD_OK"
+
+      - name: Verify anonymous download (no token)
+        run: |
+          curl -fsSL \
+            "https://huggingface.co/deepsafe/feature-bundles/resolve/main/.ci-checks/upload-check.txt" \
+            -o /tmp/downloaded.txt
+          cat /tmp/downloaded.txt
+          echo "ANON_DOWNLOAD_OK"
+
+      - name: Cleanup
+        if: always()
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          python3 -c "
+from huggingface_hub import HfApi
+HfApi().delete_file('.ci-checks/upload-check.txt', repo_id='deepsafe/feature-bundles', repo_type='model')
+print('CLEANUP_OK')
+" || true
