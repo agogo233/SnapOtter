@@ -314,7 +314,7 @@ All AI tools run on your hardware (CPU or NVIDIA GPU). No internet required.
 | `to-epub` | Convert to EPUB | - (accepts .docx, .md, .html, .txt) |
 | `ocr-pdf` | PDF OCR (AI) | `quality` (fast/balanced/best), `language` (auto/en/de/fr/es/zh/ja/ko), `pages` |
 
-### Data Tools
+### File Tools
 
 | Tool ID | Name | Key settings |
 |---------|------|-------------|

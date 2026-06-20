@@ -132,7 +132,7 @@ const TOOL_FIXTURE: Record<string, FixtureSpec> = {
   "convert-presentation": { buffer: PPTX, filename: "test.pptx" },
   "epub-convert": { buffer: EPUB, filename: "test.epub" },
   "ocr-pdf": PDF_FIX,
-  // Data tools
+  // File tools
   "csv-excel": CSV_FIX,
   "csv-json": CSV_FIX,
   "json-xml": { buffer: JSON_F, filename: "test.json" },

@@ -173,8 +173,8 @@ describe("cross-modality launch smoke", () => {
     30_000,
   );
 
-  // ── Data/File: csv-json (pure JS, no binary) ─────────────────────
-  it("data modality: csv-json", async () => {
+  // ── Files: csv-json (pure JS, no binary) ─────────────────────
+  it("file modality: csv-json", async () => {
     const file = readFixture(fixtures.data.csv);
     const res = await postTool(app, adminToken, "csv-json", file, "tiny.csv", "text/csv", {
       direction: "csv-to-json",

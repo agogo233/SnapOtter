@@ -148,7 +148,7 @@ Document processing uses qpdf, LibreOffice, Ghostscript, Pandoc, and WeasyPrint.
 | **Input** | PDF, DOCX, DOC, XLSX, XLS, PPTX, PPT, ODT, ODS, ODP, RTF, TXT, Markdown, HTML, EPUB |
 | **Output** | PDF, PDF/A, DOCX, HTML, EPUB, images (via PDF to Image) |
 
-## Data Formats
+## File Formats
 
 | Type | Formats |
 |------|---------|
