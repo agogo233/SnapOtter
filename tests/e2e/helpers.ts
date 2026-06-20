@@ -34,7 +34,7 @@ export function getTestImagePath(): string {
   try {
     const script = [
       "const sharp = require('sharp');",
-      `sharp({create:{width:100,height:100,channels:4,background:{r:255,g:0,b:0,alpha:1}}}).png().toFile('${_testImagePath.replace(/'/g, "\\'")}')`,
+      `sharp({create:{width:100,height:100,channels:4,background:{r:255,g:0,b:0,alpha:1}}}).png().toFile(${JSON.stringify(_testImagePath)})`,
     ].join(" ");
     execFileSync("node", ["-e", script], {
       cwd: process.cwd(),
