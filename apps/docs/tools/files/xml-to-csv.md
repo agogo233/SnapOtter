@@ -40,4 +40,4 @@ curl -X POST http://localhost:1349/api/v1/tools/xml-to-csv \
 - Only `.xml` files are accepted as input.
 - The tool scans the XML tree for the first repeating set of sibling elements and uses those as rows.
 - Each unique child element or attribute name becomes a CSV column header.
-- This is a one-way conversion. For bidirectional JSON/XML conversion, use the [JSON to XML](/tools/data/json-xml) tool.
+- This is a one-way conversion. For bidirectional JSON/XML conversion, use the [JSON to XML](/tools/files/json-xml) tool.
