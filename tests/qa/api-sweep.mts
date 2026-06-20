@@ -12,6 +12,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
+import { apiToolPath } from "@snapotter/shared";
 
 // ── Config ────────────────────────────────────────────────────────
 const BASE = "http://localhost:13499";
@@ -530,7 +531,7 @@ async function main() {
 
         let res: Response;
         try {
-          res = await fetch(`${BASE}/api/v1/tools/${tool.id}`, {
+          res = await fetch(`${BASE}${apiToolPath(tool.id)}`, {
             method: "POST",
             body: form,
             signal: controller.signal,

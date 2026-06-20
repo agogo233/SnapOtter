@@ -5,6 +5,7 @@
  * verifying output dimensions, file validity, and metadata via Sharp decode.
  */
 
+import { apiToolPath } from "@snapotter/shared";
 import sharp from "sharp";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fixtures, readFixture } from "../../fixtures/index.js";
@@ -48,7 +49,7 @@ async function postTool(
   ]);
   return app.inject({
     method: "POST",
-    url: `/api/v1/tools/${toolId}`,
+    url: apiToolPath(toolId),
     headers: {
       authorization: `Bearer ${adminToken}`,
       "content-type": ct,
@@ -205,7 +206,7 @@ describe("Image depth: extract metadata from EXIF hero", () => {
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/info",
+      url: "/api/v1/tools/image/info",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,
@@ -233,7 +234,7 @@ describe("Image depth: extract metadata from EXIF hero", () => {
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/info",
+      url: "/api/v1/tools/image/info",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,

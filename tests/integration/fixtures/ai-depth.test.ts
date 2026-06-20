@@ -10,6 +10,7 @@
  * If 501, the describe is skipped. If 200/202, we proceed with assertions.
  */
 
+import { apiToolPath } from "@snapotter/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fixtures, readFixture } from "../../fixtures/index.js";
 import {
@@ -43,7 +44,7 @@ async function isBundleInstalled(
   ]);
   const res = await app.inject({
     method: "POST",
-    url: `/api/v1/tools/${toolId}`,
+    url: apiToolPath(toolId),
     headers: {
       authorization: `Bearer ${adminToken}`,
       "content-type": contentType,
@@ -81,7 +82,7 @@ async function postTool(
   ]);
   return app.inject({
     method: "POST",
-    url: `/api/v1/tools/${toolId}`,
+    url: apiToolPath(toolId),
     headers: {
       authorization: `Bearer ${adminToken}`,
       "content-type": contentType,

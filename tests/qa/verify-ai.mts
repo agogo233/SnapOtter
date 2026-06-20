@@ -3,6 +3,7 @@
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { apiToolPath } from "@snapotter/shared";
 
 const BASE = "http://localhost:13499";
 
@@ -63,7 +64,7 @@ async function run(toolId: string, file: string, settings: Record<string, unknow
   const fd = new FormData();
   fd.append("file", new Blob([buf]), path.basename(file));
   fd.append("settings", JSON.stringify(settings));
-  const res = await fetch(`${BASE}/api/v1/tools/${toolId}`, { method: "POST", body: fd });
+  const res = await fetch(`${BASE}${apiToolPath(toolId)}`, { method: "POST", body: fd });
   if (res.status === 200) {
     const j = (await res.json()) as { downloadUrl?: string };
     if (j.downloadUrl) {

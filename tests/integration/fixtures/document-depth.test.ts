@@ -76,7 +76,7 @@ describe.skipIf(!qpdfAvailable())("Document depth: split-pdf multipage hero", ()
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/split-pdf",
+      url: "/api/v1/tools/pdf/split-pdf",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,
@@ -117,7 +117,7 @@ describe.skipIf(!qpdfAvailable())("Document depth: merge-pdf real heroes", () =>
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/merge-pdf",
+      url: "/api/v1/tools/pdf/merge-pdf",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,
@@ -154,7 +154,7 @@ describe.skipIf(!gsAvailable())("Document depth: compress-pdf multipage hero", (
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/compress-pdf",
+      url: "/api/v1/tools/pdf/compress-pdf",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,
@@ -191,7 +191,7 @@ describe("Document depth: pdf-to-image multipage hero", () => {
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/pdf-to-image",
+      url: "/api/v1/tools/pdf/pdf-to-image",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,
@@ -223,7 +223,7 @@ describe("Document depth: pdf-to-image multipage hero", () => {
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/pdf-to-image/info",
+      url: "/api/v1/tools/pdf/pdf-to-image/info",
       headers: {
         authorization: `Bearer ${adminToken}`,
         "content-type": contentType,

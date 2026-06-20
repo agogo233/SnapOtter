@@ -15,6 +15,7 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { apiToolPath } from "@snapotter/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { fixtures, readFixture } from "../../fixtures/index.js";
 import {
@@ -58,7 +59,7 @@ async function postTool(
   ]);
   return app.inject({
     method: "POST",
-    url: `/api/v1/tools/${toolId}`,
+    url: apiToolPath(toolId),
     headers: { authorization: `Bearer ${token}`, "content-type": ct },
     body,
   });
@@ -94,7 +95,7 @@ describe("cross-modality launch smoke", () => {
     ]);
     const res = await app.inject({
       method: "POST",
-      url: "/api/v1/tools/rotate",
+      url: "/api/v1/tools/image/rotate",
       headers: { "content-type": contentType },
       body,
     });

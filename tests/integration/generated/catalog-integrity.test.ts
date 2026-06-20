@@ -15,7 +15,7 @@
  * cannot silently drift when tools are added or removed.
  */
 
-import { TOOLS } from "@snapotter/shared";
+import { apiToolPath, TOOLS } from "@snapotter/shared";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { getRegisteredToolIds } from "../../../apps/api/src/routes/tool-factory.js";
 import { TOOL_DISPLAY_MODES } from "../../../apps/web/src/lib/tool-display-modes.js";
@@ -97,7 +97,7 @@ describe("catalog integrity launch gate", () => {
     for (const tool of TOOLS) {
       const res = await testApp.app.inject({
         method: "POST",
-        url: `/api/v1/tools/${tool.id}`,
+        url: apiToolPath(tool.id),
         headers: {
           authorization: `Bearer ${adminToken}`,
           "content-type": "application/json",
