@@ -106,11 +106,11 @@ run_python -c "
 import json, sys
 with open('${STAGING}/bundle.json') as f:
     b = json.load(f)
-for field in ('bundleId', 'arch', 'version'):
+for field in ('bundleId', 'arch', 'version', 'models'):
     if field not in b:
         print(f'Missing required field: {field}', file=sys.stderr)
         sys.exit(1)
-print(f'  bundleId={b[\"bundleId\"]} arch={b[\"arch\"]} version={b[\"version\"]}')
+print(f'  bundleId={b[\"bundleId\"]} arch={b[\"arch\"]} version={b[\"version\"]} models={len(b[\"models\"])}')
 " || fail "bundle.json missing required fields"
 pass "bundle.json valid"
 
@@ -136,7 +136,7 @@ fi
 if [[ -d "${STAGING}/fixups" ]]; then
   WHEELS=("${STAGING}/fixups"/*.whl)
   if [[ -f "${WHEELS[0]}" ]]; then
-    "${VENV}/bin/pip" install --no-cache-dir "${STAGING}/fixups"/*.whl 2>/dev/null
+    run_python -m pip install --no-index --no-cache-dir "${STAGING}/fixups"/*.whl 2>/dev/null
     pass "Fixup wheels installed"
   else
     echo "  No .whl files in fixups/, skipping"
@@ -191,14 +191,24 @@ AI_SCRIPTS="/app/packages/ai/python"
 
 smoke_background_removal() {
   local input="/fixtures/test-200x150.png"
+  [[ -f "$input" ]] || fail "Fixture missing: $input" 3
   local output="/tmp/verify-smoke-rembg.png"
   timeout 300 run_python "${AI_SCRIPTS}/remove_bg.py" "${input}" "${output}" 2>/dev/null
   [[ -f "${output}" && -s "${output}" ]] || fail "remove_bg output missing or empty" 3
-  pass "remove_bg produced output"
+  # Verify it's a valid PNG (check magic bytes)
+  run_python -c "
+import sys
+with open('${output}', 'rb') as f:
+    magic = f.read(8)
+if magic[:4] != b'\\x89PNG':
+    sys.exit(1)
+" || fail "remove_bg output is not a valid PNG" 3
+  pass "remove_bg produced valid PNG output"
 }
 
 smoke_face_detection() {
   local input="/fixtures/sample-photo.jpg"
+  [[ -f "$input" ]] || fail "Fixture missing: $input" 3
   local output="/tmp/verify-smoke-faces.png"
   timeout 300 run_python "${AI_SCRIPTS}/detect_faces.py" "${input}" "${output}" 2>/dev/null
   [[ -f "${output}" ]] || fail "detect_faces output missing" 3
@@ -221,14 +231,25 @@ img.save('${input}')
 
 smoke_upscale_enhance() {
   local input="/fixtures/test-100x100.jpg"
+  [[ -f "$input" ]] || fail "Fixture missing: $input" 3
   local output="/tmp/verify-smoke-upscale.png"
   timeout 300 run_python "${AI_SCRIPTS}/upscale.py" "${input}" "${output}" '{"scale":2}' 2>/dev/null
   [[ -f "${output}" && -s "${output}" ]] || fail "upscale output missing or empty" 3
-  pass "upscale produced output"
+  run_python -c "
+from PIL import Image
+inp = Image.open('${input}')
+out = Image.open('${output}')
+if out.width <= inp.width or out.height <= inp.height:
+    print(f'Output {out.size} not larger than input {inp.size}')
+    exit(1)
+print(f'  Upscale: {inp.size} -> {out.size}')
+" || fail "upscale output dimensions not larger than input" 3
+  pass "upscale produced larger output"
 }
 
 smoke_photo_restoration() {
   local input="/fixtures/test-100x100.jpg"
+  [[ -f "$input" ]] || fail "Fixture missing: $input" 3
   local output="/tmp/verify-smoke-restore.png"
   timeout 300 run_python "${AI_SCRIPTS}/restore.py" "${input}" "${output}" 2>/dev/null
   [[ -f "${output}" && -s "${output}" ]] || fail "restore output missing or empty" 3
@@ -248,9 +269,9 @@ img.save('${input}')
   local result
   result="$(timeout 300 run_python "${AI_SCRIPTS}/ocr.py" "${input}" '{"quality":"balanced","enhance":false}' 2>/dev/null)"
   # Check stdout JSON has success=true and non-empty text
-  run_python -c "
+  echo "${result}" | run_python -c "
 import json, sys
-data = json.loads('''${result}''')
+data = json.load(sys.stdin)
 if not data.get('success'):
     print('OCR did not return success=true', file=sys.stderr)
     sys.exit(1)
@@ -265,12 +286,13 @@ print(f'  OCR text: {text[:80]}')
 
 smoke_transcription() {
   local input="/fixtures/content/speech-10s.wav"
+  [[ -f "$input" ]] || fail "Fixture missing: $input" 3
   local result
   result="$(timeout 300 run_python "${AI_SCRIPTS}/transcribe.py" "${input}" 2>/dev/null)"
   # Check stdout JSON has success=true and non-empty segments
-  run_python -c "
+  echo "${result}" | run_python -c "
 import json, sys
-data = json.loads('''${result}''')
+data = json.load(sys.stdin)
 if not data.get('success'):
     print('Transcription did not return success=true', file=sys.stderr)
     sys.exit(1)
