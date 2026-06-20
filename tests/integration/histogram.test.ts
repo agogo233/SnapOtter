@@ -1,5 +1,5 @@
 /**
- * Integration tests for the histogram tool (/api/v1/tools/histogram).
+ * Integration tests for the histogram tool (/api/v1/tools/image/histogram).
  *
  * Covers PNG output, bins + stats payload, backward-compat mean/max fields,
  * and channel accuracy with a pure-red fixture.

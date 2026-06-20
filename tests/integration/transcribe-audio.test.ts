@@ -1,5 +1,5 @@
 /**
- * Integration tests for the transcribe-audio tool (/api/v1/tools/transcribe-audio).
+ * Integration tests for the transcribe-audio tool (/api/v1/tools/audio/transcribe-audio).
  *
  * The transcription bundle (faster-whisper) is not installed locally, so the
  * 501 gate is always hit. Validation paths (bad settings) are tested after

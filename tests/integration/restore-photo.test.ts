@@ -1,5 +1,5 @@
 /**
- * Integration tests for the restore-photo tool (/api/v1/tools/restore-photo).
+ * Integration tests for the restore-photo tool (/api/v1/tools/image/restore-photo).
  *
  * This tool requires the Python sidecar (LaMa / Real-ESRGAN / face enhancement).
  * Tests accept both 200 (sidecar running) and 501 (not installed) for the

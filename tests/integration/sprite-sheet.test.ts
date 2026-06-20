@@ -1,5 +1,5 @@
 /**
- * Integration tests for the sprite-sheet tool (/api/v1/tools/sprite-sheet).
+ * Integration tests for the sprite-sheet tool (/api/v1/tools/image/sprite-sheet).
  *
  * Covers grid layout, dimension math, frames payload, and minimum input guard.
  */

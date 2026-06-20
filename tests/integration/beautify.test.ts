@@ -1,5 +1,5 @@
 /**
- * Integration tests for the beautify tool (/api/v1/tools/beautify).
+ * Integration tests for the beautify tool (/api/v1/tools/image/beautify).
  *
  * Beautify adds polished backgrounds, shadows, device frames, watermarks,
  * and social media sizing to screenshots. Tests exercise all background types,

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the smart-crop tool (/api/v1/tools/smart-crop).
+ * Integration tests for the smart-crop tool (/api/v1/tools/image/smart-crop).
  *
  * Smart crop has three modes:
  *   - subject (Sharp attention/entropy strategy)

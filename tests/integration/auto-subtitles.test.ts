@@ -1,5 +1,5 @@
 /**
- * Integration tests for the auto-subtitles tool (/api/v1/tools/auto-subtitles).
+ * Integration tests for the auto-subtitles tool (/api/v1/tools/video/auto-subtitles).
  *
  * The transcription bundle (faster-whisper) is not installed locally, so the
  * 501 gate is always hit. Validation paths (bad settings) fire after the 501

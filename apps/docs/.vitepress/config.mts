@@ -66,8 +66,8 @@ export default defineConfig({
 
 - Base URL: \`http://localhost:1349\`
 - Auth: Session token via \`POST /api/auth/login\` or API key (\`Authorization: Bearer si_...\`)
-- Tools: \`POST /api/v1/tools/{toolId}\` (multipart: file + settings JSON)
-- Batch: \`POST /api/v1/tools/{toolId}/batch\` (multiple files, returns ZIP)
+- Tools: \`POST /api/v1/tools/{section}/{toolId}\` (multipart: file + settings JSON)
+- Batch: \`POST /api/v1/tools/{section}/{toolId}/batch\` (multiple files, returns ZIP)
 - Pipelines: \`POST /api/v1/pipeline/execute\` (chain tools sequentially)
 - Interactive API docs on running instance: \`/api/docs\`
 - OpenAPI spec on running instance: \`/api/v1/openapi.yaml\`

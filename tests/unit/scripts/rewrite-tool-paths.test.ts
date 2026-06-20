@@ -73,6 +73,15 @@ describe("rewriteToolPaths", () => {
     );
   });
 
+  it("treats ) and , as segment boundaries (prose/comments)", () => {
+    expect(rewriteToolPaths("see (/api/v1/tools/crop) for details", MAP)).toBe(
+      "see (/api/v1/tools/image/crop) for details",
+    );
+    expect(rewriteToolPaths("endpoints /api/v1/tools/crop, /api/v1/tools/resize", MAP)).toBe(
+      "endpoints /api/v1/tools/image/crop, /api/v1/tools/image/resize",
+    );
+  });
+
   it("throws if an id is also a section slug (idempotency invariant)", () => {
     expect(() => rewriteToolPaths("x", { image: "image" })).toThrow(/idempotency/);
   });

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the blur-faces AI tool (/api/v1/tools/blur-faces).
+ * Integration tests for the blur-faces AI tool (/api/v1/tools/image/blur-faces).
  *
  * The Python sidecar may not be running, so processing tests accept both
  * 200 (sidecar available) and 501 (feature not installed). Validation paths

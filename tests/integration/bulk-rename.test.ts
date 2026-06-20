@@ -1,5 +1,5 @@
 /**
- * Integration tests for the bulk-rename tool (/api/v1/tools/bulk-rename).
+ * Integration tests for the bulk-rename tool (/api/v1/tools/image/bulk-rename).
  *
  * Covers pattern-based renaming with {{index}}, {{padded}}, {{original}}
  * placeholders, custom start index, ZIP response format, and input validation.

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the border tool (/api/v1/tools/border).
+ * Integration tests for the border tool (/api/v1/tools/image/border).
  *
  * Covers solid-color borders, padding, corner radius, shadow, dimension
  * verification, and input validation.

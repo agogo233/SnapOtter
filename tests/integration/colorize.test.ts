@@ -1,5 +1,5 @@
 /**
- * Integration tests for the colorize AI tool (/api/v1/tools/colorize).
+ * Integration tests for the colorize AI tool (/api/v1/tools/image/colorize).
  *
  * The Python sidecar may not be running, so processing tests accept both
  * 200 (sidecar available) and 501 (feature not installed). Validation paths

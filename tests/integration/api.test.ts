@@ -2896,7 +2896,7 @@ describe("OCR API", () => {
 // BATCH PROCESSING
 // ═══════════════════════════════════════════════════════════════════════════
 describe("Batch processing", () => {
-  describe("POST /api/v1/tools/:toolId/batch", () => {
+  describe("POST /api/v1/tools/:section/:toolId/batch", () => {
     it("processes multiple images in a batch and returns ZIP", async () => {
       const { body: payload, contentType } = createMultipartPayload([
         { name: "file", filename: "a.png", contentType: "image/png", content: PNG_1x1 },

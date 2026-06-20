@@ -1,5 +1,5 @@
 /**
- * Integration tests for the circle-crop tool (/api/v1/tools/circle-crop).
+ * Integration tests for the circle-crop tool (/api/v1/tools/image/circle-crop).
  *
  * Covers circular masking, PNG output, corner alpha transparency,
  * and center pixel opacity.

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the stitch tool (/api/v1/tools/stitch).
+ * Integration tests for the stitch tool (/api/v1/tools/image/stitch).
  *
  * Stitch joins multiple images horizontally, vertically, or in a grid.
  * It requires at least 2 images and accepts them via any file field name

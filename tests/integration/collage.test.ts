@@ -1,5 +1,5 @@
 /**
- * Integration tests for the collage tool (/api/v1/tools/collage).
+ * Integration tests for the collage tool (/api/v1/tools/image/collage).
  *
  * Collage accepts multiple images (any field name, type === "file") and
  * arranges them in a template-based grid layout. It uses a custom route

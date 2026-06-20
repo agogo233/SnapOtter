@@ -1,5 +1,5 @@
 /**
- * Integration tests for the background-replace tool (/api/v1/tools/background-replace).
+ * Integration tests for the background-replace tool (/api/v1/tools/image/background-replace).
  *
  * This tool reuses the rembg bundle (background-removal). The 501 gate fires
  * before any settings validation when the bundle is absent. Locally and in CI,

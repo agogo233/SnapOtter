@@ -1,5 +1,5 @@
 /**
- * Integration tests for the erase-object AI tool (/api/v1/tools/erase-object).
+ * Integration tests for the erase-object AI tool (/api/v1/tools/image/erase-object).
  *
  * This tool requires BOTH an image and a mask file. The Python sidecar may not
  * be running, so processing tests accept both 200 (sidecar available) and

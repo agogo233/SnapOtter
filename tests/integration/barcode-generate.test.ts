@@ -1,5 +1,5 @@
 /**
- * Integration tests for the barcode-generate tool (/api/v1/tools/barcode-generate).
+ * Integration tests for the barcode-generate tool (/api/v1/tools/image/barcode-generate).
  *
  * Custom JSON POST route mirroring qr-generate. Generates barcode images
  * from text input using bwip-js. Tests cover code128, ean13 validation,

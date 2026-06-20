@@ -1,5 +1,5 @@
 /**
- * Integration tests for the remove-background tool (/api/v1/tools/remove-background).
+ * Integration tests for the remove-background tool (/api/v1/tools/image/remove-background).
  *
  * This tool requires the Python sidecar (rembg). Tests accept both 200
  * (sidecar running) and 501 (not installed) for the processing path while

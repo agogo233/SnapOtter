@@ -1,5 +1,5 @@
 /**
- * Integration tests for the compare tool (/api/v1/tools/compare).
+ * Integration tests for the compare tool (/api/v1/tools/image/compare).
  *
  * Covers identical-image comparison, different-image comparison,
  * similarity score, diff image generation, and input validation.

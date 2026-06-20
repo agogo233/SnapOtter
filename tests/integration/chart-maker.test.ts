@@ -1,5 +1,5 @@
 /**
- * Integration tests for the chart-maker tool (/api/v1/tools/chart-maker).
+ * Integration tests for the chart-maker tool (/api/v1/tools/files/chart-maker).
  *
  * Factory FILE tool that consumes CSV/JSON and renders hand-rolled SVG
  * rasterized to PNG via sharp. Tests cover bar/line/pie kinds, CSV and JSON

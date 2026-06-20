@@ -1,5 +1,5 @@
 /**
- * Integration tests for the compose tool (/api/v1/tools/compose).
+ * Integration tests for the compose tool (/api/v1/tools/image/compose).
  *
  * Compose overlays one image on top of another with position, opacity,
  * and blend mode controls. It uses field names "file" for the base image

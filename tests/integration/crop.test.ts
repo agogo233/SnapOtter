@@ -1,5 +1,5 @@
 /**
- * Integration tests for the crop tool (/api/v1/tools/crop).
+ * Integration tests for the crop tool (/api/v1/tools/image/crop).
  *
  * This is a Sharp-based tool (no AI sidecar). All processing tests should
  * return 200. Output dimensions are verified by downloading the result and

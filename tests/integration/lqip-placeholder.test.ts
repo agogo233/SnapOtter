@@ -1,5 +1,5 @@
 /**
- * Integration tests for the lqip-placeholder tool (/api/v1/tools/lqip-placeholder).
+ * Integration tests for the lqip-placeholder tool (/api/v1/tools/image/lqip-placeholder).
  *
  * Covers LQIP generation, data URI prefix, strategy variants, output size, and schema validation.
  */

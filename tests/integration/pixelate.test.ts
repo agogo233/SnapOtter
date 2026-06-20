@@ -1,5 +1,5 @@
 /**
- * Integration tests for the pixelate tool (/api/v1/tools/pixelate).
+ * Integration tests for the pixelate tool (/api/v1/tools/image/pixelate).
  *
  * Covers full-image pixelation, region pixelation, dimension preservation,
  * region bounds validation, region clamping, and schema validation.

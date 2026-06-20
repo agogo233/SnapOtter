@@ -1,5 +1,5 @@
 /**
- * Integration tests for the barcode-read tool (/api/v1/tools/barcode-read).
+ * Integration tests for the barcode-read tool (/api/v1/tools/image/barcode-read).
  *
  * Covers barcode/QR code detection from images, annotated image generation,
  * graceful handling of images without barcodes, and input validation.

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the blur-background tool (/api/v1/tools/blur-background).
+ * Integration tests for the blur-background tool (/api/v1/tools/image/blur-background).
  *
  * This tool reuses the rembg bundle (background-removal). The 501 gate fires
  * before any settings validation when the bundle is absent. Locally and in CI,

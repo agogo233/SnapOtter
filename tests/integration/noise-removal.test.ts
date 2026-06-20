@@ -1,5 +1,5 @@
 /**
- * Integration tests for the noise-removal AI tool (/api/v1/tools/noise-removal).
+ * Integration tests for the noise-removal AI tool (/api/v1/tools/image/noise-removal).
  *
  * The Python sidecar may not be running, so processing tests accept both
  * 200 (sidecar available) and 501 (feature not installed). Validation paths

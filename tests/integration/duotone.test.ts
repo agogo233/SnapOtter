@@ -1,5 +1,5 @@
 /**
- * Integration tests for the duotone tool (/api/v1/tools/duotone).
+ * Integration tests for the duotone tool (/api/v1/tools/image/duotone).
  *
  * Covers duotone color mapping, black-to-shadow and white-to-highlight
  * pixel assertions with tolerance, intensity blending, and schema validation.

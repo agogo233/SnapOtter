@@ -1,5 +1,5 @@
 /**
- * Integration tests for the ai-canvas-expand AI tool (/api/v1/tools/ai-canvas-expand).
+ * Integration tests for the ai-canvas-expand AI tool (/api/v1/tools/image/ai-canvas-expand).
  *
  * This tool uses async processing: valid requests return 202 with a jobId,
  * and the result is delivered via SSE. The Python sidecar is not available

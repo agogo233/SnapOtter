@@ -1,5 +1,5 @@
 /**
- * Integration tests for the qr-generate tool (/api/v1/tools/qr-generate).
+ * Integration tests for the qr-generate tool (/api/v1/tools/image/qr-generate).
  *
  * Covers QR code generation from text/URL input, custom size and colors,
  * error correction levels, download verification, and input validation.

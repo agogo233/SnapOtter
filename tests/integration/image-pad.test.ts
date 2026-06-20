@@ -1,5 +1,5 @@
 /**
- * Integration tests for the image-pad tool (/api/v1/tools/image-pad).
+ * Integration tests for the image-pad tool (/api/v1/tools/image/image-pad).
  *
  * Covers aspect-ratio padding, color/transparent/blur backgrounds,
  * custom ratios, dimension math, and schema validation.

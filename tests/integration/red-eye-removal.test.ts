@@ -1,5 +1,5 @@
 /**
- * Integration tests for the red-eye-removal tool (/api/v1/tools/red-eye-removal).
+ * Integration tests for the red-eye-removal tool (/api/v1/tools/image/red-eye-removal).
  *
  * This tool requires the Python sidecar (MediaPipe face-detection bundle).
  * Tests accept both 200 (sidecar running) and 501 (not installed) for the

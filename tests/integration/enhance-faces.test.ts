@@ -1,5 +1,5 @@
 /**
- * Integration tests for the enhance-faces AI tool (/api/v1/tools/enhance-faces).
+ * Integration tests for the enhance-faces AI tool (/api/v1/tools/image/enhance-faces).
  *
  * The Python sidecar may not be running, so processing tests accept both
  * 200 (sidecar available) and 501 (feature not installed). Validation paths

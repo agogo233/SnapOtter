@@ -1,5 +1,5 @@
 /**
- * Integration tests for the find-duplicates tool (/api/v1/tools/find-duplicates).
+ * Integration tests for the find-duplicates tool (/api/v1/tools/image/find-duplicates).
  *
  * Covers duplicate detection with identical images, detection of unique images,
  * threshold tuning, response structure, and input validation.

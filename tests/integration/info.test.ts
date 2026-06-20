@@ -1,5 +1,5 @@
 /**
- * Integration tests for the info tool (/api/v1/tools/info).
+ * Integration tests for the info tool (/api/v1/tools/image/info).
  *
  * Covers image metadata extraction: dimensions, format, color space,
  * histogram, EXIF presence, and input validation.

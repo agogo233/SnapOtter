@@ -5,7 +5,7 @@ export type IdToSection = Record<string, string>;
 // next char is "-"). ":" lets YAML path keys match (".../resize:"); the backtick
 // lets backtick string literals match. ":toolId"/"{toolId}" placeholders never
 // appear as real ids in the map, so parametric routes are left untouched.
-const BOUNDARY = "(?=$|[/\"'`\\s?#:])";
+const BOUNDARY = "(?=$|[/\"'`\\s?#:,)])";
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

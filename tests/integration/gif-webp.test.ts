@@ -1,5 +1,5 @@
 /**
- * Integration tests for the gif-webp tool (/api/v1/tools/gif-webp).
+ * Integration tests for the gif-webp tool (/api/v1/tools/image/gif-webp).
  *
  * Covers GIF-to-WebP, WebP-to-GIF conversions with animation preservation,
  * and extension validation.

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the meme-generator tool (/api/v1/tools/meme-generator).
+ * Integration tests for the meme-generator tool (/api/v1/tools/image/meme-generator).
  *
  * Supports two input modes:
  * 1. Template mode: JSON body with templateId (no file upload)

@@ -1,5 +1,5 @@
 /**
- * Integration tests for the upscale tool (/api/v1/tools/upscale).
+ * Integration tests for the upscale tool (/api/v1/tools/image/upscale).
  *
  * This tool uses async processing: valid requests return 202 with a jobId,
  * and the result is delivered via SSE. Tests accept both 202 (processing

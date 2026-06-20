@@ -1,5 +1,5 @@
 /**
- * Integration tests for the vignette tool (/api/v1/tools/vignette).
+ * Integration tests for the vignette tool (/api/v1/tools/image/vignette).
  *
  * Covers vignette application, corner-darker-than-source assertion,
  * dimension preservation, and schema validation.
