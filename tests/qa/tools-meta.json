@@ -858,7 +858,9 @@
     "id": "ocr-pdf",
     "name": "PDF OCR",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "long",
     "isAI": true
   },
@@ -2620,7 +2622,10 @@
     "id": "gif-webp",
     "name": "GIF/WebP Converter",
     "modality": "image",
-    "acceptedInputs": [".gif", ".webp"],
+    "acceptedInputs": [
+      ".gif",
+      ".webp"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -2763,7 +2768,10 @@
     "id": "svg-to-raster",
     "name": "SVG to Raster",
     "modality": "image",
-    "acceptedInputs": [".svg", ".svgz"],
+    "acceptedInputs": [
+      ".svg",
+      ".svgz"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -2861,7 +2869,9 @@
     "id": "pdf-to-image",
     "name": "PDF to Image",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3277,7 +3287,9 @@
     "id": "gif-to-video",
     "name": "GIF to Video",
     "modality": "video",
-    "acceptedInputs": [".gif"],
+    "acceptedInputs": [
+      ".gif"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3883,7 +3895,9 @@
     "id": "merge-pdf",
     "name": "Merge PDFs",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3891,7 +3905,9 @@
     "id": "split-pdf",
     "name": "Split PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3899,7 +3915,9 @@
     "id": "compress-pdf",
     "name": "Compress PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3907,7 +3925,9 @@
     "id": "rotate-pdf",
     "name": "Rotate PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3915,7 +3935,13 @@
     "id": "convert-document",
     "name": "Convert Document",
     "modality": "document",
-    "acceptedInputs": [".docx", ".doc", ".odt", ".rtf", ".txt"],
+    "acceptedInputs": [
+      ".docx",
+      ".doc",
+      ".odt",
+      ".rtf",
+      ".txt"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -3923,7 +3949,11 @@
     "id": "convert-presentation",
     "name": "Convert Presentation",
     "modality": "document",
-    "acceptedInputs": [".pptx", ".ppt", ".odp"],
+    "acceptedInputs": [
+      ".pptx",
+      ".ppt",
+      ".odp"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -3931,7 +3961,12 @@
     "id": "convert-spreadsheet",
     "name": "Convert Spreadsheet",
     "modality": "document",
-    "acceptedInputs": [".xlsx", ".xls", ".ods", ".csv"],
+    "acceptedInputs": [
+      ".xlsx",
+      ".xls",
+      ".ods",
+      ".csv"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -3939,7 +3974,12 @@
     "id": "excel-to-pdf",
     "name": "Excel to PDF",
     "modality": "document",
-    "acceptedInputs": [".xlsx", ".xls", ".ods", ".csv"],
+    "acceptedInputs": [
+      ".xlsx",
+      ".xls",
+      ".ods",
+      ".csv"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -3947,7 +3987,13 @@
     "id": "word-to-pdf",
     "name": "Word to PDF",
     "modality": "document",
-    "acceptedInputs": [".docx", ".doc", ".odt", ".rtf", ".txt"],
+    "acceptedInputs": [
+      ".docx",
+      ".doc",
+      ".odt",
+      ".rtf",
+      ".txt"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -3955,7 +4001,9 @@
     "id": "extract-pages",
     "name": "Extract Pages",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3963,7 +4011,9 @@
     "id": "remove-pages",
     "name": "Remove Pages",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3971,7 +4021,9 @@
     "id": "organize-pdf",
     "name": "Organize PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3979,7 +4031,9 @@
     "id": "protect-pdf",
     "name": "Protect PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3987,7 +4041,9 @@
     "id": "unlock-pdf",
     "name": "Unlock PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -3995,7 +4051,9 @@
     "id": "repair-pdf",
     "name": "Repair PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4003,7 +4061,9 @@
     "id": "linearize-pdf",
     "name": "Web-Optimize PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4011,7 +4071,9 @@
     "id": "grayscale-pdf",
     "name": "Grayscale PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4019,7 +4081,9 @@
     "id": "pdfa-convert",
     "name": "PDF/A Convert",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4027,7 +4091,9 @@
     "id": "crop-pdf",
     "name": "Crop PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4035,7 +4101,9 @@
     "id": "nup-pdf",
     "name": "N-up PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4043,7 +4111,9 @@
     "id": "booklet-pdf",
     "name": "Booklet PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4051,7 +4121,9 @@
     "id": "watermark-pdf",
     "name": "Watermark PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4059,7 +4131,9 @@
     "id": "pdf-page-numbers",
     "name": "PDF Page Numbers",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4067,7 +4141,9 @@
     "id": "flatten-pdf",
     "name": "Flatten PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4075,7 +4151,9 @@
     "id": "redact-pdf",
     "name": "Redact PDF",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4083,7 +4161,9 @@
     "id": "pdf-to-text",
     "name": "PDF to Text",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4091,7 +4171,9 @@
     "id": "pdf-to-word",
     "name": "PDF to Word",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4099,7 +4181,9 @@
     "id": "pdf-metadata",
     "name": "PDF Metadata",
     "modality": "document",
-    "acceptedInputs": [".pdf"],
+    "acceptedInputs": [
+      ".pdf"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4107,7 +4191,11 @@
     "id": "powerpoint-to-pdf",
     "name": "PowerPoint to PDF",
     "modality": "document",
-    "acceptedInputs": [".pptx", ".ppt", ".odp"],
+    "acceptedInputs": [
+      ".pptx",
+      ".ppt",
+      ".odp"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4115,7 +4203,10 @@
     "id": "html-to-pdf",
     "name": "HTML to PDF",
     "modality": "document",
-    "acceptedInputs": [".html", ".htm"],
+    "acceptedInputs": [
+      ".html",
+      ".htm"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4123,7 +4214,10 @@
     "id": "markdown-to-docx",
     "name": "Markdown to Word",
     "modality": "document",
-    "acceptedInputs": [".md", ".markdown"],
+    "acceptedInputs": [
+      ".md",
+      ".markdown"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4131,7 +4225,10 @@
     "id": "markdown-to-html",
     "name": "Markdown to HTML",
     "modality": "document",
-    "acceptedInputs": [".md", ".markdown"],
+    "acceptedInputs": [
+      ".md",
+      ".markdown"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4139,7 +4236,10 @@
     "id": "markdown-to-pdf",
     "name": "Markdown to PDF",
     "modality": "document",
-    "acceptedInputs": [".md", ".markdown"],
+    "acceptedInputs": [
+      ".md",
+      ".markdown"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4147,7 +4247,9 @@
     "id": "epub-convert",
     "name": "Convert EPUB",
     "modality": "document",
-    "acceptedInputs": [".epub"],
+    "acceptedInputs": [
+      ".epub"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4155,7 +4257,12 @@
     "id": "to-epub",
     "name": "Convert to EPUB",
     "modality": "document",
-    "acceptedInputs": [".docx", ".md", ".html", ".txt"],
+    "acceptedInputs": [
+      ".docx",
+      ".md",
+      ".html",
+      ".txt"
+    ],
     "executionHint": "long",
     "isAI": false
   },
@@ -4163,7 +4270,10 @@
     "id": "chart-maker",
     "name": "Chart Maker",
     "modality": "file",
-    "acceptedInputs": [".csv", ".json"],
+    "acceptedInputs": [
+      ".csv",
+      ".json"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4171,7 +4281,11 @@
     "id": "csv-excel",
     "name": "CSV to Excel",
     "modality": "file",
-    "acceptedInputs": [".csv", ".tsv", ".xlsx"],
+    "acceptedInputs": [
+      ".csv",
+      ".tsv",
+      ".xlsx"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4179,7 +4293,11 @@
     "id": "csv-json",
     "name": "CSV to JSON",
     "modality": "file",
-    "acceptedInputs": [".csv", ".tsv", ".json"],
+    "acceptedInputs": [
+      ".csv",
+      ".tsv",
+      ".json"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4187,7 +4305,10 @@
     "id": "json-xml",
     "name": "JSON to XML",
     "modality": "file",
-    "acceptedInputs": [".json", ".xml"],
+    "acceptedInputs": [
+      ".json",
+      ".xml"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4195,7 +4316,10 @@
     "id": "split-csv",
     "name": "Split CSV",
     "modality": "file",
-    "acceptedInputs": [".csv", ".tsv"],
+    "acceptedInputs": [
+      ".csv",
+      ".tsv"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4203,7 +4327,10 @@
     "id": "merge-csvs",
     "name": "Merge CSVs",
     "modality": "file",
-    "acceptedInputs": [".csv", ".tsv"],
+    "acceptedInputs": [
+      ".csv",
+      ".tsv"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4211,7 +4338,11 @@
     "id": "yaml-json",
     "name": "YAML / JSON",
     "modality": "file",
-    "acceptedInputs": [".yaml", ".yml", ".json"],
+    "acceptedInputs": [
+      ".yaml",
+      ".yml",
+      ".json"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4219,7 +4350,9 @@
     "id": "xml-to-csv",
     "name": "XML to CSV",
     "modality": "file",
-    "acceptedInputs": [".xml"],
+    "acceptedInputs": [
+      ".xml"
+    ],
     "executionHint": "fast",
     "isAI": false
   },
@@ -4235,7 +4368,9 @@
     "id": "extract-zip",
     "name": "Extract ZIP",
     "modality": "file",
-    "acceptedInputs": [".zip"],
+    "acceptedInputs": [
+      ".zip"
+    ],
     "executionHint": "fast",
     "isAI": false
   }

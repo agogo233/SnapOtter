@@ -238,7 +238,9 @@ app.setErrorHandler((error: Error & { statusCode?: number }, request, reply) => 
 await app.register(cors, {
   origin: env.CORS_ORIGIN
     ? env.CORS_ORIGIN.split(",").map((s) => s.trim())
-    : process.env.NODE_ENV !== "production",
+    : process.env.NODE_ENV === "production"
+      ? false
+      : [/^http:\/\/localhost:\d+$/],
 });
 
 // Security headers -- applied in all environments. HSTS is ignored over plain
@@ -286,6 +288,7 @@ await app.register(rateLimit, {
 // Block TRACE method (returns 401 instead of 405 without this)
 app.addHook("onRequest", async (request, reply) => {
   if (request.method === "TRACE") {
+    reply.header("Allow", "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD");
     return reply.status(405).send({ error: "Method not allowed" });
   }
 });

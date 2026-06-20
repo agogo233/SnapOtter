@@ -387,6 +387,17 @@ export async function registerPipelineRoutes(app: FastifyInstance): Promise<void
         });
       }
 
+      if (env.MAX_PIPELINE_STEP_PIXELS > 0) {
+        const s = settingsResult.data as Record<string, unknown>;
+        const w = Number(s.width) || 0;
+        const h = Number(s.height) || 0;
+        if (w > 0 && h > 0 && w * h > env.MAX_PIPELINE_STEP_PIXELS) {
+          return reply.status(400).send({
+            error: `Step ${i + 1} (${step.toolId}): Output dimensions ${w}x${h} exceed per-step pixel limit`,
+          });
+        }
+      }
+
       parsedSteps.push({
         toolId: step.toolId,
         resolvedToolId,
@@ -785,6 +796,17 @@ export async function registerPipelineRoutes(app: FastifyInstance): Promise<void
             }),
           ),
         });
+      }
+
+      if (env.MAX_PIPELINE_STEP_PIXELS > 0) {
+        const s = settingsResult.data as Record<string, unknown>;
+        const w = Number(s.width) || 0;
+        const h = Number(s.height) || 0;
+        if (w > 0 && h > 0 && w * h > env.MAX_PIPELINE_STEP_PIXELS) {
+          return reply.status(400).send({
+            error: `Step ${i + 1} (${step.toolId}): Output dimensions ${w}x${h} exceed per-step pixel limit`,
+          });
+        }
       }
 
       parsedSteps.push({

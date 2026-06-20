@@ -28,6 +28,10 @@ const SENSITIVE_KEYS = new Set([
   "siem_webhook_auth",
 ]);
 
+const REDACTED_KEYS = new Set(["cookie_secret", "oidc_client_secret", "siem_webhook_auth"]);
+
+const READONLY_KEYS = new Set(["cookie_secret", "instance_id"]);
+
 async function encryptIfSensitive(key: string, value: string): Promise<string> {
   if (!env.DATA_ENCRYPTION_KEY || !SENSITIVE_KEYS.has(key)) return value;
   return encrypt(value, env.DATA_ENCRYPTION_KEY);
@@ -57,6 +61,10 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
     const settings: Record<string, string> = {};
     for (const row of rows) {
       if (!isAdmin && SENSITIVE_KEYS.has(row.key)) continue;
+      if (REDACTED_KEYS.has(row.key)) {
+        settings[row.key] = "********";
+        continue;
+      }
       settings[row.key] = await decryptIfNeeded(row.value);
     }
 
@@ -89,6 +97,13 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
         return reply.status(400).send({
           error: "Settings keys and values must not contain HTML tags",
           code: "VALIDATION_ERROR",
+        });
+      }
+
+      if (READONLY_KEYS.has(key)) {
+        return reply.status(400).send({
+          error: `Setting "${key}" cannot be modified via the API`,
+          code: "READONLY_SETTING",
         });
       }
 
@@ -152,7 +167,7 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
 
       return reply.send({
         key: row.key,
-        value: await decryptIfNeeded(row.value),
+        value: REDACTED_KEYS.has(row.key) ? "********" : await decryptIfNeeded(row.value),
         updatedAt: row.updatedAt.toISOString(),
       });
     },

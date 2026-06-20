@@ -50,6 +50,10 @@ function isPrivateIPv6(ip: string): boolean {
   return false;
 }
 
+export function isPrivateIp(ip: string): boolean {
+  return isPrivateIPv4(ip) || isPrivateIPv6(ip);
+}
+
 /**
  * Resolve a hostname and validate all returned IPs are public.
  * Returns the first valid resolved IP so callers can pin it for the actual
@@ -58,7 +62,7 @@ function isPrivateIPv6(ip: string): boolean {
 async function resolveAndCheck(hostname: string): Promise<string> {
   const bare = hostname.replace(/^\[|]$/g, "");
   if (isIP(bare)) {
-    if (isPrivateIPv4(bare) || isPrivateIPv6(bare)) {
+    if (isPrivateIp(bare)) {
       throw new Error("URL resolves to a private or reserved IP address");
     }
     return bare;
@@ -67,8 +71,7 @@ async function resolveAndCheck(hostname: string): Promise<string> {
   const result = await lookup(hostname, { all: true });
   const addresses = Array.isArray(result) ? result : [result];
   for (const entry of addresses) {
-    const addr = entry.address;
-    if (isPrivateIPv4(addr) || isPrivateIPv6(addr)) {
+    if (isPrivateIp(entry.address)) {
       throw new Error("URL resolves to a private or reserved IP address");
     }
   }

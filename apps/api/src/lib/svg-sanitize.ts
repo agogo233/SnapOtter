@@ -15,6 +15,8 @@ function decodeNumericEntities(input: string): string {
  * Sanitize an SVG buffer to prevent XXE, SSRF, and script injection.
  * Throws if the SVG exceeds the maximum allowed size.
  */
+const MAX_SVG_ELEMENTS = 5_000;
+
 export function sanitizeSvg(buffer: Buffer): Buffer {
   const maxSvgSize = env.MAX_SVG_SIZE_MB > 0 ? env.MAX_SVG_SIZE_MB * 1024 * 1024 : Infinity;
   if (buffer.length > maxSvgSize) {
@@ -25,6 +27,11 @@ export function sanitizeSvg(buffer: Buffer): Buffer {
   // ── Pre-processing: strip CDATA sections and decode numeric entities ──
   // CDATA sections can hide script content from regex-based checks.
   svg = svg.replace(/<!\[CDATA\[[\s\S]*?\]\]>/gi, "");
+
+  const elementCount = (svg.match(/<[a-zA-Z][^>]*\/?>/g) || []).length;
+  if (elementCount > MAX_SVG_ELEMENTS) {
+    throw new Error(`SVG exceeds maximum element count of ${MAX_SVG_ELEMENTS}`);
+  }
   // Decode numeric entities so obfuscated URIs (e.g. &#106;avascript:) are visible.
   svg = decodeNumericEntities(svg);
 

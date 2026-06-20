@@ -413,6 +413,19 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         // MFA plugin not loaded
       }
 
+      const cookieReply = reply as FastifyReply & {
+        setCookie?: (name: string, value: string, opts: Record<string, unknown>) => FastifyReply;
+      };
+      if (typeof cookieReply.setCookie === "function") {
+        cookieReply.setCookie("snapotter-session", token, {
+          path: "/",
+          httpOnly: true,
+          sameSite: "strict",
+          secure: env.EXTERNAL_URL.startsWith("https"),
+          maxAge: SESSION_DURATION_MS / 1000,
+        });
+      }
+
       return reply.send({
         token,
         user: {

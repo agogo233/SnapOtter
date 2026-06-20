@@ -46,6 +46,7 @@ const envSchema = z
     MAX_WORKER_THREADS: z.coerce.number().default(0),
     PROCESSING_TIMEOUT_S: z.coerce.number().default(0),
     MAX_PIPELINE_STEPS: z.coerce.number().default(20),
+    MAX_PIPELINE_STEP_PIXELS: z.coerce.number().default(67_108_864),
     MAX_CANVAS_PIXELS: z.coerce.number().default(0),
     MAX_SVG_SIZE_MB: z.coerce.number().default(50),
     MAX_SPLIT_GRID: z.coerce.number().default(100),

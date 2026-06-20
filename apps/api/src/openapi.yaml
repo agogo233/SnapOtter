@@ -5876,6 +5876,7 @@ paths:
                     type: array
                     items:
                       type: string
+                    nullable: true
                   expiresAt:
                     type: string
                     format: date-time
@@ -5923,6 +5924,7 @@ paths:
                           type: array
                           items:
                             type: string
+                          nullable: true
                         createdAt:
                           type: string
                           format: date-time
@@ -6739,19 +6741,26 @@ paths:
                           type: string
                         actorId:
                           type: string
+                          nullable: true
                         actorUsername:
                           type: string
                         action:
                           type: string
                         targetType:
                           type: string
+                          nullable: true
                         targetId:
                           type: string
+                          nullable: true
                         details:
                           type: object
                           nullable: true
                         ipAddress:
                           type: string
+                          nullable: true
+                        requestId:
+                          type: string
+                          nullable: true
                         createdAt:
                           type: string
                           format: date-time
