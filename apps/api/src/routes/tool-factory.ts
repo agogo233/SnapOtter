@@ -223,11 +223,20 @@ export function createToolRoute<T>(app: FastifyInstance, config: ToolRouteConfig
   };
   toolRegistry.set(config.toolId, resolved);
 
+  // Set up rate limiting
+  const toolRateLimit =
+    env.RATE_LIMIT_PER_MIN === 0
+      ? false
+      : {
+          max: env.RATE_LIMIT_PER_MIN || 60, // Keep fallback in case env var is not set
+          timeWindow: "1 minute",
+        };
+
   app.post(
     config.section
       ? `/api/v1/tools/${config.section}/${config.toolId}`
       : apiToolPath(config.toolId),
-    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
+    { config: { rateLimit: toolRateLimit } },
     async (request: FastifyRequest, reply: FastifyReply) => {
       // Check per-tool access before processing uploads
       const authUser = getAuthUser(request);
