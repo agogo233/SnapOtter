@@ -9,7 +9,7 @@ import { randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
 import { access, copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve, sep } from "node:path";
 import { convertDocument, sofficeAvailable } from "@snapotter/doc-engine";
 import { runFfmpeg } from "@snapotter/media-engine";
 import { eq } from "drizzle-orm";
@@ -33,8 +33,22 @@ async function ensurePreviewDir(): Promise<void> {
   previewDirReady = true;
 }
 
+/**
+ * Resolve a name inside the preview directory and verify the result cannot
+ * escape it. The id is already charset-validated at the route; this containment
+ * check is the authoritative path-traversal barrier for every preview path.
+ */
+function resolveWithinPreviewDir(name: string): string {
+  const base = resolve(previewDirPath());
+  const resolved = resolve(base, name);
+  if (resolved !== base && !resolved.startsWith(base + sep)) {
+    throw new Error("Preview path escapes the preview directory");
+  }
+  return resolved;
+}
+
 function previewPath(fileId: string, ext: string): string {
-  return join(previewDirPath(), `${fileId}${ext}`);
+  return resolveWithinPreviewDir(`${fileId}${ext}`);
 }
 
 async function fileExists(path: string): Promise<boolean> {
@@ -127,7 +141,7 @@ export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
         // Restrict to an alphanumeric extension (no path separators) -- the
         // original filename is user-controlled and feeds a filesystem path.
         const origExt = file.originalName.match(/\.[a-zA-Z0-9]+$/)?.[0] ?? "";
-        const tempInput = join(previewDirPath(), `${id}-input${origExt}`);
+        const tempInput = resolveWithinPreviewDir(`${id}-input${origExt}`);
         await copyFile(inputPath, tempInput);
 
         try {
@@ -136,7 +150,7 @@ export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
           });
 
           // convertDocument outputs next to the temp file; rename to cached path
-          const producedPath = join(previewDirPath(), `${id}-input.pdf`);
+          const producedPath = resolveWithinPreviewDir(`${id}-input.pdf`);
           await rename(producedPath, cachedPath);
         } catch (err) {
           request.log.error({ err, fileId: id }, "Document preview generation failed");
