@@ -67,6 +67,13 @@ export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
 
       const { id } = request.params;
 
+      // Confine id to a safe charset (no path separators or dots) before it is
+      // interpolated into filesystem paths below -- prevents path traversal via
+      // the URL param. File ids are generated server-side (randomUUID).
+      if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+        return reply.status(400).send({ error: "Invalid file id" });
+      }
+
       const [file] = await db.select().from(schema.userFiles).where(eq(schema.userFiles.id, id));
 
       if (
@@ -116,7 +123,9 @@ export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
 
         // Copy to a temp file with the original extension so LibreOffice
         // can detect the format correctly from the extension.
-        const origExt = file.originalName.match(/\.[^.]+$/)?.[0] ?? "";
+        // Restrict to an alphanumeric extension (no path separators) -- the
+        // original filename is user-controlled and feeds a filesystem path.
+        const origExt = file.originalName.match(/\.[a-zA-Z0-9]+$/)?.[0] ?? "";
         const tempInput = join(previewDirPath(), `${id}-input${origExt}`);
         await copyFile(inputPath, tempInput);
 
