@@ -263,6 +263,7 @@ export async function registerProgressRoutes(app: FastifyInstance): Promise<void
 
   app.get(
     "/api/v1/jobs/:jobId/progress",
+    { config: { rateLimit: { max: 300, timeWindow: "1 minute" } } },
     async (request: FastifyRequest<{ Params: { jobId: string } }>, reply: FastifyReply) => {
       const { jobId } = request.params;
 

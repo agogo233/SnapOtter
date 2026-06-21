@@ -566,6 +566,7 @@ app.get("/api/v1/readyz", async (_request, reply) => {
 // Cancel a job (authenticated)
 app.post(
   "/api/v1/jobs/:jobId/cancel",
+  { config: { rateLimit: { max: 300, timeWindow: "1 minute" } } },
   async (
     request: import("fastify").FastifyRequest<{ Params: { jobId: string } }>,
     reply: import("fastify").FastifyReply,

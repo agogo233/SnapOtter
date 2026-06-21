@@ -51,25 +51,29 @@ async function decryptIfNeeded(value: string): Promise<string> {
 
 export async function settingsRoutes(app: FastifyInstance): Promise<void> {
   // GET /api/v1/settings — Get all settings as a key-value object
-  app.get("/api/v1/settings", async (request: FastifyRequest, reply: FastifyReply) => {
-    const user = requireAuth(request, reply);
-    if (!user) return;
+  app.get(
+    "/api/v1/settings",
+    { config: { rateLimit: { max: 300, timeWindow: "1 minute" } } },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      const user = requireAuth(request, reply);
+      if (!user) return;
 
-    const isAdmin = user.role === "admin";
-    const rows = await db.select().from(schema.settings);
+      const isAdmin = user.role === "admin";
+      const rows = await db.select().from(schema.settings);
 
-    const settings: Record<string, string> = {};
-    for (const row of rows) {
-      if (!isAdmin && SENSITIVE_KEYS.has(row.key)) continue;
-      if (REDACTED_KEYS.has(row.key)) {
-        settings[row.key] = "********";
-        continue;
+      const settings: Record<string, string> = {};
+      for (const row of rows) {
+        if (!isAdmin && SENSITIVE_KEYS.has(row.key)) continue;
+        if (REDACTED_KEYS.has(row.key)) {
+          settings[row.key] = "********";
+          continue;
+        }
+        settings[row.key] = await decryptIfNeeded(row.value);
       }
-      settings[row.key] = await decryptIfNeeded(row.value);
-    }
 
-    return reply.send({ settings });
-  });
+      return reply.send({ settings });
+    },
+  );
 
   // PUT /api/v1/settings — Save settings (admin only)
   app.put("/api/v1/settings", async (request: FastifyRequest, reply: FastifyReply) => {
@@ -146,6 +150,7 @@ export async function settingsRoutes(app: FastifyInstance): Promise<void> {
   // GET /api/v1/settings/:key — Get a specific setting
   app.get(
     "/api/v1/settings/:key",
+    { config: { rateLimit: { max: 300, timeWindow: "1 minute" } } },
     async (request: FastifyRequest<{ Params: { key: string } }>, reply: FastifyReply) => {
       const user = requireAuth(request, reply);
       if (!user) return;

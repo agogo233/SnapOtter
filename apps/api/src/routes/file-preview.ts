@@ -61,6 +61,7 @@ const OFFICE_MIMES = new Set([
 export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
   app.get(
     "/api/v1/files/:id/preview",
+    { config: { rateLimit: { max: 60, timeWindow: "1 minute" } } },
     async (request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) => {
       const user = requireAuth(request, reply);
       if (!user) return;
@@ -219,141 +220,147 @@ export async function filePreviewRoutes(app: FastifyInstance): Promise<void> {
   );
 
   // ── On-demand preview for uploaded (non-stored) media files ─────
-  app.post("/api/v1/preview/generate", async (request: FastifyRequest, reply: FastifyReply) => {
-    // Optional auth -- the preview is for the user's own uploaded file
-    getAuthUser(request);
+  app.post(
+    "/api/v1/preview/generate",
+    {
+      config: { rateLimit: { max: 60, timeWindow: "1 minute" } },
+    },
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      // Optional auth -- the preview is for the user's own uploaded file
+      getAuthUser(request);
 
-    const parts = request.parts();
-    let fileBuffer: Buffer | null = null;
-    let filename = "input";
+      const parts = request.parts();
+      let fileBuffer: Buffer | null = null;
+      let filename = "input";
 
-    for await (const part of parts) {
-      if (part.type !== "file") continue;
-      const chunks: Buffer[] = [];
-      for await (const chunk of part.file) {
-        chunks.push(chunk);
-      }
-      fileBuffer = Buffer.concat(chunks);
-      filename = part.filename ?? "input";
-      break; // only process the first file
-    }
-
-    if (!fileBuffer || fileBuffer.length === 0) {
-      return reply.status(400).send({ error: "No file provided" });
-    }
-
-    const ext = filename.split(".").pop()?.toLowerCase() ?? "";
-    const videoExts = new Set([
-      "avi",
-      "mkv",
-      "wmv",
-      "flv",
-      "mov",
-      "mpg",
-      "mpeg",
-      "m4v",
-      "3gp",
-      "3g2",
-      "ts",
-      "mts",
-      "m2ts",
-      "vob",
-      "divx",
-      "asf",
-      "rm",
-      "rmvb",
-      "f4v",
-      "ogv",
-      "mp4",
-      "webm",
-      "ogg",
-    ]);
-    const audioExts = new Set([
-      "wav",
-      "flac",
-      "aac",
-      "wma",
-      "ogg",
-      "oga",
-      "opus",
-      "m4a",
-      "aiff",
-      "aif",
-      "amr",
-      "ape",
-      "ac3",
-      "dts",
-      "mp3",
-    ]);
-
-    const isVideo = videoExts.has(ext);
-    const isAudio = audioExts.has(ext);
-
-    if (!isVideo && !isAudio) {
-      return reply.status(400).send({ error: "Unsupported file type for preview" });
-    }
-
-    const id = randomUUID();
-    const inputPath = join(tmpdir(), `snapotter-preview-${id}.${ext}`);
-    const outputExt = isVideo ? "mp4" : "mp3";
-    const outputPath = join(tmpdir(), `snapotter-preview-${id}-out.${outputExt}`);
-
-    try {
-      await writeFile(inputPath, fileBuffer);
-
-      if (isVideo) {
-        await runFfmpeg([
-          "-i",
-          inputPath,
-          "-t",
-          "30",
-          "-vf",
-          "scale='min(720,iw)':-2",
-          "-c:v",
-          "libx264",
-          "-preset",
-          "ultrafast",
-          "-crf",
-          "28",
-          "-c:a",
-          "aac",
-          "-b:a",
-          "128k",
-          "-movflags",
-          "+faststart",
-          "-y",
-          outputPath,
-        ]);
-      } else {
-        await runFfmpeg([
-          "-i",
-          inputPath,
-          "-t",
-          "60",
-          "-c:a",
-          "libmp3lame",
-          "-b:a",
-          "128k",
-          "-y",
-          outputPath,
-        ]);
+      for await (const part of parts) {
+        if (part.type !== "file") continue;
+        const chunks: Buffer[] = [];
+        for await (const chunk of part.file) {
+          chunks.push(chunk);
+        }
+        fileBuffer = Buffer.concat(chunks);
+        filename = part.filename ?? "input";
+        break; // only process the first file
       }
 
-      const outputBuffer = await readFile(outputPath);
-      const contentType = isVideo ? "video/mp4" : "audio/mpeg";
+      if (!fileBuffer || fileBuffer.length === 0) {
+        return reply.status(400).send({ error: "No file provided" });
+      }
 
-      return reply
-        .header("Content-Type", contentType)
-        .header("Content-Length", outputBuffer.length)
-        .send(outputBuffer);
-    } catch (err) {
-      request.log.error({ err, filename }, "On-demand preview generation failed");
-      return reply.status(422).send({ error: "Could not generate preview" });
-    } finally {
-      await rm(inputPath, { force: true }).catch(() => {});
-      await rm(outputPath, { force: true }).catch(() => {});
-    }
-  });
+      const ext = filename.split(".").pop()?.toLowerCase() ?? "";
+      const videoExts = new Set([
+        "avi",
+        "mkv",
+        "wmv",
+        "flv",
+        "mov",
+        "mpg",
+        "mpeg",
+        "m4v",
+        "3gp",
+        "3g2",
+        "ts",
+        "mts",
+        "m2ts",
+        "vob",
+        "divx",
+        "asf",
+        "rm",
+        "rmvb",
+        "f4v",
+        "ogv",
+        "mp4",
+        "webm",
+        "ogg",
+      ]);
+      const audioExts = new Set([
+        "wav",
+        "flac",
+        "aac",
+        "wma",
+        "ogg",
+        "oga",
+        "opus",
+        "m4a",
+        "aiff",
+        "aif",
+        "amr",
+        "ape",
+        "ac3",
+        "dts",
+        "mp3",
+      ]);
+
+      const isVideo = videoExts.has(ext);
+      const isAudio = audioExts.has(ext);
+
+      if (!isVideo && !isAudio) {
+        return reply.status(400).send({ error: "Unsupported file type for preview" });
+      }
+
+      const id = randomUUID();
+      const inputPath = join(tmpdir(), `snapotter-preview-${id}.${ext}`);
+      const outputExt = isVideo ? "mp4" : "mp3";
+      const outputPath = join(tmpdir(), `snapotter-preview-${id}-out.${outputExt}`);
+
+      try {
+        await writeFile(inputPath, fileBuffer);
+
+        if (isVideo) {
+          await runFfmpeg([
+            "-i",
+            inputPath,
+            "-t",
+            "30",
+            "-vf",
+            "scale='min(720,iw)':-2",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "ultrafast",
+            "-crf",
+            "28",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "128k",
+            "-movflags",
+            "+faststart",
+            "-y",
+            outputPath,
+          ]);
+        } else {
+          await runFfmpeg([
+            "-i",
+            inputPath,
+            "-t",
+            "60",
+            "-c:a",
+            "libmp3lame",
+            "-b:a",
+            "128k",
+            "-y",
+            outputPath,
+          ]);
+        }
+
+        const outputBuffer = await readFile(outputPath);
+        const contentType = isVideo ? "video/mp4" : "audio/mpeg";
+
+        return reply
+          .header("Content-Type", contentType)
+          .header("Content-Length", outputBuffer.length)
+          .send(outputBuffer);
+      } catch (err) {
+        request.log.error({ err, filename }, "On-demand preview generation failed");
+        return reply.status(422).send({ error: "Could not generate preview" });
+      } finally {
+        await rm(inputPath, { force: true }).catch(() => {});
+        await rm(outputPath, { force: true }).catch(() => {});
+      }
+    },
+  );
 
   app.log.info("File preview routes registered");
 }
