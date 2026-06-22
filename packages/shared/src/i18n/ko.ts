@@ -3355,6 +3355,7 @@ export const ko: TranslationKeys = {
     zoomOut: "축소",
     fitToView: "화면에 맞추기",
     actualSize: "실제 크기",
+    pan: "이동",
     previousImage: "Previous image",
     nextImage: "Next image",
     imageArea: "Image area",

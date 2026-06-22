@@ -3328,6 +3328,7 @@ export const zhTW: TranslationKeys = {
     zoomOut: "縮小",
     fitToView: "符合檢視大小",
     actualSize: "實際大小",
+    pan: "平移",
     previousImage: "上一個檔案",
     nextImage: "下一個檔案",
     imageArea: "預覽區域",

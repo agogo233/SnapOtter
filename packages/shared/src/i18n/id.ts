@@ -3421,6 +3421,7 @@ export const id: TranslationKeys = {
     zoomOut: "Perkecil",
     fitToView: "Sesuaikan tampilan",
     actualSize: "Ukuran asli",
+    pan: "Geser",
     previousImage: "Previous image",
     nextImage: "Next image",
     imageArea: "Image area",

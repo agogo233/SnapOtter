@@ -3379,6 +3379,7 @@ export const th: TranslationKeys = {
     zoomOut: "ซูมออก",
     fitToView: "พอดีกับหน้าจอ",
     actualSize: "ขนาดจริง",
+    pan: "เลื่อน",
     previousImage: "ไฟล์ก่อนหน้า",
     nextImage: "ไฟล์ถัดไป",
     imageArea: "พื้นที่แสดงตัวอย่าง",

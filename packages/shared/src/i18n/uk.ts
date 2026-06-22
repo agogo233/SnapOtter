@@ -3426,6 +3426,7 @@ export const uk: TranslationKeys = {
     zoomOut: "Зменшити",
     fitToView: "Вписати у вікно",
     actualSize: "Справжній розмір",
+    pan: "Переміщення",
     previousImage: "Попередній файл",
     nextImage: "Наступний файл",
     imageArea: "Область попереднього перегляду",

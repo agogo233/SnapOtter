@@ -3435,6 +3435,7 @@ export const it: TranslationKeys = {
     zoomOut: "Riduci",
     fitToView: "Adatta alla vista",
     actualSize: "Dimensione reale",
+    pan: "Sposta",
     previousImage: "Immagine precedente",
     nextImage: "Immagine successiva",
     imageArea: "Area immagine",

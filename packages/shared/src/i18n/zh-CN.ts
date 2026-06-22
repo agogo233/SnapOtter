@@ -3328,6 +3328,7 @@ export const zhCN: TranslationKeys = {
     zoomOut: "缩小",
     fitToView: "适应视图",
     actualSize: "实际大小",
+    pan: "平移",
     previousImage: "上一个文件",
     nextImage: "下一个文件",
     imageArea: "预览区域",

@@ -3429,6 +3429,7 @@ export const nl: TranslationKeys = {
     zoomOut: "Uitzoomen",
     fitToView: "Passend in beeld",
     actualSize: "Werkelijke grootte",
+    pan: "Verschuiven",
     previousImage: "Previous image",
     nextImage: "Next image",
     imageArea: "Image area",

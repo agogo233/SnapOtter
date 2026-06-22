@@ -3429,6 +3429,7 @@ export const ptBR: TranslationKeys = {
     zoomOut: "Diminuir zoom",
     fitToView: "Ajustar à tela",
     actualSize: "Tamanho real",
+    pan: "Mover",
     previousImage: "Arquivo anterior",
     nextImage: "Próximo arquivo",
     imageArea: "Área de visualização",

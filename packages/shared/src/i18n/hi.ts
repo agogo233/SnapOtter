@@ -3393,6 +3393,7 @@ export const hi: TranslationKeys = {
     zoomOut: "ज़ूम आउट",
     fitToView: "दृश्य में फ़िट करें",
     actualSize: "वास्तविक आकार",
+    pan: "पैन करें",
     previousImage: "पिछली फ़ाइल",
     nextImage: "अगली फ़ाइल",
     imageArea: "पूर्वावलोकन क्षेत्र",

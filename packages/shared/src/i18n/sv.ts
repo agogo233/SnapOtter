@@ -3416,6 +3416,7 @@ export const sv: TranslationKeys = {
     zoomOut: "Zooma ut",
     fitToView: "Anpassa till vy",
     actualSize: "Verklig storlek",
+    pan: "Panorera",
     previousImage: "Föregående fil",
     nextImage: "Nästa fil",
     imageArea: "Förhandsvisningsområde",

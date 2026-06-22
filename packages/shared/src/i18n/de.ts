@@ -3440,6 +3440,7 @@ export const de: TranslationKeys = {
     zoomOut: "Verkleinern",
     fitToView: "Einpassen",
     actualSize: "Originalgröße",
+    pan: "Verschieben",
     previousImage: "Vorherige Datei",
     nextImage: "Nächste Datei",
     imageArea: "Vorschaubereich",

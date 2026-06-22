@@ -3424,6 +3424,7 @@ export const ru: TranslationKeys = {
     zoomOut: "Уменьшить",
     fitToView: "Вписать в окно",
     actualSize: "Реальный размер",
+    pan: "Перемещение",
     previousImage: "Предыдущий файл",
     nextImage: "Следующий файл",
     imageArea: "Область предпросмотра",
