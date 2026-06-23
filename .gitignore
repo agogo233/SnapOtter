@@ -48,6 +48,10 @@ docs/*
 !docs/COMMUNITY_GUIDE.md
 PRD.md
 
+# Docker Hub overview source + publish script (maintainer-local ops)
+DOCKERHUB.md
+scripts/update-dockerhub-overview.sh
+
 # Ad-hoc test screenshots and reports
 tests/e2e/screenshots/qa/
 test-*.png
@@ -73,3 +77,6 @@ pentest-results/
 # Stryker mutation testing
 .stryker-tmp/
 packages/image-engine/reports/
+
+# Local AI run scratch scripts
+run-ai-*.py
