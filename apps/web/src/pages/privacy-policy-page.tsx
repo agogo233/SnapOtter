@@ -47,7 +47,7 @@ export function PrivacyPolicyPage() {
             <ul className="list-disc ps-5 mt-2 space-y-1">
               <li>Your images, PDFs, videos, or any file contents</li>
               <li>File names or file paths</li>
-              <li>Personal information or IP addresses</li>
+              <li>Personal information</li>
             </ul>
             <p className="mt-2">
               Analytics is powered by{" "}

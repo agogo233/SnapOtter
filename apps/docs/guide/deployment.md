@@ -525,7 +525,7 @@ Semantic-release determines the version from commit history. The `latest` Docker
 
 ## Analytics
 
-SnapOtter uses anonymous analytics to improve reliability and prioritize features. No file contents, file names, personal information, or IP addresses are ever sent.
+SnapOtter uses anonymous analytics to improve reliability and prioritize features. No file contents, file names, or personal information are ever sent.
 
 ### What is recorded
 
