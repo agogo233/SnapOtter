@@ -122,7 +122,12 @@ function useNavItems() {
         icon: Sparkles,
         requiredPermission: "settings:write",
       },
-      { id: "tools", label: t.settings.nav.tools, icon: Wrench },
+      {
+        id: "tools",
+        label: t.settings.nav.tools,
+        icon: Wrench,
+        requiredPermission: "settings:write",
+      },
       { id: "about", label: t.settings.nav.about, icon: Info },
     ],
     [t],
@@ -521,6 +526,19 @@ function GeneralSection() {
 
 /* ────────────────────── System ────────────────────── */
 
+// PUT /v1/settings rejects server-managed read-only keys (instance_id, cookie_secret)
+// with 400 READONLY_SETTING, and GET returns redacted secrets as the literal "********"
+// (cookie_secret, oidc_client_secret, siem_webhook_auth). Echoing either back breaks the
+// save or overwrites a real secret with the mask, so strip both before any bulk save.
+const READONLY_SETTING_KEYS = new Set(["instance_id", "cookie_secret"]);
+function writableSettings(settings: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(settings).filter(
+      ([key, value]) => !READONLY_SETTING_KEYS.has(key) && value !== "********",
+    ),
+  );
+}
+
 function SystemSection() {
   const { t } = useTranslation();
   const [settings, setSettings] = useState<Record<string, string>>({});
@@ -553,17 +571,7 @@ function SystemSection() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      // GET returns read-only keys (instance_id, cookie_secret) and shows redacted
-      // secrets as the literal "********". Echoing those back fails with 400
-      // READONLY_SETTING or would overwrite a real secret with the mask, so send
-      // only the keys this section can actually change.
-      const READONLY_KEYS = new Set(["instance_id", "cookie_secret"]);
-      const writable = Object.fromEntries(
-        Object.entries(settings).filter(
-          ([key, value]) => !READONLY_KEYS.has(key) && value !== "********",
-        ),
-      );
-      await apiPut("/v1/settings", writable);
+      await apiPut("/v1/settings", writableSettings(settings));
       if (settings.analyticsEnabled === "false") {
         const { optOut } = await import("@/lib/analytics");
         optOut();
@@ -1032,7 +1040,7 @@ function AdminSecuritySettings() {
     setSaving(true);
     setSaveMsg(null);
     try {
-      await apiPut("/v1/settings", settings);
+      await apiPut("/v1/settings", writableSettings(settings));
       setSaveMsg(t.settings.security.securitySettingsSaved);
     } catch {
       setSaveMsg(t.settings.security.securitySettingsFailed);
@@ -1292,13 +1300,18 @@ function generatePassword(): string {
   const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   const lower = "abcdefghijklmnopqrstuvwxyz";
   const digits = "0123456789";
-  const all = upper + lower + digits;
+  // The server policy can require a special character (passwordRequireSpecial), so
+  // always include one alongside an upper, lower, and digit; otherwise Generate can
+  // produce a password the server rejects. These specials all satisfy its check.
+  const special = "!@#$%^&*()-_=+";
+  const all = upper + lower + digits + special;
   const required = [
     upper[secureRandom(upper.length)],
     lower[secureRandom(lower.length)],
     digits[secureRandom(digits.length)],
+    special[secureRandom(special.length)],
   ];
-  const rest = Array.from({ length: 13 }, () => all[secureRandom(all.length)]);
+  const rest = Array.from({ length: 12 }, () => all[secureRandom(all.length)]);
   const chars = [...required, ...rest];
   for (let i = chars.length - 1; i > 0; i--) {
     const j = secureRandom(i + 1);
@@ -1993,6 +2006,7 @@ function ApiKeysSection() {
   const [showScoping, setShowScoping] = useState(false);
   const [scopedPerms, setScopedPerms] = useState<string[]>([]);
   const [expiresAt, setExpiresAt] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const { permissions } = useAuth();
 
   const loadKeys = useCallback(async () => {
@@ -2013,6 +2027,7 @@ function ApiKeysSection() {
   const generateKey = useCallback(async () => {
     setGenerating(true);
     setNewKey(null);
+    setError(null);
     try {
       const payload: Record<string, unknown> = { name: keyName || "default" };
       if (showScoping && scopedPerms.length > 0) {
@@ -2029,11 +2044,11 @@ function ApiKeysSection() {
       setExpiresAt("");
       await loadKeys();
     } catch {
-      // Silently fail
+      setError(t.common.somethingWentWrong);
     } finally {
       setGenerating(false);
     }
-  }, [keyName, showScoping, scopedPerms, expiresAt, loadKeys]);
+  }, [keyName, showScoping, scopedPerms, expiresAt, loadKeys, t]);
 
   const copyKey = useCallback(async (key: string) => {
     const ok = await copyToClipboard(key);
@@ -2046,14 +2061,15 @@ function ApiKeysSection() {
   const deleteKey = useCallback(
     async (id: number) => {
       if (!confirm(t.settings.apiKeys.deleteConfirm)) return;
+      setError(null);
       try {
         await apiDelete(`/v1/api-keys/${id}`);
         await loadKeys();
       } catch {
-        // Silently fail
+        setError(t.common.somethingWentWrong);
       }
     },
-    [loadKeys],
+    [loadKeys, t],
   );
 
   if (loading) {
@@ -2095,6 +2111,12 @@ function ApiKeysSection() {
           {t.settings.apiKeys.generateButton}
         </button>
       </div>
+
+      {error && (
+        <div className="px-4 py-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-700 dark:text-red-400">
+          {error}
+        </div>
+      )}
 
       {/* Permission scoping */}
       <div className="space-y-2">
@@ -3283,6 +3305,7 @@ function ToolsSection() {
   const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState("");
   const [showRestartBanner, setShowRestartBanner] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   useEffect(() => {
     apiGet<{ settings: Record<string, string> }>("/v1/settings")
@@ -3322,11 +3345,12 @@ function ToolsSection() {
 
   const handleSave = useCallback(async () => {
     setSaving(true);
+    setSaveFailed(false);
     try {
       await apiPut("/v1/settings", { disabledTools: JSON.stringify(disabledTools) });
       setShowRestartBanner(true);
     } catch {
-      /* handle error */
+      setSaveFailed(true);
     } finally {
       setSaving(false);
     }
@@ -3421,6 +3445,12 @@ function ToolsSection() {
       {loadFailed && (
         <div className="px-4 py-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-700 dark:text-red-400">
           {t.settings.tools.loadFailedError}
+        </div>
+      )}
+
+      {saveFailed && (
+        <div className="px-4 py-3 rounded-lg border border-red-500/30 bg-red-500/10 text-sm text-red-700 dark:text-red-400">
+          {t.common.somethingWentWrong}
         </div>
       )}
 
