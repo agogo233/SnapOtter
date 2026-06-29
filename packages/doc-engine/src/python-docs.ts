@@ -1,4 +1,5 @@
 import { runDocsScript } from "@snapotter/ai";
+import type { SignPlacement } from "@snapotter/shared";
 
 /** Page count via the docs-profile Python dispatcher (pikepdf). */
 export async function pdfPageCountPy(absPath: string): Promise<number> {
@@ -118,4 +119,31 @@ export async function htmlToPdfPy(
   if (parsed.error) {
     throw new Error(`doc_html_pdf failed: ${parsed.error}`);
   }
+}
+
+/** Stamp signature images onto a PDF (PyMuPDF insert_image), flattened. */
+export async function pdfSignPy(
+  inPath: string,
+  outPath: string,
+  signatures: string[],
+  placements: SignPlacement[],
+): Promise<{ placed: number }> {
+  const stdout = await runDocsScript("doc_sign", {
+    input: inPath,
+    output: outPath,
+    signatures,
+    placements,
+  });
+  const parsed = JSON.parse(stdout.trim()) as {
+    ok?: boolean;
+    placed?: number;
+    error?: string;
+  };
+  if (parsed.error) {
+    throw new Error(`doc_sign failed: ${parsed.error}`);
+  }
+  if (typeof parsed.placed !== "number") {
+    throw new Error(`doc_sign failed: ${stdout.slice(0, 200)}`);
+  }
+  return { placed: parsed.placed };
 }

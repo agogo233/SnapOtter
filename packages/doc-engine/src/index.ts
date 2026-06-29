@@ -45,6 +45,7 @@ export {
   pdfMetadataSetPy,
   pdfPageCountPy,
   pdfRedactPy,
+  pdfSignPy,
   pdfTextPy,
   pdfToWordPy,
 } from "./python-docs.js";
