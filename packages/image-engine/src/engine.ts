@@ -34,6 +34,7 @@ import type {
   Sharp,
   SharpenAdvancedOptions,
   SharpenOptions,
+  SharpFormat,
   StripMetadataOptions,
 } from "./types.js";
 import { getImageInfo } from "./utils/metadata.js";
@@ -109,7 +110,7 @@ export async function processImage(
     if (!sharpFormat) {
       throw new Error(`Unsupported output format: ${outputFormat}`);
     }
-    image = image.toFormat(sharpFormat as keyof sharp.FormatEnum);
+    image = image.toFormat(sharpFormat as SharpFormat);
   }
 
   const buffer = await image.toBuffer();

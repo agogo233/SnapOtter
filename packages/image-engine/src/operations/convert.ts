@@ -1,12 +1,11 @@
-import type sharp from "sharp";
-import type { ConvertOptions, Sharp } from "../types.js";
+import type { ConvertOptions, Sharp, SharpFormat } from "../types.js";
 
 /**
  * Maps user-facing format names to Sharp format strings.
  * Note: HEIC is excluded because Sharp cannot encode HEVC.
  * HEIC encoding is handled at the API route level via heif-enc.
  */
-const FORMAT_MAP: Record<string, string> = {
+const FORMAT_MAP: Partial<Record<ConvertOptions["format"], SharpFormat>> = {
   jpg: "jpeg",
   png: "png",
   webp: "webp",
@@ -32,5 +31,5 @@ export async function convert(image: Sharp, options: ConvertOptions): Promise<Sh
     formatOptions.quality = quality;
   }
 
-  return image.toFormat(sharpFormat as keyof sharp.FormatEnum, formatOptions);
+  return image.toFormat(sharpFormat, formatOptions);
 }

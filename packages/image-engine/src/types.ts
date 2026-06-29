@@ -1,6 +1,9 @@
-import type sharp from "sharp";
+import type { ChannelStats, FormatEnum, Metadata, Sharp as SharpInstance } from "sharp";
 
-export type Sharp = sharp.Sharp;
+export type Sharp = SharpInstance;
+export type SharpFormat = Extract<keyof FormatEnum, string> | "avif";
+export type SharpChannelStats = ChannelStats;
+export type SharpMetadata = Metadata;
 
 export interface ImageInfo {
   width: number;

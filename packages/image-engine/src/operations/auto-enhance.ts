@@ -5,6 +5,8 @@ import type {
   CorrectionParams,
   EnhancementMode,
   Sharp,
+  SharpChannelStats,
+  SharpMetadata,
 } from "../types.js";
 
 /**
@@ -123,9 +125,9 @@ export async function analyzeImage(buffer: Buffer): Promise<AnalysisResult> {
 }
 
 function computeScores(
-  rCh: sharp.ChannelStats,
-  gCh: sharp.ChannelStats,
-  bCh: sharp.ChannelStats,
+  rCh: SharpChannelStats,
+  gCh: SharpChannelStats,
+  bCh: SharpChannelStats,
   meanLum: number,
   stdevLum: number,
   isGrayscale: boolean,
@@ -200,7 +202,7 @@ function detectIssues(scores: AnalysisScores): string[] {
   return issues;
 }
 
-function suggestMode(scores: AnalysisScores, _meta: sharp.Metadata): EnhancementMode {
+function suggestMode(scores: AnalysisScores, _meta: SharpMetadata): EnhancementMode {
   if (scores.exposure < 30) return "low-light";
   if (scores.contrast > 60 && scores.saturation < 30) return "document";
   return "auto";

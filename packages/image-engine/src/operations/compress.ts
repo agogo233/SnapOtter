@@ -1,7 +1,7 @@
 import sharp from "sharp";
-import type { CompressOptions, Sharp } from "../types.js";
+import type { CompressOptions, Sharp, SharpFormat } from "../types.js";
 
-const FORMAT_MAP: Record<string, string> = {
+const FORMAT_MAP: Record<string, SharpFormat> = {
   jpg: "jpeg",
   jpeg: "jpeg",
   png: "png",
@@ -16,7 +16,7 @@ const FORMAT_MAP: Record<string, string> = {
 /** Formats that Sharp cannot encode — fall back to PNG for output. */
 const NO_ENCODER = new Set(["svg", "raw", "tga", "psd", "exr", "hdr"]);
 
-function formatOpts(format: string, quality: number): Record<string, unknown> {
+function formatOpts(format: SharpFormat, quality: number): Record<string, unknown> {
   const opts: Record<string, unknown> = { quality };
   if (format === "avif") opts.effort = 4;
   return opts;
@@ -31,7 +31,7 @@ export async function compress(image: Sharp, options: CompressOptions): Promise<
   const safeDetected = NO_ENCODER.has(detected) ? "png" : detected;
   const outputFormat = (FORMAT_MAP[format ?? ""] ??
     FORMAT_MAP[safeDetected] ??
-    safeDetected) as keyof sharp.FormatEnum;
+    safeDetected) as SharpFormat;
 
   if (targetSizeBytes !== undefined) {
     if (targetSizeBytes <= 0) {
@@ -52,7 +52,7 @@ export async function compress(image: Sharp, options: CompressOptions): Promise<
 async function findBestQuality(
   inputBuffer: Buffer,
   resize: { width: number; height: number } | null,
-  format: keyof sharp.FormatEnum,
+  format: SharpFormat,
   targetBytes: number,
 ): Promise<number | null> {
   let low = 1;
@@ -82,7 +82,7 @@ async function findBestQuality(
 
 async function compressToTargetSize(
   inputBuffer: Buffer,
-  format: keyof sharp.FormatEnum,
+  format: SharpFormat,
   targetBytes: number,
 ): Promise<Sharp> {
   const quality = await findBestQuality(inputBuffer, null, format, targetBytes);
