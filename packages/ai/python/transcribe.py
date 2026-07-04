@@ -35,12 +35,24 @@ def main():
 
         model_dir = os.path.join(MODELS_PATH, "faster-whisper-small")
 
+        # When the bundled model dir is absent, faster-whisper treats the
+        # argument as a Hugging Face repo id and downloads it; strict offline
+        # mode blocks that fallback with a clear error.
+        from offline_guard import downloads_allowed, ensure_download_allowed
+        if not os.path.isdir(model_dir):
+            ensure_download_allowed("Whisper transcription model (faster-whisper-small)")
+
         if gpu_available():
             device, compute_type = "cuda", "float16"
         else:
             device, compute_type = "cpu", "int8"
 
-        model = WhisperModel(model_dir, device=device, compute_type=compute_type)
+        model = WhisperModel(
+            model_dir,
+            device=device,
+            compute_type=compute_type,
+            local_files_only=not downloads_allowed(),
+        )
 
         emit_progress(20, "Transcribing")
 

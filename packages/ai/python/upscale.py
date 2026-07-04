@@ -172,6 +172,13 @@ def main():
                                 f"GFPGAN model not found at {GFPGAN_MODEL_PATH}. "
                                 "Install the upscale-enhance feature or disable faceEnhance."
                             )
+                        # GFPGANer resolves its facexlib helper weights
+                        # relative to the cwd and downloads them from GitHub
+                        # when missing; resolve them from the bundle first so
+                        # no download is needed (strict offline mode errors
+                        # instead).
+                        from offline_guard import prepare_gfpgan_helper_weights
+                        prepare_gfpgan_helper_weights(_MODELS_BASE)
                         face_enhancer = GFPGANer(
                             model_path=GFPGAN_MODEL_PATH,
                             upscale=scale,
