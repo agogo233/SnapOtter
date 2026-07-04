@@ -28,7 +28,6 @@ interface TopNavProps {
   onHelpClick: () => void;
   onFeedbackClick?: () => void;
   onSettingsClick: () => void;
-  feedbackEnabled?: boolean;
 }
 
 interface NavLinkItem {
@@ -59,7 +58,6 @@ export function TopNav({
   onHelpClick,
   onFeedbackClick,
   onSettingsClick,
-  feedbackEnabled = false,
 }: TopNavProps) {
   const location = useLocation();
   const isMobile = useMobile();
@@ -114,7 +112,7 @@ export function TopNav({
 
         <div className="flex-1" />
 
-        {feedbackEnabled && onFeedbackClick && (
+        {onFeedbackClick && (
           <button
             type="button"
             onClick={onFeedbackClick}
@@ -254,12 +252,12 @@ export function TopNav({
         {!isMobile && <ThemeToggle isDark={isDark} />}
         {!isMobile && <LanguageSelector isDark={isDark} />}
 
-        {feedbackEnabled && onFeedbackClick && (
+        {onFeedbackClick && (
           <button
             type="button"
             onClick={onFeedbackClick}
             className={cn(
-              "p-1.5 rounded-md transition-colors",
+              "flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-sm font-medium transition-colors",
               isDark
                 ? "text-[#aaa] hover:text-[#e0e0e0] hover:bg-[#333]"
                 : "text-muted-foreground hover:text-foreground hover:bg-muted",
@@ -267,6 +265,7 @@ export function TopNav({
             aria-label={t.feedback.navLabel}
           >
             <MessageSquare className="h-4 w-4" />
+            {t.feedback.navButtonLabel}
           </button>
         )}
 
