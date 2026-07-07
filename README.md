@@ -2,13 +2,13 @@
   <img src="branding/social-preview.png" width="800" alt="SnapOtter - A Self-Hosted File Manipulation Suite">
 </p>
 
-<!-- TEMP: 2.0.0 launch banner. Remove a few weeks after release, once it's old news. -->
-> [!NOTE]
-> **SnapOtter 2.0 is here.** 200+ tools across five modalities (image, video, audio, PDF, and files), durable background jobs, on-demand local AI, and a one-command `docker run`. See the [release notes](https://github.com/snapotter-hq/SnapOtter/releases/tag/v2.0.0) and the [1.x upgrade guide](./MIGRATING.md).
-
-<!-- TEMP: 1.x to 2.0 migration note. Remove once 2.0 has been out for a while and most users have upgraded. -->
+<!-- TEMP: 2.0.0 launch + migration + Discord note. Trim a few weeks after release, once it's old news. -->
 > [!IMPORTANT]
-> **Coming from 1.x?** Many of you have trusted SnapOtter since day one, and your feedback and suggestions shaped everything that followed. 2.0 is a big step, and we worked to make sure it doesn't break what you already depend on. Your accounts, saved files, settings, API keys, and pipelines carry over automatically on first boot, and your old database is never modified. We wrote a full [migration guide](./MIGRATING.md) so the move is safe and boring. Thank you for being here.
+> **SnapOtter 2.0 is here.** 200+ tools across five modalities (image, video, audio, PDF, and files), durable background jobs, on-demand local AI, and a one-command `docker run`. See the [release notes](https://github.com/snapotter-hq/SnapOtter/releases/tag/v2.0.0).
+>
+> **Coming from 1.x?** Many of you have trusted SnapOtter since day one, and your feedback and suggestions shaped everything that followed. 2.0 is a big step, and we worked to make sure it doesn't break what you already depend on. Your accounts, saved files, settings, API keys, and pipelines carry over automatically on first boot, and your old database is never modified. We wrote a full [migration guide](./MIGRATING.md) so the move is safe and boring.
+>
+> I'll be on [Discord](https://discord.gg/hr3s7HPUsr) more than usual this week, so if you need a hand with the upgrade or anything else, come say hi and I'll get back to you quickly. Thank you for being here.
 
 <p align="center">
   <a href="https://hub.docker.com/r/snapotter/snapotter"><img src="https://img.shields.io/docker/v/snapotter/snapotter?label=Docker%20Hub&logo=docker" alt="Docker Hub"></a>
@@ -34,7 +34,7 @@ Stirling-PDF stops at PDFs. ConvertX stops at conversions. SnapOtter runs all fi
 
 ## Quick Start
 
-One command, no setup. An embedded Postgres 17 + Redis 8 boot inside the container, so there's nothing else to wire up:
+One command, that's it.
 
 ```bash
 docker run -d --name SnapOtter -p 1349:1349 -v SnapOtter-data:/data snapotter/snapotter:latest
