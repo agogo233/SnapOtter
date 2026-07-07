@@ -2,6 +2,10 @@
   <img src="branding/social-preview.png" width="800" alt="SnapOtter - A Self-Hosted File Manipulation Suite">
 </p>
 
+<!-- TEMP: 2.0.0 launch banner. Remove a few weeks after release, once it's old news. -->
+> [!NOTE]
+> **SnapOtter 2.0 is here.** 200+ tools across five modalities (image, video, audio, PDF, and files), durable background jobs, on-demand local AI, and a one-command `docker run`. See the [release notes](https://github.com/snapotter-hq/SnapOtter/releases/tag/v2.0.0) and the [1.x upgrade guide](./MIGRATING.md).
+
 <!-- TEMP: 1.x to 2.0 migration note. Remove once 2.0 has been out for a while and most users have upgraded. -->
 > [!IMPORTANT]
 > **Coming from 1.x?** Many of you have trusted SnapOtter since day one, and your feedback and suggestions shaped everything that followed. 2.0 is a big step, and we worked to make sure it doesn't break what you already depend on. Your accounts, saved files, settings, API keys, and pipelines carry over automatically on first boot, and your old database is never modified. We wrote a full [migration guide](./MIGRATING.md) so the move is safe and boring. Thank you for being here.

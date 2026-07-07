@@ -169,13 +169,10 @@ jobs:
   docker:
     name: Build (${{ matrix.platform }})
     needs: release
-    # PUBLISHING PAUSED (2026-06-17): building and pushing the app image to
-    # Docker Hub + GHCR is disabled while the app is still being stabilized.
-    # The scan, sbom, ai-bundles, and manifest jobs all `need` this job, so
-    # they are skipped too and nothing reaches either registry. The release,
-    # changelog, and source-archive (prebuilt) jobs still run.
-    # To resume publishing, delete the `if: ${{ false }}` line below.
-    if: ${{ false }}
+    # Builds and pushes the multi-arch app image (by digest) to Docker Hub +
+    # GHCR; the manifest job then creates the named tags. Only runs when
+    # semantic-release produced a version (or fell back to the latest tag).
+    if: needs.release.outputs.new_version
     permissions:
       contents: read
       packages: write
@@ -393,7 +390,10 @@ jobs:
   ai-bundles:
     name: AI Bundles
     needs: [release, docker]
-    if: needs.release.outputs.new_version
+    # DISABLED for 2.0.0: all v2.0.0 bundles are already built, verified, and
+    # published to HuggingFace (deepsafe/feature-bundles/v2.0.0). Re-enable once
+    # the ordering is fixed so it runs after manifest creates the :VERSION tag.
+    if: false
     # The top-level `permissions: {}` default means this reusable-workflow call
     # grants no token scopes by default. ai-bundles.yml's jobs declare
     # `contents: read` / `packages: read`, and GitHub rejects a called workflow
