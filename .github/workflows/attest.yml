@@ -1,0 +1,79 @@
+name: Attest Provenance
+
+# Generates SLSA build-provenance attestations for an already-published release,
+# so no image rebuild is required. Dispatch it after a release once the image
+# manifest and source archives exist. Provenance is pushed to the registries as
+# OCI referrers (verify with: gh attestation verify oci://<image>@<digest>).
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version without the leading v (e.g. 2.0.0)"
+        required: true
+        type: string
+      image_digest:
+        description: "Multi-arch manifest digest, sha256:... (same on both registries)"
+        required: true
+        type: string
+
+permissions: {}
+
+jobs:
+  image:
+    name: Attest image
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      packages: write
+      contents: read
+    steps:
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@af1e73f918a031802d376d3c8bbc3fe56130a9b0 # v4.4.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Attest GHCR image
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-name: ghcr.io/snapotter-hq/snapotter
+          subject-digest: ${{ inputs.image_digest }}
+          push-to-registry: true
+
+      - name: Attest Docker Hub image
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-name: docker.io/snapotter/snapotter
+          subject-digest: ${{ inputs.image_digest }}
+          push-to-registry: true
+
+  archives:
+    name: Attest source archives
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      contents: read
+    steps:
+      - name: Download release archives
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          gh release download "v${VERSION}" --repo "$REPO" --pattern 'snapotter-v*-linux-*.tar.gz'
+          ls -l snapotter-v*-linux-*.tar.gz
+
+      - name: Attest archives
+        uses: actions/attest-build-provenance@e8998f949152b193b063cb0ec769d69d929409be # v2
+        with:
+          subject-path: "snapotter-v*-linux-*.tar.gz"
