@@ -4,6 +4,64 @@ description: Release notes and version history for SnapOtter. See what's new, im
 
 # Changelog
 
+## v2.0.0
+
+SnapOtter 2.0 turns the image toolkit into a full file-manipulation suite: 200+ tools across five modalities (Image, Video, Audio, PDF, and Files), rebuilt on Postgres 17 and a Redis-backed job queue, with a one-command `docker run`. This is a major release; read Breaking changes before upgrading from 1.x.
+
+### New features
+
+- **Four new tool modalities**: Video, Audio, PDF, and Files join Image, taking the catalog to 200+ tools.
+- **Durable background jobs**: A Redis-backed queue (BullMQ) runs every tool as a tracked job with live SSE progress.
+- **All-in-one single-container mode**: One `docker run` boots a complete instance with embedded Postgres and Redis.
+- **On-demand AI bundles**: Background removal, OCR, transcription, upscaling, face detection and enhancement, object eraser, colorize, and photo restoration install from the UI. GPU acceleration is detected per framework.
+- **Sign PDF**: Draw, type, or upload a signature and place it on a PDF in the browser.
+- **Automate**: A visual pipeline builder that chains tools, with nine prebuilt templates.
+- **83 one-click conversion presets**: Dedicated JPG-to-PNG, MP4-to-GIF, and similar converters with fuzzy search.
+- **Layer-based image editor**: A Konva-powered editor at `/editor` with brushes, shapes, adjustments, filters, and curves.
+- **Files library**: Save any result and reuse it as input to another tool.
+- Pinned tools, in-canvas zoom and pan, 21 languages, and enterprise capabilities (OIDC/SSO, SAML, SCIM, S3 storage, per-tool permissions, audit export, distributed tracing).
+
+### Improvements
+
+- Cancel a running process. (#137)
+- Full-resolution RAW decoding through LibRaw, including DNG. (#289)
+- Non-root and foreign-UID deployments (TrueNAS, Unraid, OpenShift, PUID/PGID). (#230, #127)
+- Accurate AI install detection and a hardened install flow. (#214, #352)
+- Privacy hardening: no automatic third-party egress, plus an optional strict-offline mode.
+- Always-on feedback button, even with analytics off.
+
+### Bug fixes
+
+- `RATE_LIMIT_PER_MIN=0` disables rate limiting for tool routes again. (#271)
+- Repaired AI virtualenv paths inside the Docker image. (#390)
+- sharp 0.35.2+ compatibility. (#362)
+- Image editor layout fixes: rulers, fill behavior, sidebar, and canvas sizing. (#258, #259)
+- Completed the Italian translation. (#231, #206, #425)
+- Audio normalize and loudnorm preserve the source sample rate.
+- SSRF hardening: numeric IPv6 CIDR matching and a broadened URL pre-scan. (#287)
+- Generated PDFs are stamped with SnapOtter as the Producer.
+- mediapipe installs on Python 3.13 and Debian 13.
+
+### Breaking changes
+
+2.0 replaces the embedded SQLite database with Postgres 17 and adds Redis 8 for the job queue. Your 1.x data migrates automatically on first boot, but the container stack changed, so back up your whole `/data` volume first (1.x runs SQLite in WAL mode, so the committed data usually lives in `snapotter.db-wal`). Then pick the single-container image (embedded Postgres and Redis, root only) or the Compose stack (app plus Postgres 17 and Redis 8). See the [migration guide](https://github.com/snapotter-hq/SnapOtter/blob/main/MIGRATING.md) and the [upgrade guide](/guide/upgrading).
+
+### Upgrade
+
+```bash
+docker pull snapotter/snapotter:2.0.0
+```
+
+Or with Docker Compose:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+[Full diff on GitHub](https://github.com/snapotter-hq/SnapOtter/compare/v1.17.2...v2.0.0)
+
+---
+
 ## v1.17.2
 
 New HTML to Image tool, WCAG 2.2 AA accessibility, security hardening from penetration testing, and 5 critical Docker fixes.

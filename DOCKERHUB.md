@@ -11,7 +11,7 @@ Open-source, self-hostable file manipulation suite. 200+ tools across image, vid
 [![Discord](https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white)](https://discord.gg/hr3s7HPUsr)
 [![GitHub](https://img.shields.io/badge/GitHub-snapotter--hq%2FSnapOtter-181717?logo=github)](https://github.com/snapotter-hq/SnapOtter)
 
-> **SnapOtter v2.0.0 is coming soon.** The current `latest` image is v1.x and includes image tools only. v2.0 adds 200+ tools across image, video, audio, documents, and files. We are fixing a last-minute issue with local AI installs before publishing the new image. Stay tuned.
+> **SnapOtter 2.0 is here.** The `latest` tag now points at `2.0.0`: 200+ tools across image, video, audio, PDF, and files, plus a layer-based editor and local AI. See the [release notes](https://github.com/snapotter-hq/SnapOtter/releases/tag/v2.0.0).
 
 ## What is SnapOtter?
 
