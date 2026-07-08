@@ -312,8 +312,8 @@ function SponsorButton({ isDark, compact = false }: { isDark: boolean; compact?:
         aria-label={t.a11y.sponsorLink}
         title={t.a11y.sponsorLink}
         className={cn(
-          "p-1.5 rounded-md transition-colors text-primary",
-          isDark ? "hover:bg-[#333]" : "hover:bg-muted",
+          "p-1.5 rounded-md transition-colors",
+          isDark ? "text-pink-300 hover:bg-[#333]" : "text-pink-700 hover:bg-pink-50",
         )}
       >
         <Heart className="h-4 w-4 fill-current" />
@@ -327,7 +327,12 @@ function SponsorButton({ isDark, compact = false }: { isDark: boolean; compact?:
       target="_blank"
       rel="noopener noreferrer"
       onClick={handleClick}
-      className="ms-1 inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-[#1a1814] transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-1"
+      className={cn(
+        "ms-1 inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-1",
+        isDark
+          ? "border-pink-800 bg-pink-950/30 text-pink-300 hover:bg-pink-950/50"
+          : "border-pink-200 bg-pink-50 text-pink-700 hover:bg-pink-100",
+      )}
     >
       <Heart className="h-3.5 w-3.5 fill-current" aria-hidden="true" />
       {t.sidebar.sponsor}
