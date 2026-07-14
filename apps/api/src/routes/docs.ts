@@ -11,9 +11,22 @@ import {
 } from "@snapotter/shared";
 import type { FastifyInstance } from "fastify";
 import yaml from "js-yaml";
+import { env } from "../config.js";
 import { generateLocaleLlmsTxt, resolveSpecFile } from "./openapi-i18n.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+function localizedDocsRateLimit() {
+  return {
+    // A route-local limit replaces the global one in @fastify/rate-limit.
+    // Keep the mandatory ceiling without loosening a stricter operator limit.
+    max: env.RATE_LIMIT_PER_MIN > 0 ? Math.min(60, env.RATE_LIMIT_PER_MIN) : 60,
+    timeWindow: "1 minute",
+    // The global allow-list exempts non-/api routes. Override it so localized
+    // llms endpoints cannot bypass this route-specific availability control.
+    allowList: [] as string[],
+  };
+}
 
 interface PathOperation {
   tags?: string[];
@@ -45,7 +58,6 @@ function isPublic(op: PathOperation): boolean {
 function generateLlmsTxt(spec: OpenAPISpec): string {
   const lines: string[] = [];
   const customModes: Record<string, string> = {
-    ocr: "sync-json",
     "content-aware-resize": "sync",
     "passport-photo": "two-phase",
   };
@@ -241,13 +253,20 @@ export async function docsRoutes(app: FastifyInstance): Promise<void> {
     reply.type("text/plain; charset=utf-8").send(llmsFullTxt);
   });
 
-  app.get<{ Querystring: { lang?: string } }>("/api/v1/openapi.yaml", async (request, reply) => {
-    const file = resolveSpecFile(specDir, request.query.lang);
-    // English default is byte-identical to the file read at startup, preserving
-    // the ASCII-only guarantee; localized files are UTF-8 and only served with ?lang.
-    const body = file === specPath ? specContent : readFileSync(file, "utf-8");
-    reply.type("text/yaml; charset=utf-8").send(body);
-  });
+  app.get<{ Querystring: { lang?: string } }>(
+    "/api/v1/openapi.yaml",
+    {
+      exposeHeadRoute: false,
+      config: { rateLimit: localizedDocsRateLimit() },
+    },
+    async (request, reply) => {
+      const file = resolveSpecFile(specDir, request.query.lang);
+      // English default is byte-identical to the file read at startup, preserving
+      // the ASCII-only guarantee; localized files are UTF-8 and only served with ?lang.
+      const body = file === specPath ? specContent : readFileSync(file, "utf-8");
+      reply.type("text/yaml; charset=utf-8").send(body);
+    },
+  );
 
   // Localized llms.txt for every supported non-English locale. Tag/section prose
   // comes from the localized spec (English fallback when absent); tool name and
@@ -261,24 +280,31 @@ export async function docsRoutes(app: FastifyInstance): Promise<void> {
   for (const localeInfo of SUPPORTED_LOCALES) {
     if (localeInfo.code === "en") continue;
     const code = localeInfo.code;
-    app.get(`/llms.${code}.txt`, async (_request, reply) => {
-      const file = resolveSpecFile(specDir, code);
-      const localeSpec =
-        file === specPath ? spec : (yaml.load(readFileSync(file, "utf-8")) as OpenAPISpec);
-      const toolStrings = await loadLocaleToolStrings(code);
-      const body = generateLocaleLlmsTxt({
-        spec: localeSpec,
-        sections: SECTIONS.map((s) => ({ id: s.id, name: s.name })),
-        toolsBySection: Object.fromEntries(
-          toolsBySection.map(({ section, tools }) => [
-            section.id,
-            tools.map((t) => ({ id: t.id, executionHint: t.executionHint })),
-          ]),
-        ),
-        toolStrings,
-      });
-      reply.type("text/plain; charset=utf-8").send(body);
-    });
+    app.get(
+      `/llms.${code}.txt`,
+      {
+        exposeHeadRoute: false,
+        config: { rateLimit: localizedDocsRateLimit() },
+      },
+      async (_request, reply) => {
+        const file = resolveSpecFile(specDir, code);
+        const localeSpec =
+          file === specPath ? spec : (yaml.load(readFileSync(file, "utf-8")) as OpenAPISpec);
+        const toolStrings = await loadLocaleToolStrings(code);
+        const body = generateLocaleLlmsTxt({
+          spec: localeSpec,
+          sections: SECTIONS.map((s) => ({ id: s.id, name: s.name })),
+          toolsBySection: Object.fromEntries(
+            toolsBySection.map(({ section, tools }) => [
+              section.id,
+              tools.map((t) => ({ id: t.id, executionHint: t.executionHint })),
+            ]),
+          ),
+          toolStrings,
+        });
+        reply.type("text/plain; charset=utf-8").send(body);
+      },
+    );
   }
 
   // Scalar's "Ask AI" (Agent Scalar), "Generate MCP", "Open API Client", and

@@ -104,7 +104,18 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Install system dependencies (HEIC + ExifTool + ImageMagick + exotic format tools)
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends libheif-examples libheif-plugin-x265 libheif-plugin-libde265 libimage-exiftool-perl libraw-bin imagemagick ghostscript libjxl-tools libopenjp2-tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends libheif-examples libheif-plugin-x265 libheif-plugin-libde265 libimage-exiftool-perl libraw-bin imagemagick ghostscript libjxl-tools libopenjp2-tools
+          if apt-cache show libmagickcore-6.q16-7-extra >/dev/null 2>&1; then
+            sudo apt-get install -y --no-install-recommends libmagickcore-6.q16-7-extra
+          elif apt-cache show libmagickcore-6.q16-6-extra >/dev/null 2>&1; then
+            sudo apt-get install -y --no-install-recommends libmagickcore-6.q16-6-extra
+          else
+            echo "No supported ImageMagick EXR coder package found" >&2
+            exit 1
+          fi
+          convert -list format | grep -Eq '^[[:space:]]*EXR([*[:space:]]|$)'
 
       - uses: ./.github/actions/setup
       - name: Pre-pull testcontainer images (retry transient Docker Hub errors)
@@ -133,8 +144,37 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
-      - name: Install system dependencies (image formats + doc-engine qpdf/LibreOffice)
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends libheif-examples libheif-plugin-x265 libheif-plugin-libde265 libimage-exiftool-perl libraw-bin imagemagick ghostscript libjxl-tools libopenjp2-tools qpdf libreoffice-calc libreoffice-impress libreoffice-writer
+      - name: Install system dependencies (image formats + docs + Fast OCR)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libheif-examples libheif-plugin-x265 libheif-plugin-libde265 \
+            libimage-exiftool-perl libraw-bin imagemagick ghostscript \
+            libjxl-tools libopenjp2-tools \
+            qpdf libreoffice-calc libreoffice-impress libreoffice-writer \
+            tesseract-ocr tesseract-ocr-eng tesseract-ocr-deu \
+            tesseract-ocr-fra tesseract-ocr-spa \
+            tesseract-ocr-chi-sim tesseract-ocr-jpn
+
+          if apt-cache show libmagickcore-6.q16-7-extra >/dev/null 2>&1; then
+            sudo apt-get install -y --no-install-recommends libmagickcore-6.q16-7-extra
+          elif apt-cache show libmagickcore-6.q16-6-extra >/dev/null 2>&1; then
+            sudo apt-get install -y --no-install-recommends libmagickcore-6.q16-6-extra
+          else
+            echo "No supported ImageMagick EXR coder package found" >&2
+            exit 1
+          fi
+          convert -list format | grep -Eq '^[[:space:]]*EXR([*[:space:]]|$)'
+
+          sudo rm -f /usr/share/tesseract-ocr/5/tessdata/osd.traineddata
+          test ! -e /usr/share/tesseract-ocr/5/tessdata/osd.traineddata
+
+          expected=(chi_sim deu eng fra jpn spa)
+          mapfile -t actual < <(tesseract --list-langs 2>/dev/null | tail -n +2 | LC_ALL=C sort)
+          [[ "${actual[*]}" == "${expected[*]}" ]] || {
+            echo "::error::Fast OCR language payload changed: ${actual[*]}"
+            exit 1
+          }
 
       - name: Install Pandoc 3.10 (sandboxed DOCX/EPUB)
         run: |

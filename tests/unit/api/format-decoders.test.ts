@@ -2,7 +2,11 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import sharp from "sharp";
 import { describe, expect, it } from "vitest";
-import { decodeToSharpCompat, needsCliDecode } from "../../../apps/api/src/lib/format-decoders.js";
+import {
+  buildImageMagickResourceLimitArgs,
+  decodeToSharpCompat,
+  needsCliDecode,
+} from "../../../apps/api/src/lib/format-decoders.js";
 import { encodeQoi } from "../../../apps/api/src/lib/format-encoders.js";
 import { fixtures, readFixture } from "../../fixtures/index.js";
 
@@ -42,7 +46,8 @@ async function assertValidImage(buf: Buffer): Promise<{ width: number; height: n
   const meta = await sharp(buf).metadata();
   expect(meta.width).toBeGreaterThan(0);
   expect(meta.height).toBeGreaterThan(0);
-  return { width: meta.width!, height: meta.height! };
+  if (!meta.width || !meta.height) throw new Error("Decoded image has no dimensions");
+  return { width: meta.width, height: meta.height };
 }
 
 // ==========================================================================
@@ -146,6 +151,36 @@ describe("needsCliDecode", () => {
   });
 });
 
+describe("buildImageMagickResourceLimitArgs", () => {
+  it("uses unitless width and height values that work in ImageMagick 6 and 7", () => {
+    expect(
+      buildImageMagickResourceLimitArgs({
+        maxDimension: 40_000,
+        maxPixels: 40_000_000,
+      }),
+    ).toEqual([
+      "-limit",
+      "width",
+      "40000",
+      "-limit",
+      "height",
+      "40000",
+      "-limit",
+      "area",
+      "640000000B",
+      "-limit",
+      "memory",
+      "640000000B",
+      "-limit",
+      "map",
+      "640000000B",
+      "-limit",
+      "disk",
+      "1280000000B",
+    ]);
+  });
+});
+
 describe("decodeToSharpCompat", () => {
   it("returns buffer unchanged for unknown/native formats", async () => {
     const buf = Buffer.from("test data");
@@ -189,10 +224,13 @@ describe("decodeToSharpCompat", () => {
     expect(result).toBe(buf);
   });
 
-  it("decodes BMP to valid PNG", async () => {
+  it("decodes BMP to valid PNG with bounded ImageMagick 6/7 limits", async () => {
     try {
       const input = readFixture(fixtures.image.formats("bmp"));
-      const result = await decodeToSharpCompat(input, "bmp");
+      const result = await decodeToSharpCompat(input, "bmp", undefined, {
+        maxDimension: 40_000,
+        maxPixels: 40_000_000,
+      });
       expect(isPng(result)).toBe(true);
       await assertValidImage(result);
     } catch (err) {
@@ -412,7 +450,71 @@ describe("decodeToSharpCompat - individual decoder verification", () => {
   }
 });
 
+describe("decodeToSharpCompat - bounded preflight", () => {
+  const formats = [
+    ["raw", "dng"],
+    ["ico", undefined],
+    ["tga", undefined],
+    ["psd", undefined],
+    ["exr", undefined],
+    ["hdr", undefined],
+    ["bmp", undefined],
+    ["jxl", undefined],
+    ["jp2", undefined],
+    ["eps", undefined],
+    ["dds", undefined],
+    ["cur", undefined],
+    ["dpx", undefined],
+    ["fits", undefined],
+    ["ppm", undefined],
+    ["pgm", undefined],
+    ["pbm", undefined],
+  ] as const;
+
+  it.each(formats)("rejects oversized %s metadata before pixel decode", async (format, ext) => {
+    const fixtureFormat = format === "raw" ? "dng" : format;
+    const input = readFixture(fixtures.image.formats(fixtureFormat));
+
+    await expect(decodeToSharpCompat(input, format, ext, { maxPixels: 1 })).rejects.toThrow(
+      /pixel safety limit/i,
+    );
+  });
+});
+
 describe("decodeToSharpCompat - QOI decoder", () => {
+  it("rejects an extreme QOI side before allocating pixels", async () => {
+    const input = Buffer.alloc(14);
+    input.write("qoif", 0, 4, "ascii");
+    input.writeUInt32BE(40_001, 4);
+    input.writeUInt32BE(1, 8);
+    input[12] = 3;
+
+    await expect(
+      decodeToSharpCompat(input, "qoi", undefined, {
+        maxDimension: 40_000,
+        maxPixels: 40_000_000,
+      }),
+    ).rejects.toThrow(/dimension safety limit.*40,001x1/i);
+  });
+
+  it("rejects QOI dimensions over a caller-supplied pixel cap before allocating pixels", async () => {
+    const input = readFixture(fixtures.image.formats("qoi"));
+
+    await expect(decodeToSharpCompat(input, "qoi", undefined, { maxPixels: 1 })).rejects.toThrow(
+      /pixel safety limit/i,
+    );
+  });
+
+  it("honors an already-aborted request", async () => {
+    const input = readFixture(fixtures.image.formats("qoi"));
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(
+      decodeToSharpCompat(input, "qoi", undefined, { signal: controller.signal }),
+    ).rejects.toMatchObject({ name: "AbortError" });
+  });
+
   it("decodes QOI fixture to valid PNG", async () => {
     const input = readFixture(fixtures.image.formats("qoi"));
     const result = await decodeToSharpCompat(input, "qoi");
