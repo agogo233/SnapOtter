@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { readFile, unlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { isSafeMessageError, SafeError } from "@snapotter/shared";
 import sharp from "sharp";
 import { type ProgressCallback, parseStdoutJson, runPythonWithProgress } from "./bridge.js";
 
@@ -26,6 +27,20 @@ export function isMemoryAllocError(err: unknown): boolean {
   return /out of memory|failed to allocate|cudaerrormemoryallocation|cublas_status_alloc_failed|bad_alloc/i.test(
     err.message,
   );
+}
+
+/**
+ * Wrap a background-removal failure in a SafeError so its message survives the
+ * API's Sentry scrubber, which otherwise reduces a plain Error to "Error:
+ * Error". The specific sidecar reason is kept as the message (callers and the
+ * existing tests rely on it, matching the ai-bridge behavior); an empty reason
+ * falls back to a constant. Errors we already author (the bridge's SafeError
+ * timeout/OOM) pass through unchanged so their kind is not masked.
+ */
+function toBgRemovalError(reason: unknown): Error {
+  if (isSafeMessageError(reason)) return reason;
+  const message = reason instanceof Error ? reason.message : String(reason ?? "");
+  return new SafeError(message || "Background removal failed", { kind: "bug" });
 }
 
 export async function removeBackground(
@@ -96,7 +111,7 @@ async function runAndParse(
     const isOom = isMemoryAllocError(err);
     const canFallback = isOom && options.model !== OOM_FALLBACK_MODEL;
 
-    if (!canFallback) throw err;
+    if (!canFallback) throw toBgRemovalError(err);
 
     onProgress?.(5, `Retrying with lighter model (${OOM_FALLBACK_MODEL})`);
     const fallbackOpts = { ...options, model: OOM_FALLBACK_MODEL };
@@ -107,7 +122,7 @@ async function runAndParse(
     );
     const result = parseStdoutJson(stdout);
     if (!result.success) {
-      throw new Error(result.error || "Background removal failed");
+      throw toBgRemovalError(result.error || "Background removal failed");
     }
     return readFile(outputPath);
   }
