@@ -3309,6 +3309,31 @@ export const nl: TranslationKeys = {
       currentPasswordIncorrect: "Huidig wachtwoord is onjuist",
       changePasswordButton: "Wachtwoord wijzigen",
       loginAttemptLimitNote: "Inlogpogingslimieten kun je instellen bij Systeeminstellingen.",
+      twoFactorHeading: "Tweefactorauthenticatie",
+      twoFactorDescription:
+        "Voeg een extra beveiligingslaag toe aan je account met een authenticator-app.",
+      twoFactorEnabledStatus: "Tweefactorauthenticatie is ingeschakeld.",
+      twoFactorDisabledStatus: "Tweefactorauthenticatie is niet ingeschakeld.",
+      enableTwoFactorButton: "Tweefactorauthenticatie inschakelen",
+      disableTwoFactorButton: "Tweefactorauthenticatie uitschakelen",
+      twoFactorScanQr:
+        "Scan deze QR-code met je authenticator-app (zoals Google Authenticator, Authy of 1Password).",
+      twoFactorManualEntry: "Kun je de code niet scannen? Voer deze sleutel handmatig in:",
+      twoFactorRecoveryCodesHeading: "Herstelcodes",
+      twoFactorRecoveryCodesDescription:
+        "Bewaar deze codes op een veilige plek. Elke code kun je eenmalig gebruiken om in te loggen als je geen toegang meer hebt tot je authenticator-app.",
+      twoFactorCopyRecoveryCodes: "Codes kopiëren",
+      twoFactorCodesCopied: "Gekopieerd",
+      twoFactorCopyFailed:
+        "Automatisch kopiëren is mislukt. Selecteer de codes hierboven en kopieer ze handmatig.",
+      twoFactorEnterCode: "Voer de 6-cijferige code uit je app in om de installatie te bevestigen.",
+      twoFactorCodePlaceholder: "000000",
+      twoFactorConfirmButton: "Bevestigen en inschakelen",
+      twoFactorCancelButton: "Annuleren",
+      twoFactorEnableSuccess: "Tweefactorauthenticatie is nu ingeschakeld.",
+      twoFactorDisableSuccess: "Tweefactorauthenticatie is uitgeschakeld.",
+      twoFactorDisablePrompt:
+        "Voer je huidige authenticator-code in om tweefactorauthenticatie uit te schakelen.",
       adminHeading: "Beveiligingsinstellingen voor beheerders",
       adminDescription:
         "Enterprise-beveiligingsbeleid. Deze instellingen gelden voor alle gebruikers.",
