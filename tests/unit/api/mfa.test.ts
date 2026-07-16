@@ -4,6 +4,7 @@ import {
   createTotp,
   hashRecoveryCodes,
   isMfaRequiredForUser,
+  resolveExternalLoginMfaOutcome,
   verifyRecoveryCode,
   verifyTotpCode,
 } from "../../../apps/api/src/plugins/mfa.js";
@@ -186,6 +187,37 @@ describe("MFA", () => {
     it("returns false for admins_only policy when role is not admin", () => {
       expect(isMfaRequiredForUser("admins_only", "editor")).toBe(false);
       expect(isMfaRequiredForUser("admins_only", "user")).toBe(false);
+    });
+  });
+
+  describe("resolveExternalLoginMfaOutcome", () => {
+    // Exhaustive over the full input space: 3 policies x 2 roles x 2
+    // totpEnabled states. Role only matters via isMfaRequiredForUser, which
+    // branches solely on role === "admin", so {admin, user} covers it.
+    it.each([
+      ["optional", "user", false, "proceed"],
+      ["optional", "user", true, "challenge"],
+      ["optional", "admin", false, "proceed"],
+      ["optional", "admin", true, "challenge"],
+      ["admins_only", "user", false, "proceed"],
+      ["admins_only", "user", true, "challenge"],
+      ["admins_only", "admin", false, "enrollment_required"],
+      ["admins_only", "admin", true, "challenge"],
+      // required+user+enrolled is the exact shape of the #533 bug: an
+      // enrolled non-admin user under a required policy must be challenged,
+      // not hard-blocked.
+      ["required", "user", false, "enrollment_required"],
+      ["required", "user", true, "challenge"],
+      ["required", "admin", false, "enrollment_required"],
+      ["required", "admin", true, "challenge"],
+    ] as const)("policy=%s role=%s totpEnabled=%s -> %s", (policy, role, totpEnabled, expected) => {
+      expect(resolveExternalLoginMfaOutcome(policy, role, totpEnabled)).toBe(expected);
+    });
+
+    it("enrollment takes priority: an enrolled user is challenged even under a required policy", () => {
+      expect(resolveExternalLoginMfaOutcome("required", "admin", true)).not.toBe(
+        "enrollment_required",
+      );
     });
   });
 });

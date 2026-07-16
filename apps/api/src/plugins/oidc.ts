@@ -1,8 +1,11 @@
+import { randomUUID } from "node:crypto";
 import type {} from "@fastify/cookie";
+import { eq } from "drizzle-orm";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import * as oidc from "openid-client";
 import { env } from "../config.js";
 import { db, schema } from "../db/index.js";
+import { sharedRedis } from "../jobs/connection.js";
 import { auditFromRequest, sanitizeAuditInput } from "../lib/audit.js";
 import { resolveExternalUser, sanitizeUsername } from "../lib/external-auth-resolver.js";
 import { authAttempts } from "../lib/metrics.js";
@@ -274,22 +277,62 @@ export async function oidcRoutes(app: FastifyInstance): Promise<void> {
 
       const resolvedUser = result.user;
 
-      let mfaRequired = false;
+      // Unguarded on purpose: this read decides whether MFA gets checked at
+      // all, so a DB error here must fail the login, not silently skip MFA
+      // for an enrolled user. The try/catch below is scoped only to the
+      // optional MFA plugin/policy lookup, same as it always was.
+      let dbUser: { totpEnabled: boolean } | undefined;
       try {
-        const { getMfaPolicy, isMfaRequiredForUser } = await import("./mfa.js");
-        const policy = await getMfaPolicy();
-        mfaRequired = isMfaRequiredForUser(policy, resolvedUser.role);
-      } catch {
-        // MFA plugin not loaded
-      }
-      if (mfaRequired) {
+        [dbUser] = await db
+          .select({ totpEnabled: schema.users.totpEnabled })
+          .from(schema.users)
+          .where(eq(schema.users.id, resolvedUser.id));
+      } catch (err) {
+        request.log.error(
+          { err, userId: resolvedUser.id },
+          "OIDC callback: failed to read MFA enrollment status",
+        );
         authAttempts.inc({ method: "oidc", result: "failure" });
         await audit("OIDC_LOGIN_FAILED", {
           userId: resolvedUser.id,
           username: resolvedUser.username,
-          reason: "mfa_required",
+          reason: "mfa_check_error",
         });
-        return redirectToLogin(reply, "mfa_required");
+        return redirectToLogin(reply, "oidc_auth_failed");
+      }
+
+      let mfaOutcome: "proceed" | "challenge" | "enrollment_required" = "proceed";
+      try {
+        const { getMfaPolicy, resolveExternalLoginMfaOutcome } = await import("./mfa.js");
+        const policy = await getMfaPolicy();
+        mfaOutcome = resolveExternalLoginMfaOutcome(
+          policy,
+          resolvedUser.role,
+          dbUser?.totpEnabled ?? false,
+        );
+      } catch {
+        // MFA plugin not loaded
+      }
+
+      if (mfaOutcome === "challenge") {
+        const mfaToken = randomUUID();
+        const redis = sharedRedis();
+        await redis.setex(`mfa:${mfaToken}`, 300, resolvedUser.id);
+        await audit("MFA_CHALLENGE_ISSUED", {
+          userId: resolvedUser.id,
+          username: resolvedUser.username,
+        });
+        return reply.redirect(`/login?mfaToken=${mfaToken}`);
+      }
+
+      if (mfaOutcome === "enrollment_required") {
+        authAttempts.inc({ method: "oidc", result: "failure" });
+        await audit("OIDC_LOGIN_FAILED", {
+          userId: resolvedUser.id,
+          username: resolvedUser.username,
+          reason: "mfa_enrollment_required",
+        });
+        return redirectToLogin(reply, "mfa_enrollment_required");
       }
 
       // 5. Create session
