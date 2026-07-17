@@ -14,6 +14,15 @@ export const ANALYTICS_EVENTS = {
   FEEDBACK_SUBMITTED: "feedback_submitted",
   SPONSOR_CLICKED: "sponsor_clicked",
   INSTANCE_STARTED: "instance_started",
+  EDITOR_OPENED: "editor_opened",
+  EDITOR_TOOL_USED: "editor_tool_used",
+  EDITOR_EXPORTED: "editor_exported",
+  PIPELINE_OPENED: "pipeline_opened",
+  PIPELINE_STEP_ADDED: "pipeline_step_added",
+  PIPELINE_SAVED: "pipeline_saved",
+  PIPELINE_TEMPLATE_SELECTED: "pipeline_template_selected",
+  AUTH_LOGIN: "auth_login",
+  AUTH_LOGIN_FAILED: "auth_login_failed",
 } as const;
 
 export type AnalyticsEvent = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];
@@ -24,9 +33,16 @@ export interface ToolUsedProperties {
   duration_ms: number;
   category: string;
   is_ai_tool: boolean;
-  params?: Record<string, string | number | boolean>;
+  is_batch: boolean;
+  /** Safe input extension (never the filename), e.g. "heic"; "unknown" if none. */
+  input_format: string;
+  execution_hint: "fast" | "long";
+  output_format?: string;
+  bytes_in?: number;
+  bytes_out?: number;
   error_code?: string;
-  error_message?: string;
+  /** Coarse failure reason so "why do tools fail" is answerable without messages. */
+  error_kind?: "input" | "operational" | "bug" | "timeout" | "cancelled";
 }
 
 export interface SearchProperties {
@@ -54,4 +70,25 @@ export interface InstanceStartedProperties {
   os_platform: string;
   deploy_mode: "embedded" | "external" | "native";
   gpu_present: boolean;
+}
+
+export interface EditorToolUsedProperties {
+  /** The editor tool selected (move, brush, crop, ...); a fixed low-cardinality set. */
+  editor_tool: string;
+}
+
+export interface EditorExportedProperties {
+  output_format?: string;
+}
+
+export interface PipelineStepAddedProperties {
+  tool_id: string;
+}
+
+export interface PipelineSavedProperties {
+  step_count: number;
+}
+
+export interface PipelineTemplateSelectedProperties {
+  template_id: string;
 }

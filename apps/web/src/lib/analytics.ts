@@ -1,4 +1,5 @@
 import type { AnalyticsConfig } from "@snapotter/shared";
+import { flushEarlyErrors } from "./early-errors";
 
 type PostHogInstance = import("posthog-js").PostHog;
 
@@ -17,6 +18,13 @@ const ALLOWED: Record<string, ReadonlySet<string>> = {
   search: new Set(["results_count", "clicked_tool_id"]),
   ai_bundle_prompted: new Set(["bundle_id"]),
   batch_processed: new Set(["tool_id", "file_count", "status"]),
+  editor_opened: new Set<string>([]),
+  editor_tool_used: new Set(["editor_tool"]),
+  editor_exported: new Set(["output_format"]),
+  pipeline_opened: new Set<string>([]),
+  pipeline_step_added: new Set(["tool_id"]),
+  pipeline_saved: new Set(["step_count"]),
+  pipeline_template_selected: new Set(["template_id"]),
 };
 
 function sanitize(event: string, properties?: Record<string, unknown>): Record<string, unknown> {
@@ -46,11 +54,29 @@ export async function initAnalytics(config: AnalyticsConfig): Promise<void> {
         posthogJs.init(config.posthogApiKey, {
           api_host: config.posthogHost,
           autocapture: false,
-          capture_pageview: true,
+          // Fire $pageview on SPA history changes, not just the initial hard
+          // load, so react-router route changes (tool pages, editor, automate,
+          // files) are captured. capture_pageleave gives accurate time-on-page.
+          capture_pageview: "history_change",
+          capture_pageleave: true,
           disable_session_recording: true,
           ip: false,
           persistence: "localStorage",
           person_profiles: "identified_only",
+          // Last-line PII boundary at the SDK, independent of track()'s per-call
+          // sanitize(): strip any query string / fragment from URL properties.
+          // SnapOtter routes carry no PII, but pageview, survey, and other
+          // SDK-generated events never pass through track()'s allowlist, so the
+          // invariant is enforced here too.
+          before_send: (event) => {
+            const props = event?.properties;
+            if (props) {
+              const strip = (u: unknown) => (typeof u === "string" ? u.replace(/[?#].*$/, "") : u);
+              props.$current_url = strip(props.$current_url);
+              props.$referrer = strip(props.$referrer);
+            }
+            return event;
+          },
         }) ?? null;
       initialized = true;
       enabled = true;
@@ -68,8 +94,15 @@ export async function initAnalytics(config: AnalyticsConfig): Promise<void> {
     } catch {
       // ignore
     }
-    // app_version only; no instance_id, so plain events stay person-less.
-    posthog.register({ app_version: (await import("@snapotter/shared")).APP_VERSION });
+    // Super properties on every event. instance_id is an event PROPERTY (not an
+    // identify() call), so events stay anonymous and person-less while enabling
+    // fleet rollups ("how many distinct instances use tool X") via a HogQL
+    // uniq(). Omitted when empty so we never register a blank value.
+    const superProps: Record<string, string> = {
+      app_version: (await import("@snapotter/shared")).APP_VERSION,
+    };
+    if (config.instanceId) superProps.instance_id = config.instanceId;
+    posthog.register(superProps);
   }
 
   try {
@@ -100,6 +133,24 @@ export async function initAnalytics(config: AnalyticsConfig): Promise<void> {
   } catch (err) {
     console.warn("[analytics] Sentry init failed:", err);
   }
+
+  // Replay crashes captured before Sentry was ready (no-op if Sentry did not
+  // init, e.g. analytics disabled, so opt-out is respected).
+  if (enabled) void flushEarlyErrors();
+}
+
+/**
+ * Set an allowlisted Sentry tag (route / tool_id / locale / error_class, see
+ * sentry-scrub.ts TAG_ALLOWLIST) so web errors become filterable by which tool
+ * and route the user was on. No-op until Sentry is initialized; lazy so this
+ * module keeps no static @sentry/react import.
+ */
+export function setSentryTag(key: string, value: string): void {
+  void import("@sentry/react")
+    .then((Sentry) => {
+      if (Sentry.getClient()) Sentry.setTag(key, value);
+    })
+    .catch(() => {});
 }
 
 export function track(event: string, properties?: Record<string, unknown>): void {

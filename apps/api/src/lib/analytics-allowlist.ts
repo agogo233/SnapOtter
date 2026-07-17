@@ -2,7 +2,21 @@
 // primitives. Free-text fields (error_message, params, search query) are never
 // allow-listed, so tool settings and filenames cannot reach PostHog.
 const ALLOWED: Record<string, ReadonlySet<string>> = {
-  tool_used: new Set(["tool_id", "status", "duration_ms", "category", "is_ai_tool", "error_code"]),
+  tool_used: new Set([
+    "tool_id",
+    "status",
+    "duration_ms",
+    "category",
+    "is_ai_tool",
+    "is_batch",
+    "input_format",
+    "output_format",
+    "bytes_in",
+    "bytes_out",
+    "execution_hint",
+    "error_code",
+    "error_kind",
+  ]),
   pipeline_executed: new Set([
     "step_count",
     "tool_ids",
@@ -13,6 +27,8 @@ const ALLOWED: Record<string, ReadonlySet<string>> = {
   ]),
   ai_bundle_action: new Set(["bundle_id", "action", "duration_ms"]),
   instance_started: new Set(["arch", "os_platform", "deploy_mode", "gpu_present"]),
+  auth_login: new Set(["method"]),
+  auth_login_failed: new Set(["method"]),
 };
 
 function isAllowedValue(value: unknown): boolean {

@@ -2,6 +2,7 @@
 // biome-ignore-all lint/correctness/noUnusedVariables: Astro template consumes frontmatter values.
 import "@/styles/globals.css";
 import { TOOLS } from "@snapotter/shared";
+import Analytics from "@/components/Analytics.astro";
 import LaunchBanner from "@/components/LaunchBanner.astro";
 import MachineTranslationBanner from "@/components/MachineTranslationBanner.astro";
 import { LANDING_LOCALES, t } from "@/i18n";
@@ -161,5 +162,6 @@ const htmlDir = dirFor(locale);
         });
       })();
     </script>
+    <Analytics />
   </body>
 </html>
