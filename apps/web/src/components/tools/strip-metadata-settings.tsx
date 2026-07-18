@@ -119,7 +119,9 @@ export function StripMetadataControls({
           />
           Strip GPS (location data)
           {hasGps && !stripAll && (
-            <span className="ms-auto text-[10px] text-amber-500">location found</span>
+            <span className="ms-auto text-[10px] text-amber-700 dark:text-amber-400">
+              location found
+            </span>
           )}
         </label>
 
@@ -273,7 +275,7 @@ export function StripMetadataSettings() {
             </div>
           )}
 
-          {inspectError && <p className="text-[10px] text-red-500">{inspectError}</p>}
+          {inspectError && <p className="text-[10px] text-destructive-ink">{inspectError}</p>}
 
           {metadata && !hasAnyMetadata && !inspecting && (
             <p className="text-xs text-muted-foreground italic py-1">
@@ -289,8 +291,8 @@ export function StripMetadataSettings() {
               {hasGps && gpsLat != null && gpsLon != null && (
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-amber-500/10 border border-amber-500/20">
-                    <MapPin className="h-3 w-3 text-amber-500 shrink-0" />
-                    <span className="text-[10px] text-amber-600 dark:text-amber-400 font-medium">
+                    <MapPin className="h-3 w-3 text-amber-700 dark:text-amber-400 shrink-0" />
+                    <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium">
                       Location data: {gpsLat.toFixed(6)}, {gpsLon.toFixed(6)}
                     </span>
                   </div>
@@ -298,12 +300,12 @@ export function StripMetadataSettings() {
                     href={`https://www.openstreetmap.org/?mlat=${gpsLat}&mlon=${gpsLon}#map=15/${gpsLat}/${gpsLon}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-[10px] text-primary hover:underline"
+                    className="inline-flex items-center gap-1 text-[10px] text-primary-ink hover:underline"
                   >
                     <ExternalLink className="h-3 w-3" />
                     {t.toolSettings["strip-metadata"].viewOnMap}
                   </a>
-                  <p className="text-[10px] text-amber-600 dark:text-amber-400">
+                  <p className="text-[10px] text-amber-700 dark:text-amber-400">
                     This image contains your precise location. Consider removing GPS data before
                     sharing.
                   </p>
@@ -370,7 +372,7 @@ export function StripMetadataSettings() {
       />
 
       {/* Error */}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {/* Size info */}
       {originalSize != null && processedSize != null && (
@@ -408,7 +410,7 @@ export function StripMetadataSettings() {
           href={downloadUrl}
           download
           data-testid="strip-metadata-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           Download

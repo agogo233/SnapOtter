@@ -156,7 +156,7 @@ export function LqipPlaceholderSettings() {
         </div>
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {processing ? (
         <ProgressCard
@@ -188,7 +188,7 @@ export function LqipPlaceholderSettings() {
           href={downloadUrl}
           download
           data-testid="lqip-placeholder-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           {t.common.download}
@@ -267,7 +267,7 @@ function CopyBlock({
           onClick={onCopy}
           className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          {copied ? <Check className="h-3 w-3 text-green-500" /> : <Copy className="h-3 w-3" />}
+          {copied ? <Check className="h-3 w-3 text-success-ink" /> : <Copy className="h-3 w-3" />}
           Copy
         </button>
       </div>

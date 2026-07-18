@@ -91,7 +91,7 @@ export function HistogramSettings() {
         Generates an RGB histogram chart showing the color distribution of the image.
       </p>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {processing ? (
         <ProgressCard
@@ -199,7 +199,7 @@ export function HistogramSettings() {
                   </span>
                 </div>
               ))}
-              <p className="col-span-2 text-[9px] text-muted-foreground/60 mt-0.5">
+              <p className="col-span-2 text-[9px] text-muted-foreground mt-0.5">
                 mean / median / stdev
               </p>
             </div>
@@ -212,7 +212,7 @@ export function HistogramSettings() {
           href={downloadUrl}
           download
           data-testid="histogram-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           {t.common.download}

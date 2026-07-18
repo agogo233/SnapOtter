@@ -137,7 +137,7 @@ function UploadArea() {
         <button
           type="button"
           onClick={handleClick}
-          className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-primary text-primary hover:bg-primary/5 transition-colors text-sm font-medium"
+          className="flex items-center gap-2 px-6 py-2.5 rounded-lg border border-primary text-primary-ink hover:bg-primary/5 transition-colors text-sm font-medium"
         >
           <Upload className="h-4 w-4" />
           Upload images for collage
@@ -520,7 +520,7 @@ function CollageCell({
             className={cn(
               "flex items-center gap-1 rounded px-1.5 py-1 text-[11px] font-medium backdrop-blur-sm transition-colors",
               transform.objectFit === "contain"
-                ? "bg-primary/80 text-white hover:bg-primary/90"
+                ? "bg-primary/80 text-primary-foreground hover:bg-primary/90"
                 : "bg-black/50 text-white hover:bg-black/70",
             )}
             title={transform.objectFit === "cover" ? "Fit entire image" : "Fill cell"}

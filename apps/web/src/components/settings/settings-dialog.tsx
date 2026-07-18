@@ -437,7 +437,7 @@ function GeneralSection() {
       {/* User info */}
       <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
+          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary-ink font-semibold">
             {loading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -516,9 +516,7 @@ function GeneralSection() {
           <span
             className={cn(
               "text-sm",
-              saveMsg === t.settings.general.saveFailed
-                ? "text-destructive"
-                : "text-green-600 dark:text-green-400",
+              saveMsg === t.settings.general.saveFailed ? "text-destructive" : "text-success-ink",
             )}
           >
             {saveMsg}
@@ -837,9 +835,7 @@ function SystemSection() {
           <span
             className={cn(
               "text-sm",
-              saveMsg === t.settings.system.saveFailed
-                ? "text-destructive"
-                : "text-green-600 dark:text-green-400",
+              saveMsg === t.settings.system.saveFailed ? "text-destructive" : "text-success-ink",
             )}
           >
             {saveMsg}
@@ -1045,9 +1041,7 @@ function SecuritySection() {
               role="alert"
               className={cn(
                 "text-sm",
-                message.type === "error"
-                  ? "text-destructive"
-                  : "text-green-600 dark:text-green-400",
+                message.type === "error" ? "text-destructive" : "text-success-ink",
               )}
             >
               {message.text}
@@ -1347,7 +1341,7 @@ export function AdminSecuritySettings() {
           <span
             className={cn(
               "text-sm",
-              saveMsg.type === "error" ? "text-destructive" : "text-green-600 dark:text-green-400",
+              saveMsg.type === "error" ? "text-destructive" : "text-success-ink",
             )}
           >
             {saveMsg.text}
@@ -1614,7 +1608,7 @@ function PeopleSection() {
             "text-sm px-3 py-2 rounded-lg",
             actionMsg.type === "error"
               ? "bg-destructive/10 text-destructive"
-              : "bg-green-500/10 text-green-600 dark:text-green-400",
+              : "bg-green-500/10 text-success-ink",
           )}
         >
           {actionMsg.text}
@@ -1715,7 +1709,7 @@ function PeopleSection() {
                   className={cn(
                     "shrink-0 p-2 rounded-lg border border-border transition-colors",
                     pwCopied
-                      ? "text-green-500 bg-green-500/10"
+                      ? "text-success-ink bg-green-500/10"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                   title={
@@ -1778,7 +1772,7 @@ function PeopleSection() {
                 setShowGeneratedPw(true);
                 setPwCopied(false);
               }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 text-xs text-primary hover:bg-primary/20 font-medium transition-colors"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-primary/30 bg-primary/10 text-xs text-primary-ink hover:bg-primary/20 font-medium transition-colors"
             >
               <Sparkles className="h-3 w-3" />
               {t.changePassword.generateButton}
@@ -1801,7 +1795,7 @@ function PeopleSection() {
             </button>
           </div>
           {showGeneratedPw && !pwCopied && (
-            <p className="text-xs text-amber-500 flex items-center gap-1.5">
+            <p className="text-xs text-amber-700 dark:text-amber-400 flex items-center gap-1.5">
               <Key className="h-3.5 w-3.5 shrink-0" />
               {t.settings.people.copyPasswordWarning}
             </p>
@@ -1894,7 +1888,7 @@ function PeopleSection() {
             />
             <button
               type="submit"
-              className="px-4 py-2 rounded-lg bg-orange-500 text-white text-sm font-medium hover:bg-orange-600 transition-colors"
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary-light transition-colors"
             >
               {t.settings.people.resetPasswordButton}
             </button>
@@ -1942,7 +1936,7 @@ function PeopleSection() {
               {isMobile ? (
                 <>
                   {/* Mobile card layout */}
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary-ink font-semibold text-sm shrink-0">
                     {u.username.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -1966,7 +1960,7 @@ function PeopleSection() {
                         className={cn(
                           "inline-block px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide",
                           u.role === "admin"
-                            ? "bg-primary/15 text-primary"
+                            ? "bg-primary/15 text-primary-ink"
                             : "bg-muted text-muted-foreground",
                         )}
                       >
@@ -1980,7 +1974,7 @@ function PeopleSection() {
                 <>
                   {/* Desktop row layout */}
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm shrink-0">
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary-ink font-semibold text-sm shrink-0">
                       {u.username.charAt(0).toUpperCase()}
                     </div>
                     <span className="text-sm font-medium text-foreground truncate">
@@ -2004,7 +1998,7 @@ function PeopleSection() {
                       className={cn(
                         "inline-block px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide",
                         u.role === "admin"
-                          ? "bg-primary/15 text-primary"
+                          ? "bg-primary/15 text-primary-ink"
                           : "bg-muted text-muted-foreground",
                       )}
                     >
@@ -2282,7 +2276,11 @@ function ApiKeysSection() {
               title="Copy"
               aria-label={t.common.copy}
             >
-              {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
+              {copied ? (
+                <Check className="h-4 w-4 text-success-ink" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </button>
           </div>
           <p className="text-xs text-muted-foreground">{t.settings.apiKeys.keyWarning}</p>
@@ -2311,7 +2309,7 @@ function ApiKeysSection() {
                   </p>
                 )}
                 {k.expiresAt && (
-                  <span className="text-xs text-amber-500">
+                  <span className="text-xs text-amber-700 dark:text-amber-400">
                     Expires {new Date(k.expiresAt).toLocaleDateString()}
                   </span>
                 )}
@@ -2502,7 +2500,7 @@ function TeamsSection() {
             "text-sm px-3 py-2 rounded-lg",
             actionMsg.type === "error"
               ? "bg-destructive/10 text-destructive"
-              : "bg-green-500/10 text-green-600 dark:text-green-400",
+              : "bg-green-500/10 text-success-ink",
           )}
         >
           {actionMsg.text}
@@ -2603,7 +2601,7 @@ function TeamsSection() {
                       <button
                         type="button"
                         onClick={() => handleRename(tm.id)}
-                        className="text-xs text-primary hover:underline"
+                        className="text-xs text-primary-ink hover:underline"
                       >
                         {t.common.save}
                       </button>
@@ -2917,7 +2915,7 @@ function RolesSection() {
             "text-sm px-3 py-2 rounded-lg",
             actionMsg.type === "error"
               ? "bg-destructive/10 text-destructive"
-              : "bg-green-500/10 text-green-600 dark:text-green-400",
+              : "bg-green-500/10 text-success-ink",
           )}
         >
           {actionMsg.text}
@@ -3095,7 +3093,7 @@ function RolesSection() {
                       {t.settings.roles.builtInBadge}
                     </span>
                   )}
-                  <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-xs font-medium text-primary">
+                  <span className="inline-block px-2 py-0.5 rounded-full bg-primary/10 text-xs font-medium text-primary-ink">
                     {role.userCount} user{role.userCount !== 1 ? "s" : ""}
                   </span>
                 </div>
@@ -3595,7 +3593,7 @@ function AboutSection() {
         <div className="flex items-center gap-3">
           <OtterLogo className="h-8 w-8 text-primary" />
           <div className="text-2xl font-bold text-foreground">
-            <span className="text-primary">SnapOtter</span>
+            <span className="text-primary-ink">SnapOtter</span>
           </div>
         </div>
         <p className="text-sm text-muted-foreground">{t.settings.about.appDescription}</p>
@@ -3620,7 +3618,7 @@ function AboutSection() {
             href="https://github.com/snapotter-hq/snapotter"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary-ink hover:underline"
           >
             {t.settings.about.githubLink}
           </a>
@@ -3628,7 +3626,7 @@ function AboutSection() {
             href="https://docs.snapotter.com/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary-ink hover:underline"
           >
             {t.settings.about.docsLink}
           </a>
@@ -3636,7 +3634,7 @@ function AboutSection() {
             href="/api/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-primary hover:underline"
+            className="text-sm text-primary-ink hover:underline"
           >
             {t.settings.about.apiRefLink}
           </a>

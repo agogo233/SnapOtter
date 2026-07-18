@@ -568,7 +568,7 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
                   height: canvasSize.height,
                 }))
               }
-              className="mt-1 text-[10px] text-primary hover:underline"
+              className="mt-1 text-[10px] text-primary-ink hover:underline"
             >
               Reset to original size ({canvasSize.width} x {canvasSize.height})
             </button>
@@ -826,7 +826,7 @@ export function AutosaveRecoveryBanner({
 
   return (
     <div className="flex items-center gap-3 px-4 py-2 bg-yellow-500/10 border-b border-yellow-500/30 text-xs">
-      <Save size={14} className="text-yellow-600 shrink-0" />
+      <Save size={14} className="text-amber-700 dark:text-amber-400 shrink-0" />
       <span className="text-foreground">Recovered unsaved work from {timeStr}.</span>
       <div className="flex items-center gap-2 ms-auto">
         <button

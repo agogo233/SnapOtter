@@ -115,7 +115,7 @@ const COLLAPSED_LIMIT = 5;
 function FileStatusIcon({ status }: { status: FileEntry["status"] }) {
   switch (status) {
     case "completed":
-      return <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />;
+      return <CheckCircle2 className="h-3 w-3 text-success-ink shrink-0" />;
     case "failed":
       return <XCircle className="h-3 w-3 text-destructive shrink-0" />;
     case "processing":
@@ -161,7 +161,7 @@ function FileSelectionInfo({
         <button
           type="button"
           onClick={onAddMore}
-          className="text-xs text-primary hover:text-primary/80"
+          className="text-xs text-primary-ink hover:text-primary-ink-strong"
         >
           + Add more
         </button>
@@ -198,7 +198,7 @@ function FileSelectionInfo({
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="text-xs text-primary hover:text-primary/80"
+            className="text-xs text-primary-ink hover:text-primary-ink-strong"
           >
             {expanded ? "Show less" : `Show ${files.length - COLLAPSED_LIMIT} more`}
           </button>
@@ -910,12 +910,12 @@ export function ToolPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center p-8 max-w-xs">
             <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 flex items-center justify-center mb-4">
-              <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+              <CheckCircle2 className="h-8 w-8 text-success-ink" />
             </div>
             <p className="font-medium text-foreground mb-1">{t.toolPage.conversionComplete}</p>
             <p className="text-sm text-muted-foreground mb-1">{processedFileName}</p>
             {processedSize != null && (
-              <p className="text-xs text-muted-foreground/60">
+              <p className="text-xs text-muted-foreground">
                 {processedFileType} &middot; {formatFileSize(processedSize)}
               </p>
             )}
@@ -1016,7 +1016,7 @@ export function ToolPage() {
               <p className="text-sm text-muted-foreground mb-1">
                 {ext} &middot; {formatFileSize(fsize)}
               </p>
-              <p className="text-xs text-muted-foreground/60">{t.toolPage.previewUnavailable}</p>
+              <p className="text-xs text-muted-foreground">{t.toolPage.previewUnavailable}</p>
             </div>
           </div>
         );
@@ -1144,7 +1144,7 @@ export function ToolPage() {
           <button
             type="button"
             onClick={handleDownloadAll}
-            className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+            className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
           >
             <Download className="h-4 w-4" />
             {t.toolPage.downloadAllZip}

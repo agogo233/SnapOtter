@@ -338,7 +338,7 @@ export function OptimizeForWebSettings() {
           {savings != null && (
             <div
               className={`text-sm font-semibold ${
-                Number(savings) > 0 ? "text-green-500" : "text-red-500"
+                Number(savings) > 0 ? "text-success-ink" : "text-destructive-ink"
               }`}
             >
               {Number(savings) > 0 ? `${savings}% smaller` : `${Math.abs(Number(savings))}% larger`}
@@ -348,7 +348,7 @@ export function OptimizeForWebSettings() {
       )}
 
       {/* Error */}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {/* Process / Download */}
       {processing ? (
@@ -374,7 +374,7 @@ export function OptimizeForWebSettings() {
         <a
           href={downloadUrl}
           download
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           Download

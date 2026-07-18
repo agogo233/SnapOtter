@@ -123,7 +123,7 @@ export function ChangePasswordPage() {
         <div className="w-full max-w-md space-y-8">
           <div>
             <h1 className="text-3xl font-bold text-foreground">
-              <span className="text-primary">SnapOtter</span>
+              <span className="text-primary-ink">SnapOtter</span>
             </h1>
             <h2 className="text-2xl font-bold mt-4 text-foreground">{t.changePassword.title}</h2>
             <p className="text-sm text-muted-foreground mt-2">{t.changePassword.description}</p>
@@ -169,7 +169,7 @@ export function ChangePasswordPage() {
                 <button
                   type="button"
                   onClick={handleGenerate}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-xs text-primary hover:bg-primary/20 font-medium transition-colors"
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-xs text-primary-ink hover:bg-primary/20 font-medium transition-colors"
                 >
                   <Sparkles className="h-3 w-3" />
                   {t.changePassword.generateButton}
@@ -223,11 +223,11 @@ export function ChangePasswordPage() {
           </form>
         </div>
       </div>
-      <div className="hidden lg:flex flex-1 bg-primary/90 items-center justify-center p-12 text-white rounded-s-3xl">
+      <div className="hidden lg:flex flex-1 bg-primary/90 items-center justify-center p-12 text-primary-foreground rounded-s-3xl">
         <div className="max-w-lg space-y-6 text-center">
           <span className="text-7xl">🦦</span>
           <h2 className="text-3xl font-bold">{t.changePassword.sidebarTitle}</h2>
-          <p className="text-lg text-white/80">{t.changePassword.sidebarDescription}</p>
+          <p className="text-lg text-primary-foreground">{t.changePassword.sidebarDescription}</p>
         </div>
       </div>
     </div>

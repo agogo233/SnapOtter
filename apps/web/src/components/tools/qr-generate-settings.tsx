@@ -670,7 +670,7 @@ export function QrGenerateSettings() {
             onChange={handleLogoUpload}
             className="hidden"
           />
-          {store.logoError && <p className="text-xs text-red-500">{store.logoError}</p>}
+          {store.logoError && <p className="text-xs text-destructive-ink">{store.logoError}</p>}
           {store.logoDataUrl ? (
             <div className="flex items-center gap-2">
               <img
@@ -775,7 +775,7 @@ export function QrGenerateSettings() {
                   <span
                     className={`block text-[10px] ${
                       store.downloadFormat === value
-                        ? "text-primary-foreground/70"
+                        ? "text-primary-foreground"
                         : "text-muted-foreground"
                     }`}
                   >

@@ -276,7 +276,7 @@ export function FindDuplicatesSettings() {
 
       {activeDesc && <p className="text-[10px] text-muted-foreground">{activeDesc}</p>}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {/* Scan button + progress */}
       {!results && (
@@ -317,16 +317,18 @@ export function FindDuplicatesSettings() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Duplicate groups</span>
-              <span className="text-yellow-500 font-medium">{results.duplicateGroups.length}</span>
+              <span className="text-amber-700 dark:text-amber-400 font-medium">
+                {results.duplicateGroups.length}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Unique images</span>
-              <span className="text-green-500 font-medium">{results.uniqueImages}</span>
+              <span className="text-success-ink font-medium">{results.uniqueImages}</span>
             </div>
             {results.spaceSaveable > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Space saveable</span>
-                <span className="text-primary font-medium">
+                <span className="text-primary-ink font-medium">
                   {formatFileSize(results.spaceSaveable)}
                 </span>
               </div>
@@ -334,14 +336,16 @@ export function FindDuplicatesSettings() {
             {results.skippedFiles && results.skippedFiles.length > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Skipped</span>
-                <span className="text-orange-500 font-medium">{results.skippedFiles.length}</span>
+                <span className="text-amber-700 dark:text-amber-400 font-medium">
+                  {results.skippedFiles.length}
+                </span>
               </div>
             )}
           </div>
 
           {results.skippedFiles && results.skippedFiles.length > 0 && (
             <details className="text-xs">
-              <summary className="text-orange-500 cursor-pointer">
+              <summary className="text-amber-700 dark:text-amber-400 cursor-pointer">
                 {results.skippedFiles.length} file{results.skippedFiles.length > 1 ? "s" : ""} could
                 not be analyzed
               </summary>
@@ -369,7 +373,7 @@ export function FindDuplicatesSettings() {
               <button
                 type="button"
                 onClick={handleDownloadUnique}
-                className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+                className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
               >
                 <Download className="h-4 w-4" />
                 Download Unique Only

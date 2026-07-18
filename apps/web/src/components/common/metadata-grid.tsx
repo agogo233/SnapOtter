@@ -33,13 +33,13 @@ export function MetadataGrid({
         return (
           <div key={k} className="contents">
             <div
-              className={`text-[10px] text-muted-foreground truncate ${isRemoved ? "line-through opacity-50" : ""}`}
+              className={`text-[10px] text-muted-foreground truncate ${isRemoved ? "line-through" : ""}`}
               title={k}
             >
               {labelMap?.[k] ?? k}
             </div>
             <div
-              className={`text-[10px] text-foreground font-mono truncate ${isRemoved ? "line-through opacity-50" : ""}`}
+              className={`text-[10px] text-foreground font-mono truncate ${isRemoved ? "line-through" : ""}`}
               title={formatExifValue(k, v)}
             >
               {formatExifValue(k, v)}
@@ -50,7 +50,7 @@ export function MetadataGrid({
                   <button
                     type="button"
                     onClick={() => onRemove(k)}
-                    className={`p-0.5 rounded hover:bg-muted/50 transition-colors ${isRemoved ? "text-red-500" : "text-muted-foreground hover:text-red-500"}`}
+                    className={`p-0.5 rounded hover:bg-muted/50 transition-colors ${isRemoved ? "text-destructive-ink" : "text-muted-foreground hover:text-destructive-ink"}`}
                     title={
                       isRemoved ? `Restore ${labelMap?.[k] ?? k}` : `Remove ${labelMap?.[k] ?? k}`
                     }

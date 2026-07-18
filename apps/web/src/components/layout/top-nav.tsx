@@ -79,6 +79,7 @@ export function TopNav({
           <div className="flex items-center gap-2 flex-1 min-w-0">
             <Link
               to="/"
+              aria-label={t.common.goHome}
               className={cn(
                 "shrink-0",
                 isDark
@@ -179,7 +180,7 @@ export function TopNav({
               <ChevronRight
                 className={cn(
                   "h-3.5 w-3.5 shrink-0",
-                  isDark ? "text-[#666]" : "text-muted-foreground/50",
+                  isDark ? "text-[#8a8a8a]" : "text-muted-foreground",
                 )}
               />
               {breadcrumb.modalityTab ? (
@@ -204,7 +205,7 @@ export function TopNav({
           <ChevronRight
             className={cn(
               "h-3.5 w-3.5 shrink-0",
-              isDark ? "text-[#666]" : "text-muted-foreground/50",
+              isDark ? "text-[#8a8a8a]" : "text-muted-foreground",
             )}
           />
           <span
@@ -234,7 +235,7 @@ export function TopNav({
               >
                 {link.label}
                 {link.badge && (
-                  <span className="ml-1.5 rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-primary/15 text-primary align-middle">
+                  <span className="ml-1.5 rounded px-1 py-0.5 text-[9px] font-bold uppercase tracking-wide bg-primary/15 text-primary-ink-strong align-middle">
                     {link.badge}
                   </span>
                 )}

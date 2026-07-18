@@ -151,7 +151,7 @@ export function ComposeSettings() {
         </select>
       </div>
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {originalSize != null && processedSize != null && (
         <div className="text-xs text-muted-foreground space-y-0.5">
@@ -176,7 +176,7 @@ export function ComposeSettings() {
           href={downloadUrl}
           download
           data-testid="compose-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           Download

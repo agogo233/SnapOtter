@@ -97,7 +97,7 @@ function PdfPagePreview({
           {/* Empty state placeholder */}
           {!imgUrl && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <span className="text-[10px] text-muted-foreground/40">No image</span>
+              <span className="text-[10px] text-muted-foreground">No image</span>
             </div>
           )}
         </div>
@@ -365,7 +365,7 @@ export function ImageToPdfSettings() {
         imgUrl={entries[selectedIndex]?.blobUrl ?? entries[0]?.blobUrl ?? null}
       />
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {busy ? (
         <ProgressCard
@@ -397,7 +397,7 @@ export function ImageToPdfSettings() {
           href={downloadUrl}
           download
           data-testid="image-to-pdf-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           {collate ? "Download PDF" : "Download ZIP"}
@@ -409,8 +409,8 @@ export function ImageToPdfSettings() {
           data-testid="image-to-pdf-compression-result"
           className={`text-xs px-3 py-2 rounded ${
             compressionResult.targetMet
-              ? "bg-green-500/10 text-green-600"
-              : "bg-amber-500/10 text-amber-600"
+              ? "bg-green-500/10 text-success-ink"
+              : "bg-amber-500/10 text-amber-700 dark:text-amber-400"
           }`}
         >
           {compressionResult.targetMet ? (

@@ -241,14 +241,14 @@ export function FeedbackDialog({
                   href={buildToolRequestDiscussionUrl(searchQuery ?? "")}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-primary hover:underline"
+                  className="text-primary-ink hover:underline"
                 >
                   {t.feedback.searchMissDiscussionsFallback}
                 </a>
               </p>
             ) : (
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="h-5 w-5 text-success-ink shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-foreground">{t.feedback.thanksTitle}</p>
                   <p className="text-sm text-muted-foreground">{t.feedback.thanksDescription}</p>
@@ -313,7 +313,7 @@ export function FeedbackDialog({
                         className={cn(
                           "py-2 rounded-lg border text-sm font-medium transition-colors",
                           sentiment === value
-                            ? "border-primary bg-primary/10 text-primary"
+                            ? "border-primary bg-primary/10 text-primary-ink"
                             : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
                         )}
                       >

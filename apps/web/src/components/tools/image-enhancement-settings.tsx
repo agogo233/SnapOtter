@@ -380,7 +380,7 @@ export function ImageEnhancementControls({
                     onClick={() => toggleKey && toggleCorrection(toggleKey)}
                     className={`inline-flex items-center gap-1 text-[11px] px-2 py-1 rounded-full transition-colors ${
                       isEnabled
-                        ? "bg-amber-500/15 text-amber-600 dark:text-amber-400"
+                        ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
                         : "bg-muted text-muted-foreground line-through"
                     }`}
                   >
@@ -462,7 +462,7 @@ export function ImageEnhancementSettings({
     <form onSubmit={handleSubmit} className="space-y-3">
       <ImageEnhancementControls onChange={setSettings} onPreviewFilter={onPreviewFilter} />
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {originalSize != null && processedSize != null && (
         <div className="text-xs text-muted-foreground space-y-0.5">
@@ -499,7 +499,7 @@ export function ImageEnhancementSettings({
           href={downloadUrl}
           download
           data-testid="image-enhancement-download"
-          className="w-full py-2.5 rounded-lg border border-primary text-primary font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
+          className="w-full py-2.5 rounded-lg border border-primary text-primary-ink font-medium flex items-center justify-center gap-2 hover:bg-primary/5"
         >
           <Download className="h-4 w-4" />
           Download

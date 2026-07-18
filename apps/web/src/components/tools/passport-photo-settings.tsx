@@ -320,7 +320,7 @@ function CountryOption({
       type="button"
       onClick={onSelect}
       className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors ${
-        selected ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
+        selected ? "bg-primary/10 text-primary-ink" : "text-foreground hover:bg-muted"
       }`}
     >
       <span>{spec.flag}</span>
@@ -622,7 +622,7 @@ export function PassportPhotoSettings() {
                     setSearchQuery("");
                   }}
                   className={`w-full flex items-center gap-2 px-3 py-1.5 text-xs transition-colors border-b border-border ${
-                    isCustom ? "bg-primary/10 text-primary" : "text-foreground hover:bg-muted"
+                    isCustom ? "bg-primary/10 text-primary-ink" : "text-foreground hover:bg-muted"
                   }`}
                 >
                   <span>{"\u2699\uFE0F"}</span>
@@ -690,7 +690,7 @@ export function PassportPhotoSettings() {
                 onClick={() => setDocumentType(type)}
                 className={`py-2 px-2 rounded-lg border text-xs font-medium transition-colors capitalize ${
                   documentType === type
-                    ? "border-primary bg-primary/10 text-primary"
+                    ? "border-primary bg-primary/10 text-primary-ink"
                     : "border-border text-muted-foreground hover:border-primary/50"
                 }`}
               >
@@ -803,7 +803,7 @@ export function PassportPhotoSettings() {
               }}
               className={`py-1.5 px-2.5 rounded-lg border text-xs font-medium transition-colors ${
                 maxFileSizeKb === preset.value
-                  ? "border-primary bg-primary/10 text-primary"
+                  ? "border-primary bg-primary/10 text-primary-ink"
                   : "border-border text-muted-foreground hover:border-primary/50"
               }`}
             >
@@ -838,9 +838,9 @@ export function PassportPhotoSettings() {
       </div>
 
       {/* Errors */}
-      {analyzeError && <p className="text-xs text-red-500">{analyzeError}</p>}
-      {generateError && <p className="text-xs text-red-500">{generateError}</p>}
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {analyzeError && <p className="text-xs text-destructive-ink">{analyzeError}</p>}
+      {generateError && <p className="text-xs text-destructive-ink">{generateError}</p>}
+      {error && <p className="text-xs text-destructive-ink">{error}</p>}
 
       {/* Analyze progress */}
       {analyzing && (
@@ -1190,11 +1190,13 @@ export function PassportPhotoPreview() {
           {complianceChecks.map((check) => (
             <div key={check.label} className="flex items-center gap-1.5 text-xs">
               {check.pass ? (
-                <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                <Check className="h-3.5 w-3.5 text-success-ink shrink-0" />
               ) : (
-                <X className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                <X className="h-3.5 w-3.5 text-destructive-ink shrink-0" />
               )}
-              <span className={check.pass ? "text-foreground" : "text-red-400"}>{check.label}</span>
+              <span className={check.pass ? "text-foreground" : "text-destructive-ink"}>
+                {check.label}
+              </span>
               {!check.pass && (
                 <span className="text-muted-foreground text-[10px]">- {check.detail}</span>
               )}
@@ -1205,7 +1207,7 @@ export function PassportPhotoPreview() {
 
       {/* Generated result notification */}
       {generateResult && (
-        <div className="flex items-center gap-2 text-xs text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20 dark:text-emerald-400 px-3 py-2 rounded-lg shrink-0">
+        <div className="flex items-center gap-2 text-xs text-success-ink bg-emerald-50 dark:bg-emerald-900/20 px-3 py-2 rounded-lg shrink-0">
           <Check className="h-4 w-4" />
           Photo generated. Download from the left panel.
         </div>
