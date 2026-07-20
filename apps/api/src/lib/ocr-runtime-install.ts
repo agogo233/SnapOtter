@@ -65,6 +65,10 @@ const HARD_MAX_RETRY_ATTEMPTS = 6;
 const HARD_MAX_RETRY_DELAY_MS = 30_000;
 const HARD_MAX_RETRY_TOTAL_DELAY_MS = 120_000;
 const RETRYABLE_HTTP_STATUSES = new Set([408, 425, 429, 500, 502, 503, 504]);
+// The bundle host answers a runtime index that was never published for this
+// version with one of these. On a public bundle repository they all mean the
+// same thing to a user: the accurate runtime is not available to install yet.
+const RUNTIME_NOT_PUBLISHED_STATUSES = new Set([401, 403, 404, 410]);
 const RETRYABLE_NETWORK_CODES = new Set([
   "EAI_AGAIN",
   "ECONNREFUSED",
@@ -182,6 +186,22 @@ export class OcrRuntimeImportValidationError extends Error {
   constructor(message: string, options?: ErrorOptions) {
     super(message, options);
     this.name = "OcrRuntimeImportValidationError";
+  }
+}
+
+/**
+ * The signed OCR runtime index is not published (or not readable) for this
+ * SnapOtter version. This is a definitive "nothing to install here" answer, not
+ * a transient failure, so it is thrown without retrying and carries a message
+ * the install UI can show verbatim.
+ */
+export class OcrRuntimeNotPublishedError extends Error {
+  readonly httpStatus: number;
+
+  constructor(message: string, httpStatus: number, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "OcrRuntimeNotPublishedError";
+    this.httpStatus = httpStatus;
   }
 }
 
@@ -330,6 +350,22 @@ async function assertDownloadResponse(
     throw new RetryableOcrDownloadError(message, retryAfterMilliseconds(retryAfter, now));
   }
   throw new Error(message);
+}
+
+/**
+ * Turn an absent (or forbidden) signed runtime index into a clear, terminal
+ * error instead of a raw "HTTP 404". Callers invoke this before the generic
+ * response check so the message reaches the install UI unretried and unwrapped.
+ */
+function assertOcrRuntimeIndexPublished(response: Response, version: string): void {
+  if (!RUNTIME_NOT_PUBLISHED_STATUSES.has(response.status)) return;
+  cancelResponseBody(response);
+  throw new OcrRuntimeNotPublishedError(
+    `The accurate OCR runtime for SnapOtter ${version} is not available to install yet ` +
+      `(its signed runtime index returned HTTP ${response.status}). Fast OCR still works; ` +
+      `accurate OCR becomes available once its runtime is published for this version.`,
+    response.status,
+  );
 }
 
 function retryDelayMs(error: unknown, completedAttempts: number, policy: ResolvedRetryPolicy) {
@@ -1748,6 +1784,7 @@ async function downloadVerifiedRuntimeReleaseUnderLease(
             signal: controller.signal,
           },
         );
+        assertOcrRuntimeIndexPublished(indexResponse, options.version);
         await assertDownloadResponse(indexResponse, "OCR runtime index", retryPolicy.now);
         return readBoundedResponse(
           indexResponse,
@@ -1963,6 +2000,17 @@ async function purgeOcrRuntimeDownloadsUnderLease(aiDataDir: string): Promise<vo
     await cache?.trashHandle.close().catch(() => {});
     await cache?.handle.close().catch(() => {});
   }
+}
+
+/**
+ * Remaining installer time budget from an optional deadline. `performance.now()`
+ * is fractional, so a raw `deadline - now` is a float that `runOcrRuntimeInstaller`
+ * rejects as a non-integer timeout. Floor it to a safe integer and keep at least
+ * 1ms so a live install always receives a positive, valid timeout.
+ */
+export function remainingInstallerTimeoutMs(deadlineMs: number | undefined, nowMs: number): number {
+  if (deadlineMs === undefined) return 0;
+  return Math.max(1, Math.floor(deadlineMs - nowMs));
 }
 
 export function buildOcrRuntimeInstallerCommand(
