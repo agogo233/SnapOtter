@@ -11,7 +11,10 @@ export function formatZodErrors(issues: ZodIssue[]): string {
  * leaking server directory structure to API consumers.
  */
 export function stripInternalPaths(message: string): string {
-  return message.replace(/\/(tmp|data|app|opt|home|workspace)\b[^\s'")}]*/g, "[internal]");
+  return message.replace(
+    /\/(?:tmp|data|app|opt|home|workspace)\b[^\s'")}]*|[A-Za-z]:\\[^\s'")}]*/g,
+    "[internal]",
+  );
 }
 
 // Matching control characters is the entire point of these patterns (we strip
@@ -36,10 +39,16 @@ export function stripControlChars(message: string): string {
 /**
  * Unambiguous markers of a raw external-tool failure dump: the
  * `ffmpeg/ffprobe exited N:` prefix that media-engine throws, a Python
- * traceback, or a crash. These are matched precisely (not by content
- * keywords like "pixel format" or "conversion failed", which can appear in
- * legitimate validation messages) -- longer or multi-line raw dumps are
- * caught separately by the length/line-count check below.
+ * traceback, or a crash. Matched precisely (not by content keywords like
+ * "pixel format" or "conversion failed", which appear in legitimate validation
+ * messages); longer or multi-line raw dumps are caught by the length/line-count
+ * check below.
+ *
+ * Doc-engine tools (qpdf, gs, pdfcpu, pandoc, LibreOffice) are deliberately NOT
+ * matched here. Their short stderr is already path-scrubbed and often carries
+ * the actionable reason (qpdf surfaces "invalid password" this way), so
+ * collapsing it to the generic sentence would hide errors users need. The
+ * genuinely verbose dumps are still caught by the length/line-count guard.
  */
 const RAW_TOOL_FAILURE =
   /ff(?:mpeg|probe) exited \d|traceback \(most recent call|segmentation fault|core dumped/i;

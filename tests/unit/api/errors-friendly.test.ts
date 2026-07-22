@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { friendlyError, stripControlChars } from "../../../apps/api/src/lib/errors.js";
+import {
+  friendlyError,
+  stripControlChars,
+  stripInternalPaths,
+} from "../../../apps/api/src/lib/errors.js";
 
 const GENERIC = "Processing failed. The file may be in an unsupported or corrupted format.";
 
@@ -12,6 +16,18 @@ describe("friendlyError", () => {
 
   it("collapses raw ffprobe stderr dumps", () => {
     expect(friendlyError("ffprobe exited 1: moov atom not found")).toBe(GENERIC);
+  });
+
+  it("preserves short doc-engine errors that carry the actionable reason", () => {
+    // qpdf/gs/pdfcpu stderr is already path-scrubbed and often IS the useful
+    // message (e.g. a wrong PDF password), so it must not collapse to generic.
+    // Only genuinely verbose dumps collapse, via the length/line-count guard.
+    expect(friendlyError("qpdf exited 2: invalid password")).toBe(
+      "qpdf exited 2: invalid password",
+    );
+    expect(friendlyError("pdfcpu exited 1: validation error at object 5")).toBe(
+      "pdfcpu exited 1: validation error at object 5",
+    );
   });
 
   it("collapses python tracebacks", () => {
@@ -81,5 +97,23 @@ describe("stripControlChars", () => {
 
   it("leaves plain text and accented locale strings untouched", () => {
     expect(stripControlChars("Café déjà vu")).toBe("Café déjà vu");
+  });
+});
+
+describe("stripInternalPaths", () => {
+  it("strips POSIX internal roots", () => {
+    expect(stripInternalPaths("wrote /tmp/workspace/out.mp4 ok")).toBe("wrote [internal] ok");
+    expect(stripInternalPaths("model at /data/ai/models/whisper")).toBe("model at [internal]");
+  });
+
+  it("strips Windows drive-letter paths (native Windows runs)", () => {
+    // Matches sentry-scrub's PATH_RE so client responses and Sentry agree.
+    expect(stripInternalPaths("failed reading C:\\Users\\snap\\secret.pdf")).toBe(
+      "failed reading [internal]",
+    );
+  });
+
+  it("leaves messages with no path untouched", () => {
+    expect(stripInternalPaths("Region exceeds image bounds")).toBe("Region exceeds image bounds");
   });
 });
